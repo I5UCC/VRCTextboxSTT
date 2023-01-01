@@ -1,0 +1,9 @@
+{
+    "IP": "127.0.0.1",
+    "Port": 9000,
+    "model": "base",
+    "language": "english",
+    "dynamic_energy_threshold": false,
+    "energy_threshold": 100,
+    "pause_threshold": 0.8
+}
