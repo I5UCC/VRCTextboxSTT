@@ -9,6 +9,7 @@ import speech_recognition as sr
 import whisper
 import torch
 import numpy as np
+import ctypes
 from pythonosc import udp_client
 import openvr
 import winsound
@@ -20,6 +21,10 @@ VRC_INPUT_PARAM = "/chatbox/input"
 VRC_TYPING_PARAM = "/chatbox/typing"
 ACTIONSETHANDLE = "/actions/textboxstt"
 STTLISTENHANDLE = "/actions/textboxstt/in/sttlisten"
+
+# Set window name on Windows
+if os.name == 'nt':
+    ctypes.windll.kernel32.SetConsoleTitleW("TextboxSTT")
 
 
 def cls():
