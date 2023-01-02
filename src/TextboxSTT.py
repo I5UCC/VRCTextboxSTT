@@ -47,7 +47,7 @@ def play_ping2():
     """Plays another ping sound."""
     winsound.PlaySound('ping2.wav', winsound.SND_FILENAME | winsound.SND_ASYNC)
 
-
+cls()
 config = json.load(open(get_absolute_path('config.json')))
 
 oscClient = udp_client.SimpleUDPClient(config["IP"], int(config["Port"]))
@@ -66,14 +66,18 @@ r.dynamic_energy_threshold = bool(config["dynamic_energy_threshold"])
 r.energy_threshold = int(config["energy_threshold"])
 r.pause_threshold = float(config["pause_threshold"])
 
-application = openvr.init(openvr.VRApplication_Utility)
-action_path = get_absolute_path("bindings/textboxstt_actions.json")
-appmanifest_path = get_absolute_path("app.vrmanifest")
-
-openvr.VRApplications().addApplicationManifest(appmanifest_path)
-openvr.VRInput().setActionManifestPath(action_path)
-actionSetHandle = openvr.VRInput().getActionSetHandle(ACTIONSETHANDLE)
-buttonactionhandle = openvr.VRInput().getActionHandle(STTLISTENHANDLE)
+ovr_initialized = False
+try:
+    application = openvr.init(openvr.VRApplication_Utility)
+    action_path = get_absolute_path("bindings/textboxstt_actions.json")
+    appmanifest_path = get_absolute_path("app.vrmanifest")
+    openvr.VRApplications().addApplicationManifest(appmanifest_path)
+    openvr.VRInput().setActionManifestPath(action_path)
+    actionSetHandle = openvr.VRInput().getActionSetHandle(ACTIONSETHANDLE)
+    buttonactionhandle = openvr.VRInput().getActionHandle(STTLISTENHANDLE)
+    ovr_initialized = True
+except Exception:
+    print("OpenVR couldnt be initialized, continuing PC only mode.")
 
 
 def listen_and_transcribe():
@@ -154,18 +158,19 @@ keyboard.add_hotkey(config["clear_hotkey"], clear_chatbox)
 cls()
 print(Fore.GREEN + "-INITIALZIED-")
 print(Fore.LIGHTBLUE_EX + "WAITING")
-# Main Loop
-while True:
-    try:
-        handle_input()
-        time.sleep(0.05)
-    except KeyboardInterrupt:
-        cls()
-        sys.exit()
-    except Exception:
-        cls()
-        print("UNEXPECTED ERROR\n")
-        print("Please Create an Issue on GitHub with the following information:\n")
-        traceback.print_exc()
-        input("\nPress ENTER to exit")
-        sys.exit()
+if ovr_initialized:
+    # Main Loop
+    while True:
+        try:
+            handle_input()
+            time.sleep(0.05)
+        except KeyboardInterrupt:
+            cls()
+            sys.exit()
+        except Exception:
+            cls()
+            print("UNEXPECTED ERROR\n")
+            print("Please Create an Issue on GitHub with the following information:\n")
+            traceback.print_exc()
+            input("\nPress ENTER to exit")
+            sys.exit()
