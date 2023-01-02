@@ -2,7 +2,8 @@
 A SpeechToText application that uses [OpenAI's whisper](https://github.com/openai/whisper) to transcribe audio and send that information to VRChats textbox system over OSC.
 
 To make the program listen, you either have to press the button that is configured in the ***config.json*** file. ***` by default*** <br>
-In VR, press the Left Controllers ***A Button*** for **Valve Index**, and the ***X-Button*** on **Oculus/Meta** respectively.
+In VR, press the Left Controllers ***A Button*** for **Valve Index**, and the ***X-Button*** on **Oculus/Meta** respectively. <br>
+Holding that button for 1.5 seconds will clear the chatbox.
 
 First startup will take longer, as it will download the configured language model. After that it will start up faster. <br>
 More to that under [#Configuration](https://github.com/I5UCC/VRCTextboxSTT#configuration)
