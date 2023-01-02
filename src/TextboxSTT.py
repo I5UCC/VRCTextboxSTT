@@ -174,3 +174,5 @@ if ovr_initialized:
             traceback.print_exc()
             input("\nPress ENTER to exit")
             sys.exit()
+else:
+    keyboard.wait()
