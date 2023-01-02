@@ -10,6 +10,12 @@ More to that under [#Configuration](https://github.com/I5UCC/VRCTextboxSTT#confi
 
 # [Download Here](https://github.com/I5UCC/VRCTextboxSTT/releases/download/v0.1/TextboxSTTv0.1.7z)
 
+# Usage
+- Run the program.
+- On desktop use F1 to start listening and F2 to clear the chatbox.
+- In VR, press A on the left Controller on index or X on Oculus.
+- Pressing the A or X button for 1.5s clears the chatbox.
+
 # Demo
 
 [soon TM]
