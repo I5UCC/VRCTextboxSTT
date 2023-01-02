@@ -21,18 +21,22 @@ VRC_TYPING_PARAM = "/chatbox/typing"
 ACTIONSETHANDLE = "/actions/textboxstt"
 STTLISTENHANDLE = "/actions/textboxstt/in/STTListen"
 
+
 def cls():
     """Clears Console"""
     os.system('cls' if os.name == 'nt' else 'clear')
+
 
 def get_absolute_path(relative_path):
     """Gets absolute path from relative path"""
     base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
     return os.path.join(base_path, relative_path)
 
+
 def play_ping():
     """Plays a ping sound."""
     winsound.PlaySound('ping.wav', winsound.SND_FILENAME | winsound.SND_ASYNC)
+
 
 config = json.load(open(get_absolute_path('config.json')))
 
@@ -53,7 +57,7 @@ r.energy_threshold = int(config["energy_threshold"])
 r.pause_threshold = float(config["pause_threshold"])
 
 application = openvr.init(openvr.VRApplication_Utility)
-action_path = get_absolute_path("textboxstt_actions.json")
+action_path = get_absolute_path("bindings/textboxstt_actions.json")
 appmanifest_path = get_absolute_path("app.vrmanifest")
 
 openvr.VRApplications().addApplicationManifest(appmanifest_path)
