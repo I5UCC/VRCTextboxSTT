@@ -87,6 +87,7 @@ def listen_and_transcribe():
             audio = r.listen(source, timeout=3)
         except sr.WaitTimeoutError:
             clear_chatbox()
+            play_ping2()
             return ""
         play_ping2()
         torch_audio = torch.from_numpy(np.frombuffer(audio.get_raw_data(), np.int16).flatten().astype(np.float32) / 32768.0)
