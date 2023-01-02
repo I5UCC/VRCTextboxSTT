@@ -47,7 +47,6 @@ def play_ping2():
     """Plays another ping sound."""
     winsound.PlaySound('ping2.wav', winsound.SND_FILENAME | winsound.SND_ASYNC)
 
-cls()
 config = json.load(open(get_absolute_path('config.json')))
 
 oscClient = udp_client.SimpleUDPClient(config["IP"], int(config["Port"]))
@@ -77,7 +76,7 @@ try:
     buttonactionhandle = openvr.VRInput().getActionHandle(STTLISTENHANDLE)
     ovr_initialized = True
 except Exception:
-    print(Fore.MAGENTA + "OpenVR couldnt be initialized, continuing PC only mode.")
+    ovr_initialized = False
 
 
 def listen_and_transcribe():
@@ -175,4 +174,5 @@ if ovr_initialized:
             input("\nPress ENTER to exit")
             sys.exit()
 else:
+    print(Fore.MAGENTA + "OpenVR couldnt be initialized, continuing PC only mode.")
     keyboard.wait()
