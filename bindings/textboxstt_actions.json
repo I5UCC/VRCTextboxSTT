@@ -7,6 +7,10 @@
         {
             "controller_type": "oculus_touch",
             "binding_url": "touch_textboxstt_bindings.json"
+        },
+        {
+            "controller_type": "vive_controller",
+            "binding_url": "wands_textboxstt_bindings.json"
         }
     ],
     "actions": [
