@@ -2,7 +2,7 @@ import sys
 from cx_Freeze import setup, Executable
 
 packages = ["torch"]
-file_include = ["config.json", "bindings/", "app.vrmanifest", "ping.wav"]
+file_include = ["config.json", "bindings/", "app.vrmanifest", "ping.wav", "ping2.wav"]
 
 build_exe_options = {"packages": packages, "include_files": file_include}
 setup(
