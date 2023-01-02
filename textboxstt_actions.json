@@ -1,0 +1,18 @@
+{
+    "default_bindings": [
+        {
+            "controller_type": "knuckles",
+            "binding_url": "knuckles_textboxstt_bindings.json"
+        },
+        {
+            "controller_type": "oculus_touch",
+            "binding_url": "touch_textboxstt_bindings.json"
+        }
+    ],
+    "actions": [
+        {
+            "name": "/actions/textboxstt/in/STTListen",
+            "type": "boolean"
+        }
+    ]
+}

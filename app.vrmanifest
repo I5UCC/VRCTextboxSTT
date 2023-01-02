@@ -1,0 +1,19 @@
+{
+	"source": "builtin",
+	"applications": [
+		{
+			"app_key": "i5ucc.TextboxSTT",
+			"launch_type": "binary",
+			"binary_path_windows": "./TextboxSTT.exe",
+			"is_dashboard_overlay": true,
+			"action_manifest_path": "./textboxstt_actions.json",
+
+			"strings": {
+				"en_us": {
+					"name": "TextboxSTT",
+					"description": "OpenAI whisper based SpeechToText that sends transcibed information to VRChats Textbox."
+				}
+			}
+		}
+	]
+}
