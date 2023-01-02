@@ -8,6 +8,8 @@ Holding that button for 1.5 seconds will clear the chatbox.
 First startup will take longer, as it will download the configured language model. After that it will start up faster. <br>
 More to that under [#Configuration](https://github.com/I5UCC/VRCTextboxSTT#configuration)
 
+# [Download Here](https://github.com/I5UCC/VRCTextboxSTT/releases/download/v0.1/TextboxSTTv0.1.7z)
+
 # Demo
 
 [soon TM]
