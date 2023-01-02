@@ -83,7 +83,11 @@ def listen_and_transcribe():
     with sr.Microphone(sample_rate=16000) as source:
         print(Fore.LIGHTCYAN_EX + "LISTENING")
         play_ping()
-        audio = r.listen(source)
+        try:
+            audio = r.listen(source, timeout=3)
+        except sr.WaitTimeoutError:
+            clear_chatbox()
+            return ""
         play_ping2()
         torch_audio = torch.from_numpy(np.frombuffer(audio.get_raw_data(), np.int16).flatten().astype(np.float32) / 32768.0)
         
@@ -100,11 +104,12 @@ def listen_and_transcribe():
 def send_message():
     oscClient.send_message(VRC_TYPING_PARAM, True)
     trans = listen_and_transcribe()
-    print(Fore.YELLOW + "-" + trans)
-    print(Fore.LIGHTCYAN_EX + "POPULATING TEXTBOX")
-    oscClient.send_message(VRC_INPUT_PARAM, [trans, True, True])
-    oscClient.send_message(VRC_TYPING_PARAM, False)
-    print(Fore.LIGHTBLUE_EX + "WAITING")
+    if trans:
+        print(Fore.YELLOW + "-" + trans)
+        print(Fore.LIGHTCYAN_EX + "POPULATING TEXTBOX")
+        oscClient.send_message(VRC_INPUT_PARAM, [trans, True, True])
+        oscClient.send_message(VRC_TYPING_PARAM, False)
+        print(Fore.LIGHTBLUE_EX + "WAITING")
 
 
 def clear_chatbox():
