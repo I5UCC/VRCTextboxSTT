@@ -5,5 +5,6 @@
     "language": "english",
     "dynamic_energy_threshold": false,
     "energy_threshold": 100,
-    "pause_threshold": 0.8
+    "pause_threshold": 0.8,
+    "keyboard_hotkey": "^"
 }

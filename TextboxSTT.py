@@ -1,16 +1,17 @@
+import os
+import sys
+import traceback
+import time
+import json
+import keyboard
+import warnings
 import speech_recognition as sr
 import whisper
 import torch
 import numpy as np
 from pythonosc import udp_client
-import json
-import winsound
-import warnings
-import os
-import sys
 import openvr
-import time
-import traceback
+import winsound
 from colorama import Fore
 
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -104,9 +105,11 @@ def get_action_bstate():
     openvr.VRInput().updateActionState(_actionsets)
     return bool(openvr.VRInput().getDigitalActionData(buttonactionhandle, openvr.k_ulInvalidInputValueHandle).bState)
 
+def on_hotkey():
+    send_message()
+    print(Fore.LIGHTBLUE_EX + "WAITING")
 
 def handle_input():
-    """Handles the OpenVR Input"""
     global held
     # Set up OpenVR events and Action sets
     
@@ -130,6 +133,8 @@ def handle_input():
 
 
 held = False
+keyboard.add_hotkey(config["keyboard_hotkey"], on_hotkey)
+cls()
 print(Fore.GREEN + "-INITIALZIED-")
 print(Fore.LIGHTBLUE_EX + "WAITING")
 # Main Loop
