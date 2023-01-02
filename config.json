@@ -4,7 +4,8 @@
     "model": "base",
     "language": "english",
     "dynamic_energy_threshold": false,
-    "energy_threshold": 100,
+    "energy_threshold": 200,
     "pause_threshold": 0.8,
-    "keyboard_hotkey": "`"
+    "record_hotkey": "F1",
+    "clear_hotkey": "F2"
 }

@@ -19,7 +19,7 @@ warnings.filterwarnings("ignore", category=UserWarning)
 VRC_INPUT_PARAM = "/chatbox/input"
 VRC_TYPING_PARAM = "/chatbox/typing"
 ACTIONSETHANDLE = "/actions/textboxstt"
-STTLISTENHANDLE = "/actions/textboxstt/in/STTListen"
+STTLISTENHANDLE = "/actions/textboxstt/in/sttlisten"
 
 
 def cls():
@@ -36,6 +36,11 @@ def get_absolute_path(relative_path):
 def play_ping():
     """Plays a ping sound."""
     winsound.PlaySound('ping.wav', winsound.SND_FILENAME | winsound.SND_ASYNC)
+
+
+def play_ping2():
+    """Plays another ping sound."""
+    winsound.PlaySound('ping2.wav', winsound.SND_FILENAME | winsound.SND_ASYNC)
 
 
 config = json.load(open(get_absolute_path('config.json')))
@@ -66,14 +71,15 @@ actionSetHandle = openvr.VRInput().getActionSetHandle(ACTIONSETHANDLE)
 buttonactionhandle = openvr.VRInput().getActionHandle(STTLISTENHANDLE)
 
 
-def record_and_transcribe():
+def listen_and_transcribe():
     with sr.Microphone(sample_rate=16000) as source:
-        print(Fore.LIGHTCYAN_EX + "RECORDING")
+        print(Fore.LIGHTCYAN_EX + "LISTENING")
         play_ping()
         audio = r.listen(source)
-
+        play_ping2()
         torch_audio = torch.from_numpy(np.frombuffer(audio.get_raw_data(), np.int16).flatten().astype(np.float32) / 32768.0)
-
+        
+        oscClient.send_message(VRC_TYPING_PARAM, True)
         print(Fore.LIGHTCYAN_EX + "TRANSCRIBING")
         if lang:
             result = audio_model.transcribe(torch_audio, language=lang)
@@ -85,17 +91,19 @@ def record_and_transcribe():
 
 def send_message():
     oscClient.send_message(VRC_TYPING_PARAM, True)
-    trans = record_and_transcribe()
+    trans = listen_and_transcribe()
     print(Fore.YELLOW + "-" + trans)
     print(Fore.LIGHTCYAN_EX + "POPULATING TEXTBOX")
     oscClient.send_message(VRC_INPUT_PARAM, [trans, True, True])
     oscClient.send_message(VRC_TYPING_PARAM, False)
+    print(Fore.LIGHTBLUE_EX + "WAITING")
 
 
 def clear_chatbox():
     print(Fore.LIGHTCYAN_EX + "CLEARING OSC TEXTBOX")
     oscClient.send_message(VRC_INPUT_PARAM, ["", True])
     oscClient.send_message(VRC_TYPING_PARAM, False)
+    print(Fore.LIGHTBLUE_EX + "WAITING")
 
 
 def get_action_bstate():
@@ -109,9 +117,10 @@ def get_action_bstate():
     openvr.VRInput().updateActionState(_actionsets)
     return bool(openvr.VRInput().getDigitalActionData(buttonactionhandle, openvr.k_ulInvalidInputValueHandle).bState)
 
+
 def on_hotkey():
     send_message()
-    print(Fore.LIGHTBLUE_EX + "WAITING")
+
 
 def handle_input():
     global held
@@ -124,20 +133,19 @@ def handle_input():
         while pressed:
             if time.time() - curr_time > 1.5:
                 clear_chatbox()
-                print(Fore.LIGHTBLUE_EX + "WAITING")
                 held = True
                 break
             pressed = get_action_bstate()
             time.sleep(0.05)
         if not held:
             send_message()
-            print(Fore.LIGHTBLUE_EX + "WAITING")
     elif held and not pressed:
         held = False
 
 
 held = False
-keyboard.add_hotkey(config["keyboard_hotkey"], on_hotkey)
+keyboard.add_hotkey(config["record_hotkey"], on_hotkey)
+keyboard.add_hotkey(config["clear_hotkey"], clear_chatbox)
 cls()
 print(Fore.GREEN + "-INITIALZIED-")
 print(Fore.LIGHTBLUE_EX + "WAITING")
