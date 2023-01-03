@@ -28,6 +28,8 @@ Configuration of this program is located in the ***config.json*** file:
 | "dynamic_energy_threshold" | true, false | false | With dynamic_energy_threshold set to 'True', the program will continuously try to re-adjust the energy threshold to match the environment based on the ambient noise level at that time. I'd recommend setting the 'energy_threshold' value high when enabling this setting. |
 | "energy_threshold" | 0-3500 | 200 | Under 'ideal' conditions (such as in a quiet room), values between 0 and 100 are considered silent or ambient, and values 300 to about 3500 are considered speech. |
 | "pause_threshold" | 0.0-10.0 | 0.8 | Amount of seconds to wait when current energy is under the 'energy_threshold' |
+| "timeout_time" | 0.0-10.0 | 3.0 | Amount of time to wait for the user to speak before timeout |
+| "hold_time" | 0.0-10.0 | 1.5 | amount of time to hold the button to clear the Textbox |
 | "record_hotkey" | Any key supported by the [python keyboard library](https://github.com/boppreh/keyboard) | F1 | The key that is used to trigger listening. |
 | "clear_hotkey" | Any key supported by the [python keyboard library](https://github.com/boppreh/keyboard) | F2 | The key that is used to trigger clearning the chatbox. |
 
