@@ -63,10 +63,12 @@ text_lbl.place(relx=0.5, rely=0.55, anchor="center")
 def set_status_label(text, color):
     status_lbl.configure(text=text)
     color_lbl.configure(bg=color)
+    ui.update()
 
 def set_text_label(text):
     text = text[:144]
     text_lbl.configure(text=text)
+    ui.update()
 
 VRC_INPUT_PARAM = "/chatbox/input"
 VRC_TYPING_PARAM = "/chatbox/typing"
@@ -118,6 +120,8 @@ try:
     actionSetHandle = openvr.VRInput().getActionSetHandle(ACTIONSETHANDLE)
     buttonactionhandle = openvr.VRInput().getActionHandle(STTLISTENHANDLE)
     ovr_initialized = True
+    print("INITIALZIED")
+    set_status_label("INITIALZIED", "green")
 except Exception:
     ovr_initialized = False
 
@@ -140,6 +144,7 @@ def listen_and_transcribe():
         oscClient.send_message(VRC_TYPING_PARAM, True)
         print("TRANSCRIBING")
         set_status_label("TRANSCRIBING", "orange")
+
         if lang:
             result = audio_model.transcribe(torch_audio, language=lang)
         else:
@@ -158,8 +163,8 @@ def send_message():
         set_status_label("TRANSCRIBING", "#ff8800")
         oscClient.send_message(VRC_INPUT_PARAM, [trans, True, True])
         oscClient.send_message(VRC_TYPING_PARAM, False)
-        print("WAITING")
-        set_status_label("WAITING", "#00008b")
+        print("WAITING FOR INPUT")
+        set_status_label("WAITING FOR INPUT", "#00008b")
 
 
 def clear_chatbox():
@@ -167,8 +172,8 @@ def clear_chatbox():
     set_status_label("CLEARING OSC TEXTBOX", "#e0ffff")
     oscClient.send_message(VRC_INPUT_PARAM, ["", True])
     oscClient.send_message(VRC_TYPING_PARAM, False)
-    print("WAITING")
-    set_status_label("WAITING", "#00008b")
+    print("WAITING FOR INPUT")
+    set_status_label("WAITING FOR INPUT", "#00008b")
     set_text_label("---")
 
 
@@ -195,6 +200,7 @@ def handle_input():
         while pressed:
             if time.time() - curr_time > float(config["hold_time"]):
                 clear_chatbox()
+                set_status_label("CLEARED - WAITING FOR INPUT", "#000054")
                 held = True
                 break
             pressed = get_action_bstate()
@@ -212,10 +218,8 @@ held = False
 keyboard.add_hotkey(config["record_hotkey"], send_message)
 keyboard.add_hotkey(config["clear_hotkey"], clear_chatbox)
 cls()
-print("-INITIALZIED-")
-set_status_label("INITIALZIED", "green")
-print("WAITING")
-set_status_label("WAITING", "#00008b")
+print("WAITING FOR INPUT")
+set_status_label("WAITING FOR INPUT", "#00008b")
 if ovr_initialized:
     try:
         ui.after(50, handle_input)
