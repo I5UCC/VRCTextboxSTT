@@ -1,7 +1,7 @@
 # VRCTextboxSTT
 A SpeechToText application that uses [OpenAI's whisper](https://github.com/openai/whisper) to transcribe audio and send that information to VRChats textbox system over OSC.
 
-First startup will take longer, as it will download the configured language model. After that it will start up faster. <br>
+### First startup will take longer, as it will download the configured language model. After that it will start up faster. <br>
 More to that under [#Configuration](https://github.com/I5UCC/VRCTextboxSTT#configuration)
 
 # [Download Here](https://github.com/I5UCC/VRCTextboxSTT/releases/latest)
