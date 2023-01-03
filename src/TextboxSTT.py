@@ -1,5 +1,33 @@
-import os
 import sys
+import logging
+
+class StreamToLogger(object):
+    """
+    Fake file-like stream object that redirects writes to a logger instance.
+    """
+    def __init__(self, logger, level):
+       self.logger = logger
+       self.level = level
+       self.linebuf = ''
+
+    def write(self, buf):
+       for line in buf.rstrip().splitlines():
+          self.logger.log(self.level, line.rstrip())
+
+    def flush(self):
+        pass
+
+logging.basicConfig(
+        level=logging.DEBUG,
+        format='%(asctime)s:%(levelname)s:%(name)s:%(message)s',
+        filename='out.log',
+        filemode='a'
+        )
+log = logging.getLogger('TextboxSTT')
+sys.stdout = StreamToLogger(log,logging.INFO)
+sys.stderr = StreamToLogger(log,logging.ERROR)
+
+import os
 import traceback
 import time
 import json
@@ -12,7 +40,6 @@ import torch
 import speech_recognition as sr
 import tkinter as tk
 from pythonosc import udp_client
-from colorama import Fore
 
 ui = tk.Tk()
 ui.minsize(810, 310)
@@ -97,7 +124,7 @@ except Exception:
 
 def listen_and_transcribe():
     with sr.Microphone(sample_rate=16000) as source:
-        print(Fore.LIGHTCYAN_EX + "LISTENING")
+        print("LISTENING")
         set_status_label("LISTENING", "#FF00FF")
         play_sound("listen")
         try:
@@ -110,7 +137,7 @@ def listen_and_transcribe():
         torch_audio = torch.from_numpy(np.frombuffer(audio.get_raw_data(), np.int16).flatten().astype(np.float32) / 32768.0)
         
         oscClient.send_message(VRC_TYPING_PARAM, True)
-        print(Fore.LIGHTCYAN_EX + "TRANSCRIBING")
+        print("TRANSCRIBING")
         set_status_label("TRANSCRIBING", "orange")
         if lang:
             result = audio_model.transcribe(torch_audio, language=lang)
@@ -124,22 +151,22 @@ def send_message():
     oscClient.send_message(VRC_TYPING_PARAM, True)
     trans = listen_and_transcribe()
     if trans:
-        print(Fore.YELLOW + "-" + trans)
+        print("-" + trans)
         set_text_label(trans)
-        print(Fore.LIGHTCYAN_EX + "POPULATING TEXTBOX")
+        print("POPULATING TEXTBOX")
         set_status_label("TRANSCRIBING", "#ff8800")
         oscClient.send_message(VRC_INPUT_PARAM, [trans, True, True])
         oscClient.send_message(VRC_TYPING_PARAM, False)
-        print(Fore.LIGHTBLUE_EX + "WAITING")
+        print("WAITING")
         set_status_label("WAITING", "#00008b")
 
 
 def clear_chatbox():
-    print(Fore.LIGHTCYAN_EX + "CLEARING OSC TEXTBOX")
+    print("CLEARING OSC TEXTBOX")
     set_status_label("CLEARING OSC TEXTBOX", "#e0ffff")
     oscClient.send_message(VRC_INPUT_PARAM, ["", True])
     oscClient.send_message(VRC_TYPING_PARAM, False)
-    print(Fore.LIGHTBLUE_EX + "WAITING")
+    print("WAITING")
     set_status_label("WAITING", "#00008b")
     set_text_label("---")
 
@@ -184,9 +211,9 @@ held = False
 keyboard.add_hotkey(config["record_hotkey"], send_message)
 keyboard.add_hotkey(config["clear_hotkey"], clear_chatbox)
 cls()
-print(Fore.GREEN + "-INITIALZIED-")
+print("-INITIALZIED-")
 set_status_label("INITIALZIED", "green")
-print(Fore.LIGHTBLUE_EX + "WAITING")
+print("WAITING")
 set_status_label("WAITING", "#00008b")
 if ovr_initialized:
     try:
@@ -199,6 +226,6 @@ if ovr_initialized:
         input("\nPress ENTER to exit")
         sys.exit()
 else:
-    print(Fore.MAGENTA + "OpenVR couldnt be initialized, continuing PC only mode.")
+    print("OpenVR couldnt be initialized, continuing PC only mode.")
 
 ui.mainloop()
