@@ -131,6 +131,7 @@ def listen_and_transcribe():
             audio = r.listen(source, timeout=float(config["timeout_time"]))
         except sr.WaitTimeoutError:
             clear_chatbox()
+            print("TIMEOUT")
             play_sound("timeout")
             return None
         play_sound("donelisten")
