@@ -1,5 +1,6 @@
 import sys
 import logging
+import os
 
 class StreamToLogger(object):
     """
@@ -9,6 +10,7 @@ class StreamToLogger(object):
        self.logger = logger
        self.level = level
        self.linebuf = ''
+       open('out.log', 'w').close()
 
     def write(self, buf):
        for line in buf.rstrip().splitlines():
@@ -18,16 +20,51 @@ class StreamToLogger(object):
         pass
 
 logging.basicConfig(
-        level=logging.DEBUG,
-        format='%(asctime)s:%(levelname)s:%(name)s:%(message)s',
-        filename='out.log',
-        filemode='a'
-        )
+    level=logging.DEBUG,
+    format='%(asctime)s:%(levelname)s:%(name)s: %(message)s',
+    filename='out.log',
+    filemode='a'
+)
+
 log = logging.getLogger('TextboxSTT')
 sys.stdout = StreamToLogger(log,logging.INFO)
 sys.stderr = StreamToLogger(log,logging.ERROR)
 
-import os
+import tkinter as tk
+
+ui = tk.Tk()
+ui.minsize(810, 310)
+ui.maxsize(810, 310)
+ui.resizable(False, False)
+ui.configure(bg="#333333")
+ui.title("TextboxSTT")
+
+status_lbl = tk.Label(ui, text="INITIALIZING")
+status_lbl.configure(bg="#333333", fg="white", font=("Cascadia Code", 12))
+status_lbl.place(relx=0.045, rely=0.07, anchor="w")
+
+color_lbl = tk.Label(ui, text="")
+color_lbl.configure(bg="red", width=2, fg="white", font=("Cascadia Code", 12))
+color_lbl.place(relx=0.01, rely=0.07, anchor="w")
+
+text_lbl = tk.Label(ui, wraplength=800, text="---")
+text_lbl.configure(bg="#333333", fg="white", font=("Cascadia Code", 27))
+text_lbl.place(relx=0.5, rely=0.55, anchor="center")
+
+ui.update()
+ui.update_idletasks()
+
+def set_status_label(text, color):
+    status_lbl.configure(text=text)
+    color_lbl.configure(bg=color)
+    ui.update()
+    print(text)
+
+def set_text_label(text):
+    text = text[:144]
+    text_lbl.configure(text=text)
+    ui.update()
+
 import traceback
 import time
 import json
@@ -38,37 +75,7 @@ import openvr
 import whisper
 import torch
 import speech_recognition as sr
-import tkinter as tk
 from pythonosc import udp_client
-
-ui = tk.Tk()
-ui.minsize(810, 310)
-ui.maxsize(810, 310)
-ui.resizable(False, False)
-ui.configure(bg="#333333")
-ui.title("TextboxSTT")
-
-status_lbl = tk.Label(ui, text="Status")
-status_lbl.configure(bg="#333333", fg="white", font=("Cascadia Code", 12))
-status_lbl.place(relx=0.045, rely=0.07, anchor="w")
-
-color_lbl = tk.Label(ui, text="")
-color_lbl.configure(bg="blue", width=2, fg="white", font=("Cascadia Code", 12))
-color_lbl.place(relx=0.01, rely=0.07, anchor="w")
-
-text_lbl = tk.Label(ui, wraplength=800, text="---")
-text_lbl.configure(bg="#333333", fg="white", font=("Cascadia Code", 27))
-text_lbl.place(relx=0.5, rely=0.55, anchor="center")
-
-def set_status_label(text, color):
-    status_lbl.configure(text=text)
-    color_lbl.configure(bg=color)
-    ui.update()
-
-def set_text_label(text):
-    text = text[:144]
-    text_lbl.configure(text=text)
-    ui.update()
 
 VRC_INPUT_PARAM = "/chatbox/input"
 VRC_TYPING_PARAM = "/chatbox/typing"
@@ -102,6 +109,7 @@ is_english = lang == "english"
 
 if model != "large" and is_english:
         model = model + ".en"
+set_status_label(f"LOADING \"{model}\" MODEL", "orange")
 audio_model = whisper.load_model(model);
 
 #load the speech recognizer and set the initial energy threshold and pause threshold
@@ -110,6 +118,7 @@ r.dynamic_energy_threshold = bool(config["dynamic_energy_threshold"])
 r.energy_threshold = int(config["energy_threshold"])
 r.pause_threshold = float(config["pause_threshold"])
 
+set_status_label(f"INITIALIZING OVR", "orange")
 ovr_initialized = False
 try:
     application = openvr.init(openvr.VRApplication_Utility)
@@ -120,31 +129,28 @@ try:
     actionSetHandle = openvr.VRInput().getActionSetHandle(ACTIONSETHANDLE)
     buttonactionhandle = openvr.VRInput().getActionHandle(STTLISTENHANDLE)
     ovr_initialized = True
-    print("INITIALZIED")
     set_status_label("INITIALZIED", "green")
 except Exception:
     ovr_initialized = False
+    set_status_label("OVR ERROR", "red")
 
 
 def listen_and_transcribe():
     with sr.Microphone(sample_rate=16000) as source:
-        print("LISTENING")
         set_status_label("LISTENING", "#FF00FF")
         play_sound("listen")
         try:
             audio = r.listen(source, timeout=float(config["timeout_time"]))
         except sr.WaitTimeoutError:
-            clear_chatbox()
-            print("TIMEOUT")
+            set_status_label("TIMEOUT - WAITING FOR INPUT", "orange")
             play_sound("timeout")
             return None
         play_sound("donelisten")
         torch_audio = torch.from_numpy(np.frombuffer(audio.get_raw_data(), np.int16).flatten().astype(np.float32) / 32768.0)
         
         oscClient.send_message(VRC_TYPING_PARAM, True)
-        print("TRANSCRIBING")
-        set_status_label("TRANSCRIBING", "orange")
 
+        set_status_label("TRANSCRIBING", "orange")
         if lang:
             result = audio_model.transcribe(torch_audio, language=lang)
         else:
@@ -157,22 +163,18 @@ def send_message():
     oscClient.send_message(VRC_TYPING_PARAM, True)
     trans = listen_and_transcribe()
     if trans:
-        print("-" + trans)
         set_text_label(trans)
-        print("POPULATING TEXTBOX")
-        set_status_label("TRANSCRIBING", "#ff8800")
+        print(trans)
+        set_status_label("POPULATING TEXTBOX", "#ff8800")
         oscClient.send_message(VRC_INPUT_PARAM, [trans, True, True])
         oscClient.send_message(VRC_TYPING_PARAM, False)
-        print("WAITING FOR INPUT")
         set_status_label("WAITING FOR INPUT", "#00008b")
 
 
 def clear_chatbox():
-    print("CLEARING OSC TEXTBOX")
     set_status_label("CLEARING OSC TEXTBOX", "#e0ffff")
     oscClient.send_message(VRC_INPUT_PARAM, ["", True])
     oscClient.send_message(VRC_TYPING_PARAM, False)
-    print("WAITING FOR INPUT")
     set_status_label("WAITING FOR INPUT", "#00008b")
     set_text_label("---")
 
@@ -218,7 +220,6 @@ held = False
 keyboard.add_hotkey(config["record_hotkey"], send_message)
 keyboard.add_hotkey(config["clear_hotkey"], clear_chatbox)
 cls()
-print("WAITING FOR INPUT")
 set_status_label("WAITING FOR INPUT", "#00008b")
 if ovr_initialized:
     try:
@@ -228,9 +229,6 @@ if ovr_initialized:
         print("UNEXPECTED ERROR\n")
         print("Please Create an Issue on GitHub with the following information:\n")
         traceback.print_exc()
-        input("\nPress ENTER to exit")
         sys.exit()
-else:
-    print("OpenVR couldnt be initialized, continuing PC only mode.")
 
 ui.mainloop()
