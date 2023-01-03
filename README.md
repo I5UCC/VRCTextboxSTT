@@ -17,6 +17,8 @@ More to that under [#Configuration](https://github.com/I5UCC/VRCTextboxSTT#confi
 
 # Usage
 - Run the program.
+- The program will use your standard microphone set in windows.
+- if you have a lot of background noise you should play around with the "energy_threshold" option in the ***config.json*** file.
 - On desktop use F1 to start listening and F2 to clear the chatbox.
 - In VR, press A on the left Controller on index or X on Oculus.
 - Pressing the A or X button for 1.5s clears the chatbox.
