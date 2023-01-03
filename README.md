@@ -6,6 +6,15 @@ More to that under [#Configuration](https://github.com/I5UCC/VRCTextboxSTT#confi
 
 # [Download Here](https://github.com/I5UCC/VRCTextboxSTT/releases/latest)
 
+# Requirements
+
+- GPU version (faster):
+-- ~5GB of storage space
+-- ~1GB of VRAM
+- CPU version:
+-- ~2GB of storage space
+-- ~1GB of RAM
+
 # Usage
 - Run the program.
 - On desktop use F1 to start listening and F2 to clear the chatbox.
