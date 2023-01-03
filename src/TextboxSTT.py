@@ -58,7 +58,7 @@ color_lbl.place(relx=0.01, rely=0.07, anchor="w")
 
 text_lbl = tk.Label(ui, wraplength=800, text="---")
 text_lbl.configure(bg="#333333", fg="white", font=("Cascadia Code", 27))
-text_lbl.place(relx=0.45, rely=0.55, anchor="center")
+text_lbl.place(relx=0.5, rely=0.55, anchor="center")
 
 def set_status_label(text, color):
     status_lbl.configure(text=text)
