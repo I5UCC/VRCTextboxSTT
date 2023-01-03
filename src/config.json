@@ -6,6 +6,8 @@
     "dynamic_energy_threshold": false,
     "energy_threshold": 200,
     "pause_threshold": 0.8,
+    "timeout_time": 3.0,
+    "hold_time": 3.0,
     "record_hotkey": "F1",
     "clear_hotkey": "F2"
 }
