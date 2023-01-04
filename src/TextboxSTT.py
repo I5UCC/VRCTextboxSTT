@@ -3,11 +3,9 @@ import logging
 
 # Initialize logging and UI before starting.
 from StreamToLogger import StreamToLogger
-
 log = logging.getLogger('TextboxSTT')
 sys.stdout = StreamToLogger(log,logging.INFO)
 sys.stderr = StreamToLogger(log,logging.ERROR)
-
 from UI import UI
 ui = UI()
 
@@ -23,10 +21,12 @@ import openvr
 import whisper
 import torch
 
+
 VRC_INPUT_PARAM = "/chatbox/input"
 VRC_TYPING_PARAM = "/chatbox/typing"
 ACTIONSETHANDLE = "/actions/textboxstt"
 STTLISTENHANDLE = "/actions/textboxstt/in/sttlisten"
+
 
 def get_absolute_path(relative_path):
     """Gets absolute path from relative path"""
@@ -75,40 +75,24 @@ except Exception:
     ovr_initialized = False
     ui.set_status_label("OVR ERROR", "red")
 
-def listen_and_transcribe():
-    with sr.Microphone(sample_rate=16000) as source:
-        ui.set_status_label("LISTENING", "#FF00FF")
-        play_sound("listen")
+
+def listen(device_index = None):
+    with sr.Microphone(device_index, sample_rate=16000) as source:
         try:
             audio = r.listen(source, timeout=float(config["timeout_time"]))
         except sr.WaitTimeoutError:
-            ui.set_status_label("TIMEOUT - WAITING FOR INPUT", "orange")
-            play_sound("timeout")
             return None
-        play_sound("donelisten")
-        torch_audio = torch.from_numpy(np.frombuffer(audio.get_raw_data(), np.int16).flatten().astype(np.float32) / 32768.0)
         
-        oscClient.send_message(VRC_TYPING_PARAM, True)
+        return torch.from_numpy(np.frombuffer(audio.get_raw_data(), np.int16).flatten().astype(np.float32) / 32768.0)
 
+
+def transcribe(torch_audio, language):
         ui.set_status_label("TRANSCRIBING", "orange")
-        if lang:
-            result = audio_model.transcribe(torch_audio, language=lang)
+        if language:
+            result = audio_model.transcribe(torch_audio, language=language)
         else:
             result = audio_model.transcribe(torch_audio)
-        play_sound("finished")
-        return result["text"][:144]
-
-
-def send_message():
-    oscClient.send_message(VRC_TYPING_PARAM, True)
-    trans = listen_and_transcribe()
-    if trans:
-        ui.set_text_label(trans)
-        print(trans)
-        ui.set_status_label("POPULATING TEXTBOX", "#ff8800")
-        oscClient.send_message(VRC_INPUT_PARAM, [trans, True, True])
-        oscClient.send_message(VRC_TYPING_PARAM, False)
-        ui.set_status_label("WAITING FOR INPUT", "#00008b")
+        return result["text"]
 
 
 def clear_chatbox():
@@ -117,6 +101,36 @@ def clear_chatbox():
     oscClient.send_message(VRC_TYPING_PARAM, False)
     ui.set_status_label("CLEARED - WAITING FOR INPUT", "#00008b")
     ui.set_text_label("- No Text -")
+
+
+def populate_chatbox(text):
+    ui.set_text_label(text)
+    print(text)
+    ui.set_status_label("POPULATING TEXTBOX", "#ff8800")
+    oscClient.send_message(VRC_INPUT_PARAM, [text, True, True])
+    oscClient.send_message(VRC_TYPING_PARAM, False)
+    ui.set_status_label("WAITING FOR INPUT", "#00008b")
+
+
+def process():
+    oscClient.send_message(VRC_TYPING_PARAM, True)
+
+    ui.set_status_label("LISTENING", "#FF00FF")
+    play_sound("listen")
+    torch_audio = listen()
+    if torch_audio is None:
+        ui.set_status_label("TIMEOUT - WAITING FOR INPUT", "orange")
+        play_sound("timeout")
+        oscClient.send_message(VRC_TYPING_PARAM, False)
+    else:
+        play_sound("donelisten")
+        oscClient.send_message(VRC_TYPING_PARAM, True)
+        print(torch_audio)
+        ui.set_status_label("TRANSCRIBING", "orange")
+        trans = transcribe(torch_audio, lang)[:144]
+        play_sound("finished")
+        if trans:
+            populate_chatbox(trans)
 
 
 def get_action_bstate():
@@ -131,10 +145,8 @@ def get_action_bstate():
     return bool(openvr.VRInput().getDigitalActionData(buttonactionhandle, openvr.k_ulInvalidInputValueHandle).bState)
 
 
-def handle_input():
+def handle_ovr_input():
     global held
-    # Set up OpenVR events and Action sets
-    
     pressed = get_action_bstate()
     curr_time = time.time()
 
@@ -148,18 +160,19 @@ def handle_input():
             ui.update()
             time.sleep(0.05)
         if not held:
-            send_message()
+            process()
     elif held and not pressed:
         held = False
 
-    ui.ui.after(50, handle_input)
+    ui.ui.after(50, handle_ovr_input)
 
+
+keyboard.add_hotkey(config["record_hotkey"], process)
+keyboard.add_hotkey(config["clear_hotkey"], clear_chatbox)
 
 held = False
-keyboard.add_hotkey(config["record_hotkey"], send_message)
-keyboard.add_hotkey(config["clear_hotkey"], clear_chatbox)
-ui.set_status_label("WAITING FOR INPUT", "#00008b")
 if ovr_initialized:
-    ui.ui.after(50, handle_input)
+    ui.ui.after(50, handle_ovr_input)
 
+ui.set_status_label("WAITING FOR INPUT", "#00008b")
 ui.ui.mainloop()
