@@ -41,13 +41,13 @@ def play_sound(filename):
 
 
 config = json.load(open(get_absolute_path('config.json')))
-
+ui.set_conf_label(config["IP"], config["Port"])
 oscClient = udp_client.SimpleUDPClient(config["IP"], int(config["Port"]))
 
 # Load Whisper model
 model = config["model"].lower()
 lang = config["language"].lower()
-if model != "large" and lang == "english":
+if model != "large" and lang == "english" and ".en" not in model:
         model = model + ".en"
 ui.set_status_label(f"LOADING \"{model}\" MODEL", "orange")
 audio_model = whisper.load_model(model);
@@ -97,7 +97,7 @@ def transcribe(torch_audio, language):
 
 def clear_chatbox():
     ui.set_status_label("CLEARING OSC TEXTBOX", "#e0ffff")
-    oscClient.send_message(VRC_INPUT_PARAM, ["", True])
+    oscClient.send_message(VRC_INPUT_PARAM, ["", True, False])
     oscClient.send_message(VRC_TYPING_PARAM, False)
     ui.set_status_label("CLEARED - WAITING FOR INPUT", "#00008b")
     ui.set_text_label("- No Text -")
@@ -128,12 +128,14 @@ def process():
         print(torch_audio)
         ui.set_status_label("TRANSCRIBING", "orange")
         trans = transcribe(torch_audio, lang)[:144]
-        play_sound("finished")
-        if trans:
+        if not get_trigger_state() and trans:
+            play_sound("finished")
             populate_chatbox(trans)
+        else:
+            play_sound("timeout")
 
 
-def get_action_bstate():
+def get_trigger_state():
     event = openvr.VREvent_t()
     has_events = True
     while has_events:
@@ -142,13 +144,17 @@ def get_action_bstate():
     _actionset = _actionsets[0]
     _actionset.ulActionSet = actionSetHandle
     openvr.VRInput().updateActionState(_actionsets)
-    return bool(openvr.VRInput().getDigitalActionData(buttonactionhandle, openvr.k_ulInvalidInputValueHandle).bState)
+
+    if bool(openvr.VRInput().getDigitalActionData(buttonactionhandle, openvr.k_ulInvalidInputValueHandle).bState):
+        return True
+    else:
+        return keyboard.is_pressed(config["hotkey"])
 
 
 held = False
 def handle_ovr_input():
     global held
-    pressed = get_action_bstate()
+    pressed = get_trigger_state()
     curr_time = time.time()
 
     if pressed and not held:
@@ -157,7 +163,7 @@ def handle_ovr_input():
                 clear_chatbox()
                 held = True
                 break
-            pressed = get_action_bstate()
+            pressed = get_trigger_state()
             ui.update()
             time.sleep(0.05)
         if not held:
@@ -165,14 +171,10 @@ def handle_ovr_input():
     elif held and not pressed:
         held = False
 
-    ui.ui.after(50, handle_ovr_input)
+    ui.tkui.after(50, handle_ovr_input)
 
 if ovr_initialized:
-    ui.ui.after(50, handle_ovr_input)
-
-# Add keyboard hotkeys
-keyboard.add_hotkey(config["record_hotkey"], process)
-keyboard.add_hotkey(config["clear_hotkey"], clear_chatbox)
+    ui.tkui.after(50, handle_ovr_input)
 
 ui.set_status_label("WAITING FOR INPUT", "#00008b")
-ui.ui.mainloop()
+ui.tkui.mainloop()
