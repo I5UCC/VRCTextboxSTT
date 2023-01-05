@@ -26,6 +26,7 @@ VRC_INPUT_PARAM = "/chatbox/input"
 VRC_TYPING_PARAM = "/chatbox/typing"
 ACTIONSETHANDLE = "/actions/textboxstt"
 STTLISTENHANDLE = "/actions/textboxstt/in/sttlisten"
+held = False
 
 
 def get_absolute_path(relative_path):
@@ -113,6 +114,7 @@ def populate_chatbox(text):
 
 
 def process():
+    global held
     oscClient.send_message(VRC_TYPING_PARAM, True)
 
     ui.set_status_label("LISTENING", "#FF00FF")
@@ -121,6 +123,7 @@ def process():
     if torch_audio is None:
         ui.set_status_label("TIMEOUT - WAITING FOR INPUT", "orange")
         play_sound("timeout")
+        held = True
         oscClient.send_message(VRC_TYPING_PARAM, False)
     else:
         play_sound("donelisten")
@@ -151,7 +154,6 @@ def get_trigger_state():
         return keyboard.is_pressed(config["hotkey"])
 
 
-held = False
 def handle_ovr_input():
     global held
     pressed = get_trigger_state()
