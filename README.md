@@ -10,6 +10,7 @@ More to that under [#Configuration](https://github.com/I5UCC/VRCTextboxSTT#confi
 
 - GPU version (faster): <br>
 -- ~5GB of storage space <br>
+-- ~1GB of RAM
 -- ~1GB of VRAM (by default, dependent on the used model)<br>
 - CPU version: <br>
 -- ~2GB of storage space <br>
