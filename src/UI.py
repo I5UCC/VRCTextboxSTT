@@ -12,7 +12,7 @@ class UI(object):
 
         self.status_lbl = tk.Label(self.ui, text="INITIALIZING")
         self.status_lbl.configure(bg="#333333", fg="white", font=("Cascadia Code", 12))
-        self.status_lbl.place(relx=0.045, rely=0.07, anchor="w")
+        self.status_lbl.place(relx=0.047, rely=0.065, anchor="w")
 
         self.color_lbl = tk.Label(self.ui, text="")
         self.color_lbl.configure(bg="red", width=2, fg="white", font=("Cascadia Code", 12))

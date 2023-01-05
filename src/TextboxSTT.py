@@ -145,6 +145,7 @@ def get_action_bstate():
     return bool(openvr.VRInput().getDigitalActionData(buttonactionhandle, openvr.k_ulInvalidInputValueHandle).bState)
 
 
+held = False
 def handle_ovr_input():
     global held
     pressed = get_action_bstate()
@@ -166,13 +167,12 @@ def handle_ovr_input():
 
     ui.ui.after(50, handle_ovr_input)
 
-
-keyboard.add_hotkey(config["record_hotkey"], process)
-keyboard.add_hotkey(config["clear_hotkey"], clear_chatbox)
-
-held = False
 if ovr_initialized:
     ui.ui.after(50, handle_ovr_input)
+
+# Add keyboard hotkeys
+keyboard.add_hotkey(config["record_hotkey"], process)
+keyboard.add_hotkey(config["clear_hotkey"], clear_chatbox)
 
 ui.set_status_label("WAITING FOR INPUT", "#00008b")
 ui.ui.mainloop()
