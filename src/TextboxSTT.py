@@ -158,7 +158,7 @@ def process_stt():
             held = True
 
 
-def handle_ovr_input():
+def handle_input():
     global held
     pressed = get_trigger_state()
     curr_time = time.time()
@@ -177,9 +177,9 @@ def handle_ovr_input():
     elif held and not pressed:
         held = False
 
-    ui.tkui.after(50, handle_ovr_input)
+    ui.tkui.after(50, handle_input)
 
 
 ui.set_status_label("WAITING FOR INPUT", "#00008b")
-ui.tkui.after(50, handle_ovr_input)
+ui.tkui.after(50, handle_input)
 ui.tkui.mainloop()
