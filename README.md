@@ -8,11 +8,11 @@ A SpeechToText application that uses [OpenAI's whisper](https://github.com/opena
 # Requirements
 With default settings, this program has following requirements:
 
-- GPU version (faster): <br>
+- GPU version (Faster, Recommended): <br>
 -- ~5GB of storage space <br>
 -- ~1GB of RAM<br>
 -- ~1GB of VRAM<br>
-- CPU version: <br>
+- CPU version (Slower): <br>
 -- ~2GB of storage space <br>
 -- ~1GB of RAM<br>
 
