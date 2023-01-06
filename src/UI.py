@@ -5,6 +5,7 @@ class UI(object):
     def __init__(self, version):
         FONT = "Cascadia Code"
         self.version = version
+        print(version)
 
         self.tkui = tk.Tk()
         self.tkui.minsize(810, 310)
