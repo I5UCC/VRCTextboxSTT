@@ -4,8 +4,8 @@ import logging
 # Initialize logging and UI before starting.
 from StreamToLogger import StreamToLogger
 log = logging.getLogger('TextboxSTT')
-sys.stdout = StreamToLogger(log,logging.INFO)
-sys.stderr = StreamToLogger(log,logging.ERROR)
+sys.stdout = StreamToLogger(log, logging.INFO)
+sys.stderr = StreamToLogger(log, logging.ERROR)
 from UI import UI
 ui = UI()
 
@@ -42,25 +42,24 @@ def play_sound(filename):
 
 
 config = json.load(open(get_absolute_path('config.json')))
-ui.set_conf_label(config["IP"], config["Port"])
 oscClient = udp_client.SimpleUDPClient(config["IP"], int(config["Port"]))
 
 # Load Whisper model
 model = config["model"].lower()
 lang = config["language"].lower()
 if model != "large" and lang == "english" and ".en" not in model:
-        model = model + ".en"
+    model = model + ".en"
 ui.set_status_label(f"LOADING \"{model}\" MODEL", "orange")
-audio_model = whisper.load_model(model);
+audio_model = whisper.load_model(model)
 
-#load the speech recognizer and set the initial energy threshold and pause threshold
+# load the speech recognizer and set the initial energy threshold and pause threshold
 r = sr.Recognizer()
 r.dynamic_energy_threshold = bool(config["dynamic_energy_threshold"])
 r.energy_threshold = int(config["energy_threshold"])
 r.pause_threshold = float(config["pause_threshold"])
 
 # Initialize OpenVR
-ui.set_status_label(f"INITIALIZING OVR", "orange")
+ui.set_status_label("INITIALIZING OVR", "orange")
 ovr_initialized = False
 try:
     application = openvr.init(openvr.VRApplication_Utility)
@@ -74,26 +73,27 @@ try:
     ui.set_status_label("INITIALZIED", "green")
 except Exception:
     ovr_initialized = False
-    ui.set_status_label("OVR ERROR", "red")
+    ui.set_status_label("COULDNT INITIALIZE OVR, CONTINUING DESKTOP ONLY", "red")
+
+ui.set_conf_label(config["IP"], config["Port"], ovr_initialized)
 
 
-def listen(device_index = None):
+def listen(device_index=None):
     with sr.Microphone(device_index, sample_rate=16000) as source:
         try:
             audio = r.listen(source, timeout=float(config["timeout_time"]))
         except sr.WaitTimeoutError:
             return None
-        
+
         return torch.from_numpy(np.frombuffer(audio.get_raw_data(), np.int16).flatten().astype(np.float32) / 32768.0)
 
 
 def transcribe(torch_audio, language):
-        ui.set_status_label("TRANSCRIBING", "orange")
-        if language:
-            result = audio_model.transcribe(torch_audio, language=language)
-        else:
-            result = audio_model.transcribe(torch_audio)
-        return result["text"]
+    if language:
+        result = audio_model.transcribe(torch_audio, language=language)
+    else:
+        result = audio_model.transcribe(torch_audio)
+    return result["text"]
 
 
 def clear_chatbox():
@@ -113,7 +113,26 @@ def populate_chatbox(text):
     ui.set_status_label("WAITING FOR INPUT", "#00008b")
 
 
-def process():
+def get_ovraction_bstate():
+    event = openvr.VREvent_t()
+    has_events = True
+    while has_events:
+        has_events = application.pollNextEvent(event)
+    _actionsets = (openvr.VRActiveActionSet_t * 1)()
+    _actionset = _actionsets[0]
+    _actionset.ulActionSet = actionSetHandle
+    openvr.VRInput().updateActionState(_actionsets)
+    return bool(openvr.VRInput().getDigitalActionData(buttonactionhandle, openvr.k_ulInvalidInputValueHandle).bState)
+
+
+def get_trigger_state():
+    if ovr_initialized and get_ovraction_bstate():
+        return True
+    else:
+        return keyboard.is_pressed(config["hotkey"])
+
+
+def process_stt():
     global held
     oscClient.send_message(VRC_TYPING_PARAM, True)
 
@@ -139,22 +158,6 @@ def process():
             held = True
 
 
-def get_trigger_state():
-    event = openvr.VREvent_t()
-    has_events = True
-    while has_events:
-        has_events = application.pollNextEvent(event)
-    _actionsets = (openvr.VRActiveActionSet_t * 1)()
-    _actionset = _actionsets[0]
-    _actionset.ulActionSet = actionSetHandle
-    openvr.VRInput().updateActionState(_actionsets)
-
-    if bool(openvr.VRInput().getDigitalActionData(buttonactionhandle, openvr.k_ulInvalidInputValueHandle).bState):
-        return True
-    else:
-        return keyboard.is_pressed(config["hotkey"])
-
-
 def handle_ovr_input():
     global held
     pressed = get_trigger_state()
@@ -170,14 +173,13 @@ def handle_ovr_input():
             ui.update()
             time.sleep(0.05)
         if not held:
-            process()
+            process_stt()
     elif held and not pressed:
         held = False
 
     ui.tkui.after(50, handle_ovr_input)
 
-if ovr_initialized:
-    ui.tkui.after(50, handle_ovr_input)
 
 ui.set_status_label("WAITING FOR INPUT", "#00008b")
+ui.tkui.after(50, handle_ovr_input)
 ui.tkui.mainloop()
