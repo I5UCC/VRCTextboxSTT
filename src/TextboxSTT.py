@@ -7,7 +7,7 @@ log = logging.getLogger('TextboxSTT')
 sys.stdout = StreamToLogger(log, logging.INFO)
 sys.stderr = StreamToLogger(log, logging.ERROR)
 from UI import UI
-ui = UI()
+ui = UI("v0.2.3")
 
 import os
 import time

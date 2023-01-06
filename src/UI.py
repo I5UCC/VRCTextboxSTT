@@ -2,8 +2,9 @@ import tkinter as tk
 
 
 class UI(object):
-    def __init__(self):
+    def __init__(self, version):
         FONT = "Cascadia Code"
+        self.version = version
 
         self.tkui = tk.Tk()
         self.tkui.minsize(810, 310)
@@ -12,9 +13,9 @@ class UI(object):
         self.tkui.configure(bg="#333333")
         self.tkui.title("TextboxSTT")
 
-        self.conf_lbl = tk.Label(self.tkui, text="IP:PORT\nOVR: Disconnected")
+        self.conf_lbl = tk.Label(self.tkui, text=f"IP:PORT\nOVR: Disconnected\n{self.version}")
         self.conf_lbl.configure(bg="#333333", fg="#666666", font=(FONT, 10))
-        self.conf_lbl.place(relx=0.99, rely=0.07, anchor="e")
+        self.conf_lbl.place(relx=0.99, rely=0.09, anchor="e")
 
         self.status_lbl = tk.Label(self.tkui, text="INITIALIZING")
         self.status_lbl.configure(bg="#333333", fg="white", font=(FONT, 12))
@@ -44,5 +45,5 @@ class UI(object):
         self.update()
 
     def set_conf_label(self, ip, port, ovr_initialized):
-        self.conf_lbl.configure(text=f"{ip}:{port}\nOVR: {'Connected' if ovr_initialized else 'Disconnected'} ")
+        self.conf_lbl.configure(text=f"{ip}:{port}\nOVR: {'Connected' if ovr_initialized else 'Disconnected'}\n{self.version}")
         self.update()
