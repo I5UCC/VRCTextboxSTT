@@ -20,9 +20,8 @@ With default settings, this program has following requirements:
 - Run the program.
 - The program will use your standard microphone set in windows.
 - if you have a lot of background noise you should play around with the "energy_threshold" option in the ***config.json*** file to get it working well.
-- On desktop use F1 to start listening and F2 to clear the chatbox.
-- In VR, press A on the left Controller on index or X on Oculus.
-- Pressing the A or X button for 1.5s clears the chatbox.
+- Press A on the left Controller on index or X on Oculus or F1 on your Keyboard.
+- Pressing the A Button, X Button or F1 for 1.5s clears the chatbox.
 
 # Demo
 
