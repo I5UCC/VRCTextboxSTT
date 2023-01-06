@@ -8,7 +8,7 @@
 # Requirements
 With default settings, this program has following requirements:
 
-- GPU version (Faster, Recommended): <br>
+- GPU version (Faster, Recommended, ***NVIDIA ONLY***): <br>
 -- ~5GB of storage space <br>
 -- ~1GB of RAM<br>
 -- ~1GB of VRAM<br>
