@@ -123,7 +123,6 @@ def process():
     if torch_audio is None:
         ui.set_status_label("TIMEOUT - WAITING FOR INPUT", "orange")
         play_sound("timeout")
-        held = True
         oscClient.send_message(VRC_TYPING_PARAM, False)
     else:
         play_sound("donelisten")
@@ -135,7 +134,9 @@ def process():
             play_sound("finished")
             populate_chatbox(trans)
         else:
+            ui.set_status_label("CANCELED - WAITING FOR INPUT", "orange")
             play_sound("timeout")
+            held = True
 
 
 def get_trigger_state():
