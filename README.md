@@ -21,7 +21,7 @@ With default settings, this program has following requirements:
 - The program will use your standard microphone set in windows.
 - if you have a lot of background noise you should play around with the "energy_threshold" option in the ***config.json*** file to get it working well.
 - Press A on the left Controller on index or X on Oculus or F1 on your Keyboard.
-- Pressing any of those for 1.5s clears the chatbox.
+- Pressing any of those for 1.5s clears the chatbox or cancels the action.
 
 # Demo
 
