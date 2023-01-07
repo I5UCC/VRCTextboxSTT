@@ -29,6 +29,15 @@ With default settings, this program has following requirements:
 
 [soon TM]
 
+## OSC Troubleshoot
+
+If you have problems with this program, try any of these to fix it then create an Issue in the repository:
+- Close VRChat.
+- Open 'Run' in Windows (Windows Key + R)
+- Type in `%APPDATA%\..\LocalLow\VRChat\VRChat`
+- Delete the **contents** of the OSC folder.
+- Startup VRChat again and it should work.
+
 # Configuration
 Configuration of this program is located in the ***config.json*** file:
 
