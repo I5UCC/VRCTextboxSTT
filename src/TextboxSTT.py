@@ -120,7 +120,7 @@ def transcribe(torch_audio, language):
         result = audio_model.transcribe(torch_audio, language=language)
     else:
         result = audio_model.transcribe(torch_audio)
-    return result["text"]
+    return result["text"].strip()
 
 
 def clear_chatbox():
