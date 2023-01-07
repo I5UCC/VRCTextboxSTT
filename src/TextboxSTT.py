@@ -195,6 +195,7 @@ def handle_input():
         while pressed:
             if time.time() - curr_time > float(config["hold_time"]):
                 clear_chatbox()
+                play_sound("clear")
                 held = True
                 break
             pressed = get_trigger_state()
