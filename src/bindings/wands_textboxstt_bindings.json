@@ -12,15 +12,6 @@
                   }
                },
                "mode" : "button",
-               "path" : "/user/hand/left/input/a"
-            },
-            {
-               "inputs" : {
-                  "click" : {
-                     "output" : "/actions/textboxstt/in/sttlisten"
-                  }
-               },
-               "mode" : "button",
                "path" : "/user/hand/left/input/trackpad"
             }
          ]
@@ -30,7 +21,7 @@
    "controller_type" : "vive_controller",
    "description" : "",
    "interaction_profile" : "",
-   "name" : "My TextboxSTT configuration for Vive Controller",
+   "name" : "Default TextboxSTT configuration for Vive Controller",
    "options" : {},
    "simulated_actions" : []
 }
