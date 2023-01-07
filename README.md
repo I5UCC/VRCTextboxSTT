@@ -16,7 +16,9 @@ With default settings, this program has following requirements:
 -- ~2GB of storage space <br>
 -- ~1GB of RAM<br>
 
-# Usage
+# How to use
+- Activate OSC in VRChat: <br/><br/>
+![EnableOSC](https://user-images.githubusercontent.com/43730681/172059335-db3fd6f9-86ae-4f6a-9542-2a74f47ff826.gif)
 - Run the program.
 - The program will use your standard microphone set in windows.
 - if you have a lot of background noise you should play around with the "energy_threshold" option in the ***config.json*** file to get it working well.
