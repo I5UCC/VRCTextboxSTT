@@ -1,17 +1,42 @@
 import sys
 import logging
 
-# Initialize logging and UI before starting.
 from StreamToLogger import StreamToLogger
 log = logging.getLogger('TextboxSTT')
 sys.stdout = StreamToLogger(log, logging.INFO)
 sys.stderr = StreamToLogger(log, logging.ERROR)
-from UI import UI
-ui = UI("v0.2.3")
 
 import os
-import time
 import json
+import pyaudio
+
+
+def get_absolute_path(relative_path):
+    """Gets absolute path from relative path"""
+    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base_path, relative_path)
+
+
+def get_sound_devices():
+    res = ["Default"]
+    p = pyaudio.PyAudio()
+    info = p.get_host_api_info_by_index(0)
+    numdev = info.get("deviceCount")
+
+    for i in range(0, numdev):
+        if (p.get_device_info_by_host_api_device_index(0, i).get('maxInputChannels')) > 0:
+            res.append([i, p.get_device_info_by_host_api_device_index(0, i).get('name')])
+            print(f"Input Device id {i} - {p.get_device_info_by_host_api_device_index(0, i).get('name')}")
+
+    return res
+
+
+config = json.load(open(get_absolute_path('config.json')))
+
+import UI
+ui = UI.UI("v0.2.3", config["IP"], config["Port"], get_sound_devices(), config["microphone_index"])
+
+import time
 import keyboard
 import numpy as np
 import winsound
@@ -29,19 +54,12 @@ STTLISTENHANDLE = "/actions/textboxstt/in/sttlisten"
 held = False
 
 
-def get_absolute_path(relative_path):
-    """Gets absolute path from relative path"""
-    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
-    return os.path.join(base_path, relative_path)
-
-
 def play_sound(filename):
     """Plays a wave file."""
     filename = f"resources/{filename}.wav"
     winsound.PlaySound(get_absolute_path(filename), winsound.SND_FILENAME | winsound.SND_ASYNC)
 
 
-config = json.load(open(get_absolute_path('config.json')))
 oscClient = udp_client.SimpleUDPClient(config["IP"], int(config["Port"]))
 
 # Load Whisper model
@@ -78,7 +96,16 @@ except Exception:
 ui.set_conf_label(config["IP"], config["Port"], ovr_initialized)
 
 
-def listen(device_index=None):
+def get_audiodevice_index():
+    option = ui.value_inside.get()
+    if option != "Default":
+        return int(option[1:option.index(',')])
+    else:
+        return None
+
+
+def listen():
+    device_index = get_audiodevice_index()
     with sr.Microphone(device_index, sample_rate=16000) as source:
         try:
             audio = r.listen(source, timeout=float(config["timeout_time"]))
@@ -180,6 +207,13 @@ def handle_input():
     ui.tkui.after(50, handle_input)
 
 
+def on_closing():
+    config["microphone_index"] = get_audiodevice_index()
+    json.dump(config, open(get_absolute_path('config.json'), "w"), indent=4)
+    ui.tkui.destroy()
+
+
 ui.set_status_label("WAITING FOR INPUT", "#00008b")
+ui.tkui.protocol("WM_DELETE_WINDOW", on_closing)
 ui.tkui.after(50, handle_input)
 ui.tkui.mainloop()
