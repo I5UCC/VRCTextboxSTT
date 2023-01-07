@@ -35,7 +35,7 @@ If you have problems with this program, try this to fix it:
 - Close VRChat.
 - Open 'Run' in Windows (Windows Key + R)
 - Type in `%APPDATA%\..\LocalLow\VRChat\VRChat`
-- Delete the **contents** of the OSC folder.
+- Delete the OSC folder.
 - Startup VRChat again and it should work.
 
 # Configuration
