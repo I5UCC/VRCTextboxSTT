@@ -170,6 +170,7 @@ def process_stt():
         ui.set_status_label("TIMEOUT - WAITING FOR INPUT", "orange")
         play_sound("timeout")
         oscClient.send_message(VRC_TYPING_PARAM, False)
+        held = True
     else:
         play_sound("donelisten")
         oscClient.send_message(VRC_TYPING_PARAM, True)
