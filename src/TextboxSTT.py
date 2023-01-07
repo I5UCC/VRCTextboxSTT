@@ -34,7 +34,7 @@ def get_sound_devices():
 config = json.load(open(get_absolute_path('config.json')))
 
 import UI
-ui = UI.UI("v0.2.3", config["IP"], config["Port"], get_sound_devices(), config["microphone_index"])
+ui = UI.UI("v0.3", config["IP"], config["Port"], get_sound_devices(), config["microphone_index"])
 
 import time
 import keyboard
