@@ -9,12 +9,12 @@
 With default settings, this program has following requirements:
 
 - GPU version (Faster, Recommended): <br>
--- ~5GB of storage space <br>
--- ~1GB of RAM<br>
--- ~1GB of VRAM<br>
+  - ~5GB of storage space <br>
+  - ~1GB of RAM<br>
+  - ~1GB of VRAM<br>
 - CPU version (Slower): <br>
--- ~2GB of storage space <br>
--- ~1GB of RAM<br>
+  - ~2GB of storage space <br>
+  - ~1GB of RAM<br>
 
 # How to use
 - Activate OSC in VRChat: <br/><br/>
