@@ -42,6 +42,7 @@ Configuration of this program is located in the ***config.json*** file:
 | "pause_threshold" | 0.0-10.0 | 0.8 | Amount of seconds to wait when current energy is under the 'energy_threshold' |
 | "timeout_time" | 0.0-10.0 | 3.0 | Amount of time to wait for the user to speak before timeout |
 | "hold_time" | 0.0-10.0 | 1.5 | amount of time to hold the button to clear the Textbox |
+| "microphone_index" | null, 0-10 | null | Index of the microphone to use. null is the System Default mircophone. |
 
 # Available models and languages
 
