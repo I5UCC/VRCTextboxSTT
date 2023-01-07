@@ -81,3 +81,4 @@ On first launch of the program, it registers as an Overlay app on SteamVR just l
 ![Screenshot 2023-01-02 084823](https://user-images.githubusercontent.com/43730681/210209107-746196dd-7e19-47c4-a668-221824d44a4e.png)
 
 After setting the option to ON it will launch the program on SteamVR startup.
+If it doesnt show up, manually register the ´app.vrmanifest´ file by double clicking it and running it with SteamVR.
