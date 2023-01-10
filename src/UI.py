@@ -51,6 +51,10 @@ class UI(object):
     def update(self):
         self.tkui.update()
         self.tkui.update_idletasks()
+    
+    def create_loop(self, intervall, func):
+        func()
+        self.tkui.after(intervall, self.create_loop, *[intervall, func])
 
     def set_status_label(self, text, color):
         self.status_lbl.configure(text=text)

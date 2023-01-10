@@ -36,6 +36,7 @@ config = json.load(open(get_absolute_path('config.json')))
 import UI
 ui = UI.UI("v0.3", config["IP"], config["Port"], get_sound_devices(), config["microphone_index"])
 
+import threading
 import time
 import keyboard
 import numpy as np
@@ -51,7 +52,6 @@ VRC_INPUT_PARAM = "/chatbox/input"
 VRC_TYPING_PARAM = "/chatbox/typing"
 ACTIONSETHANDLE = "/actions/textboxstt"
 STTLISTENHANDLE = "/actions/textboxstt/in/sttlisten"
-held = False
 
 
 def play_sound(filename):
@@ -68,7 +68,7 @@ lang = config["language"].lower()
 if model != "large" and lang == "english" and ".en" not in model:
     model = model + ".en"
 ui.set_status_label(f"LOADING \"{model}\" MODEL", "orange")
-audio_model = whisper.load_model(model)
+audio_model = whisper.load_model(model, download_root=get_absolute_path("whisper_cache/"), in_memory=True)
 
 # load the speech recognizer and set the initial energy threshold and pause threshold
 r = sr.Recognizer()
@@ -187,11 +187,14 @@ def process_stt():
 
 
 def handle_input():
+    global thread_process
     global held
     pressed = get_trigger_state()
     curr_time = time.time()
 
-    if pressed and not held:
+    if thread_process.is_alive():
+        return
+    elif pressed and not held:
         while pressed:
             if time.time() - curr_time > float(config["hold_time"]):
                 clear_chatbox()
@@ -202,11 +205,10 @@ def handle_input():
             ui.update()
             time.sleep(0.05)
         if not held:
-            process_stt()
+            thread_process = threading.Thread(target=process_stt)
+            thread_process.start()
     elif held and not pressed:
         held = False
-
-    ui.tkui.after(50, handle_input)
 
 
 def on_closing():
@@ -215,7 +217,9 @@ def on_closing():
     ui.tkui.destroy()
 
 
+held = False
+thread_process = threading.Thread(target=process_stt)
 ui.set_status_label("WAITING FOR INPUT", "#00008b")
 ui.tkui.protocol("WM_DELETE_WINDOW", on_closing)
-ui.tkui.after(50, handle_input)
+ui.create_loop(50, handle_input)
 ui.tkui.mainloop()
