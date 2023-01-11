@@ -21,7 +21,7 @@ class UI(object):
         self.text_lbl.configure(bg="#333333", fg="white", font=(FONT, 27))
         self.text_lbl.place(relx=0.5, rely=0.53, anchor="center")
 
-        self.conf_lbl = tk.Label(self.tkui, text=f"OSC: {ip}:{port}, OVR: Connecting, Device: None")
+        self.conf_lbl = tk.Label(self.tkui, text=f"OSC: {ip}:{port}, OVR: Connecting, Device: Loading")
         self.conf_lbl.configure(bg="#333333", fg="#666666", font=(FONT, 10))
         self.conf_lbl.place(relx=0.01, rely=0.935, anchor="w")
 
@@ -51,7 +51,7 @@ class UI(object):
     def update(self):
         self.tkui.update()
         self.tkui.update_idletasks()
-    
+
     def create_loop(self, intervall, func):
         func()
         self.tkui.after(intervall, self.create_loop, *[intervall, func])
@@ -65,13 +65,13 @@ class UI(object):
     def set_text_label(self, text):
         self.text_lbl.configure(text=text)
         self.update()
-    
-    def loading_status(self, s:str):
+
+    def loading_status(self, s: str):
         try:
             self.set_text_label(f"Downloading Model:{s[s.rindex('|')+1:]}")
         except Exception:
             self.set_text_label("Done.")
 
-    def set_conf_label(self, ip, port, ovr_initialized, device:str):
+    def set_conf_label(self, ip, port, ovr_initialized, device: str):
         self.conf_lbl.configure(text=f"OSC: {ip}:{port}, OVR: {'Connected' if ovr_initialized else 'Failed to Connect'}, Device: {device.upper()}")
         self.update()

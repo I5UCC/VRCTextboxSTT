@@ -9,7 +9,7 @@ class StreamToLogger(object):
         self.logger = logger
         self.level = level
         self.linebuf = ''
-        
+
         logging.basicConfig(
             level=logging.DEBUG,
             format='%(asctime)s:%(levelname)s:%(name)s: %(message)s',

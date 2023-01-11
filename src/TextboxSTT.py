@@ -17,13 +17,13 @@ VRC_INPUT_PARAM = "/chatbox/input"
 VRC_TYPING_PARAM = "/chatbox/typing"
 ACTIONSETHANDLE = "/actions/textboxstt"
 STTLISTENHANDLE = "/actions/textboxstt/in/sttlisten"
-logfile = get_absolute_path('out.log')
-config = json.load(open(get_absolute_path('config.json')))
+LOGFILE = get_absolute_path('out.log')
+CONFIG = json.load(open(get_absolute_path('config.json')))
 
-open(logfile, 'w').close()
+open(LOGFILE, 'w').close()
 log = logging.getLogger('TextboxSTT')
-sys.stdout = StreamToLogger(log, logging.INFO, logfile)
-sys.stderr = StreamToLogger(log, logging.ERROR, logfile)
+sys.stdout = StreamToLogger(log, logging.INFO, LOGFILE)
+sys.stderr = StreamToLogger(log, logging.ERROR, LOGFILE)
 
 
 def get_sound_devices():
@@ -40,7 +40,7 @@ def get_sound_devices():
     return res
 
 
-ui = UI("v0.3.1", config["IP"], config["Port"], get_sound_devices(), config["microphone_index"])
+ui = UI("v0.3.1", CONFIG["IP"], CONFIG["Port"], get_sound_devices(), CONFIG["microphone_index"])
 
 import threading
 import time
@@ -60,25 +60,26 @@ def play_sound(filename):
     winsound.PlaySound(get_absolute_path(filename), winsound.SND_FILENAME | winsound.SND_ASYNC)
 
 
-oscClient = udp_client.SimpleUDPClient(config["IP"], int(config["Port"]))
+oscClient = udp_client.SimpleUDPClient(CONFIG["IP"], int(CONFIG["Port"]))
 
-model = config["model"].lower()
-lang = config["language"].lower()
+model = CONFIG["model"].lower()
+lang = CONFIG["language"].lower()
 if model != "large" and lang == "english" and ".en" not in model:
     model = model + ".en"
 ui.set_status_label(f"LOADING \"{model}\" MODEL", "orange")
 # Temporarily output stderr to text label for download progress.
 sys.stderr.write = ui.loading_status
 # Load Whisper model
-audio_model = whisper.load_model(model, download_root=get_absolute_path("whisper_cache/"), in_memory=True)
+model = whisper.load_model(model, download_root=get_absolute_path("whisper_cache/"), in_memory=True)
+print(model.device)
 
-sys.stderr = StreamToLogger(log, logging.ERROR, logfile)
+sys.stderr = StreamToLogger(log, logging.ERROR, LOGFILE)
 
 # load the speech recognizer and set the initial energy threshold and pause threshold
 r = sr.Recognizer()
-r.dynamic_energy_threshold = bool(config["dynamic_energy_threshold"])
-r.energy_threshold = int(config["energy_threshold"])
-r.pause_threshold = float(config["pause_threshold"])
+r.dynamic_energy_threshold = bool(CONFIG["dynamic_energy_threshold"])
+r.energy_threshold = int(CONFIG["energy_threshold"])
+r.pause_threshold = float(CONFIG["pause_threshold"])
 
 # Initialize OpenVR
 ui.set_status_label("INITIALIZING OVR", "orange")
@@ -97,7 +98,7 @@ except Exception:
     ovr_initialized = False
     ui.set_status_label("COULDNT INITIALIZE OVR, CONTINUING DESKTOP ONLY", "red")
 
-ui.set_conf_label(config["IP"], config["Port"], ovr_initialized, str(audio_model.device))
+ui.set_conf_label(CONFIG["IP"], CONFIG["Port"], ovr_initialized, str(model.device))
 
 
 def get_audiodevice_index():
@@ -112,7 +113,7 @@ def listen():
     device_index = get_audiodevice_index()
     with sr.Microphone(device_index, sample_rate=16000) as source:
         try:
-            audio = r.listen(source, timeout=float(config["timeout_time"]))
+            audio = r.listen(source, timeout=float(CONFIG["timeout_time"]))
         except sr.WaitTimeoutError:
             return None
 
@@ -121,9 +122,9 @@ def listen():
 
 def transcribe(torch_audio, language):
     if language:
-        result = audio_model.transcribe(torch_audio, language=language)
+        result = model.transcribe(torch_audio, language=language)
     else:
-        result = audio_model.transcribe(torch_audio)
+        result = model.transcribe(torch_audio)
     return result["text"].strip()
 
 
@@ -160,7 +161,7 @@ def get_trigger_state():
     if ovr_initialized and get_ovraction_bstate():
         return True
     else:
-        return keyboard.is_pressed(config["hotkey"])
+        return keyboard.is_pressed(CONFIG["hotkey"])
 
 
 def process_stt():
@@ -200,7 +201,7 @@ def handle_input():
         return
     elif pressed and not held:
         while pressed:
-            if time.time() - curr_time > float(config["hold_time"]):
+            if time.time() - curr_time > float(CONFIG["hold_time"]):
                 clear_chatbox()
                 play_sound("clear")
                 held = True
@@ -216,8 +217,8 @@ def handle_input():
 
 
 def on_closing():
-    config["microphone_index"] = get_audiodevice_index()
-    json.dump(config, open(get_absolute_path('config.json'), "w"), indent=4)
+    CONFIG["microphone_index"] = get_audiodevice_index()
+    json.dump(CONFIG, open(get_absolute_path('config.json'), "w"), indent=4)
     ui.tkui.destroy()
 
 
