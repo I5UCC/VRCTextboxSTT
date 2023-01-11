@@ -72,6 +72,6 @@ class UI(object):
         except Exception:
             self.set_text_label("Done.")
 
-    def set_conf_label(self, ip, port, ovr_initialized, device: str):
-        self.conf_lbl.configure(text=f"OSC: {ip}:{port}, OVR: {'Connected' if ovr_initialized else 'Failed to Connect'}, Device: {device.upper()}")
+    def set_conf_label(self, ip, port, ovr_initialized, use_cpu):
+        self.conf_lbl.configure(text=f"OSC: {ip}:{port}, OVR: {'Connected' if ovr_initialized else 'Failed to Connect'}, Device: {'CPU' if use_cpu else 'GPU'}")
         self.update()

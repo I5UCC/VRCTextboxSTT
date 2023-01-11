@@ -54,20 +54,23 @@ import openvr
 import whisper
 import torch
 import re
+from CustomThread import CustomThread
 
 
 oscClient = udp_client.SimpleUDPClient(CONFIG["IP"], int(CONFIG["Port"]))
 
 model = CONFIG["model"].lower()
 lang = CONFIG["language"].lower()
-if model != "large" and lang == "english" and ".en" not in model:
+if lang == "":
+    lang = None
+elif model != "large" and lang == "english" and ".en" not in model:
     model = model + ".en"
 ui.set_status_label(f"LOADING \"{model}\" MODEL", "orange")
 # Temporarily output stderr to text label for download progress.
 sys.stderr.write = ui.loading_status
 # Load Whisper model
 model = whisper.load_model(model, download_root=get_absolute_path("whisper_cache/"), in_memory=True)
-print(model.device)
+use_cpu = True if str(model.device) == "cpu" else False
 
 sys.stderr = StreamToLogger(log, logging.ERROR, LOGFILE)
 
@@ -94,7 +97,7 @@ except Exception:
     ovr_initialized = False
     ui.set_status_label("COULDNT INITIALIZE OVR, CONTINUING DESKTOP ONLY", "red")
 
-ui.set_conf_label(CONFIG["IP"], CONFIG["Port"], ovr_initialized, str(model.device))
+ui.set_conf_label(CONFIG["IP"], CONFIG["Port"], ovr_initialized, use_cpu)
 
 
 def play_sound(filename):
@@ -123,19 +126,26 @@ def listen():
 
 
 def transcribe(torch_audio, language):
-    if language:
-        result = model.transcribe(torch_audio, language=language)
-    else:
-        result = model.transcribe(torch_audio)
+    use_gpu = not use_cpu
+    torch_audio = whisper.pad_or_trim(torch_audio)
+    options = whisper.DecodingOptions(language=language, fp16=use_gpu, without_timestamps=True)
+    mel = whisper.log_mel_spectrogram(torch_audio).to(model.device)
+    t = CustomThread(target=whisper.decode, args=[model, mel, options])
+    t.start()
+
+    timeout = float(CONFIG["max_transcribe_time"])
+    if timeout == 0.0:
+        timeout = None
+    result = t.join(timeout)
 
     if result:
-        result = result["text"].strip()
+        result = result.text.strip()
         # Filter by banned words
         for word in CONFIG["banned_words"]:
             tmp = re.compile(word, re.IGNORECASE)
             result = tmp.sub("", result)
         result = re.sub(' +', ' ', result)
-    
+
     return result
 
 
@@ -193,11 +203,12 @@ def process_stt():
         ui.set_status_label("TRANSCRIBING", "orange")
 
         if not pressed:
-            trans = transcribe(torch_audio, lang)[:144]
+            trans = transcribe(torch_audio, lang)
             if pressed:
                 ui.set_status_label("CANCELED - WAITING FOR INPUT", "orange")
                 play_sound("timeout")
             elif trans:
+                trans = trans[:144]
                 populate_chatbox(trans)
                 play_sound("finished")
             else:

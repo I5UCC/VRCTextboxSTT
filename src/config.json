@@ -9,6 +9,7 @@
     "pause_threshold": 0.8,
     "timeout_time": 3.0,
     "hold_time": 1.5,
+    "max_transcribe_time": 0.0,
     "microphone_index": null,
     "banned_words": []
 }
