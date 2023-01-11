@@ -13,6 +13,7 @@ def get_absolute_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 
+VERSION = "v0.4"
 VRC_INPUT_PARAM = "/chatbox/input"
 VRC_TYPING_PARAM = "/chatbox/typing"
 ACTIONSETHANDLE = "/actions/textboxstt"
@@ -40,7 +41,7 @@ def get_sound_devices():
     return res
 
 
-ui = UI("v0.3.1", CONFIG["IP"], CONFIG["Port"], get_sound_devices(), CONFIG["microphone_index"])
+ui = UI(VERSION, CONFIG["IP"], CONFIG["Port"], get_sound_devices(), CONFIG["microphone_index"])
 
 import threading
 import time
@@ -52,12 +53,6 @@ import speech_recognition as sr
 import openvr
 import whisper
 import torch
-
-
-def play_sound(filename):
-    """Plays a wave file."""
-    filename = f"resources/{filename}.wav"
-    winsound.PlaySound(get_absolute_path(filename), winsound.SND_FILENAME | winsound.SND_ASYNC)
 
 
 oscClient = udp_client.SimpleUDPClient(CONFIG["IP"], int(CONFIG["Port"]))
@@ -99,6 +94,12 @@ except Exception:
     ui.set_status_label("COULDNT INITIALIZE OVR, CONTINUING DESKTOP ONLY", "red")
 
 ui.set_conf_label(CONFIG["IP"], CONFIG["Port"], ovr_initialized, str(model.device))
+
+
+def play_sound(filename):
+    """Plays a wave file."""
+    filename = f"resources/{filename}.wav"
+    winsound.PlaySound(get_absolute_path(filename), winsound.SND_FILENAME | winsound.SND_ASYNC)
 
 
 def get_audiodevice_index():
@@ -165,9 +166,9 @@ def get_trigger_state():
 
 
 def process_stt():
-    global held
-    oscClient.send_message(VRC_TYPING_PARAM, True)
+    global pressed
 
+    oscClient.send_message(VRC_TYPING_PARAM, True)
     ui.set_status_label("LISTENING", "#FF00FF")
     play_sound("listen")
     torch_audio = listen()
@@ -175,45 +176,54 @@ def process_stt():
         ui.set_status_label("TIMEOUT - WAITING FOR INPUT", "orange")
         play_sound("timeout")
         oscClient.send_message(VRC_TYPING_PARAM, False)
-        held = True
     else:
         play_sound("donelisten")
         oscClient.send_message(VRC_TYPING_PARAM, True)
         print(torch_audio)
         ui.set_status_label("TRANSCRIBING", "orange")
-        trans = transcribe(torch_audio, lang)[:144]
-        if not get_trigger_state() and trans:
-            play_sound("finished")
-            populate_chatbox(trans)
+
+        if not pressed:
+            trans = transcribe(torch_audio, lang)[:144]
+            if trans:
+                populate_chatbox(trans)
+                play_sound("finished")
+            else:
+                ui.set_status_label("ERROR TRANSCRIBING - WAITING FOR INPUT", "red")
+                play_sound("timeout")
         else:
             ui.set_status_label("CANCELED - WAITING FOR INPUT", "orange")
             play_sound("timeout")
-            held = True
 
 
 def handle_input():
     global thread_process
     global held
+    global holding
+    global pressed
+    global curr_time
+
     pressed = get_trigger_state()
-    curr_time = time.time()
 
     if thread_process.is_alive():
         return
-    elif pressed and not held:
-        while pressed:
-            if time.time() - curr_time > float(CONFIG["hold_time"]):
-                clear_chatbox()
-                play_sound("clear")
-                held = True
-                break
-            pressed = get_trigger_state()
-            ui.update()
-            time.sleep(0.05)
-        if not held:
-            thread_process = threading.Thread(target=process_stt)
-            thread_process.start()
-    elif held and not pressed:
+    elif pressed and not holding and not held:
+        holding = True
+        curr_time = time.time()
+    elif pressed and holding and not held:
+        holding = True
+        if time.time() - curr_time > float(CONFIG["hold_time"]):
+            clear_chatbox()
+            play_sound("clear")
+            held = True
+            holding = False
+    elif not pressed and holding and not held:
+        held = True
+        holding = False
+        thread_process = threading.Thread(target=process_stt)
+        thread_process.start()
+    elif not pressed and held:
         held = False
+        holding = False
 
 
 def on_closing():
@@ -222,6 +232,9 @@ def on_closing():
     ui.tkui.destroy()
 
 
+curr_time = 0.0
+pressed = False
+holding = False
 held = False
 thread_process = threading.Thread(target=process_stt)
 ui.set_status_label("WAITING FOR INPUT", "#00008b")
