@@ -3,6 +3,7 @@ import sys
 import json
 import logging
 import pyaudio
+from UI import UI
 from StreamToLogger import StreamToLogger
 
 
@@ -39,8 +40,7 @@ def get_sound_devices():
     return res
 
 
-import UI
-ui = UI.UI("v0.3", config["IP"], config["Port"], get_sound_devices(), config["microphone_index"])
+ui = UI("v0.3.1", config["IP"], config["Port"], get_sound_devices(), config["microphone_index"])
 
 import threading
 import time
