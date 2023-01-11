@@ -97,7 +97,7 @@ except Exception:
     ovr_initialized = False
     ui.set_status_label("COULDNT INITIALIZE OVR, CONTINUING DESKTOP ONLY", "red")
 
-ui.set_conf_label(config["IP"], config["Port"], ovr_initialized)
+ui.set_conf_label(config["IP"], config["Port"], ovr_initialized, str(audio_model.device))
 
 
 def get_audiodevice_index():

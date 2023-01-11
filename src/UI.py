@@ -21,7 +21,7 @@ class UI(object):
         self.text_lbl.configure(bg="#333333", fg="white", font=(FONT, 27))
         self.text_lbl.place(relx=0.5, rely=0.53, anchor="center")
 
-        self.conf_lbl = tk.Label(self.tkui, text=f"OSC: {ip}:{port}, OVR: Connecting")
+        self.conf_lbl = tk.Label(self.tkui, text=f"OSC: {ip}:{port}, OVR: Connecting, Device: None")
         self.conf_lbl.configure(bg="#333333", fg="#666666", font=(FONT, 10))
         self.conf_lbl.place(relx=0.01, rely=0.935, anchor="w")
 
@@ -72,7 +72,6 @@ class UI(object):
         except Exception:
             self.set_text_label("Done.")
 
-    def set_conf_label(self, ip, port, ovr_initialized=False):
-        self.ver_lbl.configure(text=self.version)
-        self.conf_lbl.configure(text=f"OSC: {ip}:{port}, OVR: {'Connected' if ovr_initialized else 'Failed to Connect'}")
+    def set_conf_label(self, ip, port, ovr_initialized, device:str):
+        self.conf_lbl.configure(text=f"OSC: {ip}:{port}, OVR: {'Connected' if ovr_initialized else 'Failed to Connect'}, Device: {device.upper()}")
         self.update()
