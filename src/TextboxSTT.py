@@ -184,7 +184,10 @@ def process_stt():
 
         if not pressed:
             trans = transcribe(torch_audio, lang)[:144]
-            if trans:
+            if pressed:
+                ui.set_status_label("CANCELED - WAITING FOR INPUT", "orange")
+                play_sound("timeout")
+            elif trans:
                 populate_chatbox(trans)
                 play_sound("finished")
             else:
