@@ -9,5 +9,6 @@
     "pause_threshold": 0.8,
     "timeout_time": 3.0,
     "hold_time": 1.5,
-    "microphone_index": null
+    "microphone_index": null,
+    "banned_words": []
 }

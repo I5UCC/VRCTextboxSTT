@@ -53,6 +53,7 @@ import speech_recognition as sr
 import openvr
 import whisper
 import torch
+import re
 
 
 oscClient = udp_client.SimpleUDPClient(CONFIG["IP"], int(CONFIG["Port"]))
@@ -126,7 +127,16 @@ def transcribe(torch_audio, language):
         result = model.transcribe(torch_audio, language=language)
     else:
         result = model.transcribe(torch_audio)
-    return result["text"].strip()
+
+    if result:
+        result = result["text"].strip()
+        # Filter by banned words
+        for word in CONFIG["banned_words"]:
+            tmp = re.compile(word, re.IGNORECASE)
+            result = tmp.sub("", result)
+        result = re.sub(' +', ' ', result)
+    
+    return result
 
 
 def clear_chatbox():
