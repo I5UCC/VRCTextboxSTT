@@ -5,15 +5,15 @@ class StreamToLogger(object):
     """
     Fake file-like stream object that redirects writes to a logger instance.
     """
-    def __init__(self, logger, level):
+    def __init__(self, logger, level, logfile):
         self.logger = logger
         self.level = level
         self.linebuf = ''
-        open('out.log', 'w').close()
+        
         logging.basicConfig(
             level=logging.DEBUG,
             format='%(asctime)s:%(levelname)s:%(name)s: %(message)s',
-            filename='out.log',
+            filename=logfile,
             filemode='a'
         )
 

@@ -56,7 +56,7 @@ class UI(object):
         func()
         self.tkui.after(intervall, self.create_loop, *[intervall, func])
 
-    def set_status_label(self, text, color):
+    def set_status_label(self, text, color="orange"):
         self.status_lbl.configure(text=text)
         self.color_lbl.configure(bg=color)
         self.update()
@@ -65,6 +65,12 @@ class UI(object):
     def set_text_label(self, text):
         self.text_lbl.configure(text=text)
         self.update()
+    
+    def loading_status(self, s:str):
+        try:
+            self.set_text_label(f"Downloading Model:{s[s.rindex('|')+1:]}")
+        except Exception:
+            self.set_text_label("Done.")
 
     def set_conf_label(self, ip, port, ovr_initialized=False):
         self.ver_lbl.configure(text=self.version)

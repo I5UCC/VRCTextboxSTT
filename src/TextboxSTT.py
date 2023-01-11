@@ -1,20 +1,28 @@
-import sys
-import logging
-
-from StreamToLogger import StreamToLogger
-log = logging.getLogger('TextboxSTT')
-sys.stdout = StreamToLogger(log, logging.INFO)
-sys.stderr = StreamToLogger(log, logging.ERROR)
-
 import os
+import sys
 import json
+import logging
 import pyaudio
+from StreamToLogger import StreamToLogger
 
 
 def get_absolute_path(relative_path):
     """Gets absolute path from relative path"""
     base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
     return os.path.join(base_path, relative_path)
+
+
+VRC_INPUT_PARAM = "/chatbox/input"
+VRC_TYPING_PARAM = "/chatbox/typing"
+ACTIONSETHANDLE = "/actions/textboxstt"
+STTLISTENHANDLE = "/actions/textboxstt/in/sttlisten"
+logfile = get_absolute_path('out.log')
+config = json.load(open(get_absolute_path('config.json')))
+
+open(logfile, 'w').close()
+log = logging.getLogger('TextboxSTT')
+sys.stdout = StreamToLogger(log, logging.INFO, logfile)
+sys.stderr = StreamToLogger(log, logging.ERROR, logfile)
 
 
 def get_sound_devices():
@@ -31,8 +39,6 @@ def get_sound_devices():
     return res
 
 
-config = json.load(open(get_absolute_path('config.json')))
-
 import UI
 ui = UI.UI("v0.3", config["IP"], config["Port"], get_sound_devices(), config["microphone_index"])
 
@@ -48,12 +54,6 @@ import whisper
 import torch
 
 
-VRC_INPUT_PARAM = "/chatbox/input"
-VRC_TYPING_PARAM = "/chatbox/typing"
-ACTIONSETHANDLE = "/actions/textboxstt"
-STTLISTENHANDLE = "/actions/textboxstt/in/sttlisten"
-
-
 def play_sound(filename):
     """Plays a wave file."""
     filename = f"resources/{filename}.wav"
@@ -62,13 +62,17 @@ def play_sound(filename):
 
 oscClient = udp_client.SimpleUDPClient(config["IP"], int(config["Port"]))
 
-# Load Whisper model
 model = config["model"].lower()
 lang = config["language"].lower()
 if model != "large" and lang == "english" and ".en" not in model:
     model = model + ".en"
 ui.set_status_label(f"LOADING \"{model}\" MODEL", "orange")
+# Temporarily output stderr to text label for download progress.
+sys.stderr.write = ui.loading_status
+# Load Whisper model
 audio_model = whisper.load_model(model, download_root=get_absolute_path("whisper_cache/"), in_memory=True)
+
+sys.stderr = StreamToLogger(log, logging.ERROR, logfile)
 
 # load the speech recognizer and set the initial energy threshold and pause threshold
 r = sr.Recognizer()
@@ -133,7 +137,7 @@ def clear_chatbox():
 
 def populate_chatbox(text):
     ui.set_text_label(text)
-    print(text)
+    print("Transcribed: " + text)
     ui.set_status_label("POPULATING TEXTBOX", "#ff8800")
     oscClient.send_message(VRC_INPUT_PARAM, [text, True, True])
     oscClient.send_message(VRC_TYPING_PARAM, False)
