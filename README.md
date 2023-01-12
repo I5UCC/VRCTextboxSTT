@@ -8,13 +8,13 @@
 # Requirements
 With default settings, this program has following requirements:
 
+- CPU version (Slower, Lower Requirements, Lower Performance Compromises): <br>
+  - ~2GB of storage space <br>
+  - ~1GB of RAM<br>
 - GPU version (Faster, Higher Requirements, Higher Performance Compromises): <br>
   - ~5GB of storage space <br>
   - ~1GB of RAM<br>
   - ~1GB of VRAM<br>
-- CPU version (Slower, Lower Requirements, Lower Performance Compromises): <br>
-  - ~2GB of storage space <br>
-  - ~1GB of RAM<br>
 
 # How to use
 - Activate OSC in VRChat: <br/><br/>
@@ -53,7 +53,9 @@ Configuration of this program is located in the ***config.json*** file:
 | "pause_threshold" | 0.0-10.0 | 0.8 | Amount of seconds to wait when current energy is under the 'energy_threshold' |
 | "timeout_time" | 0.0-10.0 | 3.0 | Amount of time to wait for the user to speak before timeout |
 | "hold_time" | 0.0-10.0 | 1.5 | amount of time to hold the button to clear the Textbox |
+| "max_transcribe_time" | 0.0-20.0 | 0.0 | maximum amount of time for transcribing a message before transcribing gets cancelled. 0.0 is infinite |
 | "microphone_index" | null, 0-10 | null | Index of the microphone to use. null is the System Default mircophone. |
+| "banned_words" | ["word1", "word2", ...] | [] | Array of banned words that are gonna get removed from the transcribed text. |
 
 # Available models and languages
 
