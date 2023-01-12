@@ -182,7 +182,7 @@ def populate_chatbox(text):
     print("Transcribed: " + text)
     ui.set_status_label("POPULATING TEXTBOX", "#ff8800")
     if textbox:
-        oscClient.send_message(VRC_INPUT_PARAM, [text, True, True])
+        oscClient.send_message(VRC_INPUT_PARAM, [text[:VRC_INPUT_CHARLIMIT], True, True])
     if kat:
         kat.set_text(text[:KAT_CHARLIMIT])
     set_typing_indicator(False)
