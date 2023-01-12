@@ -1,11 +1,13 @@
 import tkinter as tk
 
+
 class UI(object):
-    def __init__(self, version, config):
+    def __init__(self, version, ip, port, options, option_index):
+        option_index = 0 if option_index is None else int(option_index) + 1
 
         FONT = "Cascadia Code"
-        self.config = config
         self.version = version
+        self.options = options
         print(version)
 
         self.tkui = tk.Tk()
@@ -19,7 +21,7 @@ class UI(object):
         self.text_lbl.configure(bg="#333333", fg="white", font=(FONT, 27))
         self.text_lbl.place(relx=0.5, rely=0.45, anchor="center")
 
-        self.conf_lbl = tk.Label(self.tkui, text=f"OSC: {self.config['osc_ip']}:{self.config['osc_port']}, OVR: Connecting, Device: Loading")
+        self.conf_lbl = tk.Label(self.tkui, text=f"OSC: {ip}:{port}, OVR: Connecting, Device: Loading")
         self.conf_lbl.configure(bg="#333333", fg="#666666", font=(FONT, 10))
         self.conf_lbl.place(relx=0.01, rely=0.935, anchor="w")
 
@@ -39,13 +41,16 @@ class UI(object):
         self.options_lbl.configure(bg="#333333", fg="#666666", font=(FONT, 12))
         self.options_lbl.place(relx=0.72, rely=0.93, anchor="e")
 
-        self.btn_settings = tk.Button(self.tkui, text="Settings")
-        self.btn_settings.configure(bg="#333333", fg="white", font=(FONT, 10), width=25, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
-        self.btn_settings.place(relx=0.99, rely=0.935, anchor="e")
+        self.value_inside = tk.StringVar(self.tkui)
+        self.value_inside.set(self.options[option_index])
+        self.mic_opt = tk.OptionMenu(self.tkui, self.value_inside, *self.options)
+        self.mic_opt.configure(bg="#333333", fg="white", font=(FONT, 10), width=25, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white", indicatoron=0)
+        self.mic_opt.place(relx=0.99, rely=0.93, anchor="e")
 
         self.textfield = tk.Entry(self.tkui)
         self.textfield.configure(bg="#333333", fg="white", font=(FONT, 10), width=25, highlightthickness=0, insertbackground="#666666")
         self.textfield.place(relx=0.5, rely=0.845, anchor="center", width=792, height=25)
+        self.update()
 
     def update(self):
         self.tkui.update()

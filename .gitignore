@@ -3,4 +3,3 @@ build/
 __pycache__/
 out.log
 whisper_cache/
-src/test.py
