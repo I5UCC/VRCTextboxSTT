@@ -1,6 +1,7 @@
 {
-    "IP": "127.0.0.1",
-    "Port": 9000,
+    "osc_ip": "127.0.0.1",
+    "osc_port": 9000,
+    "osc_server_port": 9001,
     "model": "base",
     "language": "english",
     "hotkey": "F1",
@@ -11,5 +12,7 @@
     "hold_time": 1.5,
     "max_transcribe_time": 0.0,
     "microphone_index": null,
-    "banned_words": []
+    "banned_words": [],
+    "use_textbox": true,
+    "use_kat": true
 }

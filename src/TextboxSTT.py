@@ -16,6 +16,7 @@ def get_absolute_path(relative_path):
 VERSION = "v0.4"
 VRC_INPUT_PARAM = "/chatbox/input"
 VRC_TYPING_PARAM = "/chatbox/typing"
+AV_LISTENING_PARAM = "/avatar/parameters/stt_listening"
 ACTIONSETHANDLE = "/actions/textboxstt"
 STTLISTENHANDLE = "/actions/textboxstt/in/sttlisten"
 LOGFILE = get_absolute_path('out.log')
@@ -41,7 +42,7 @@ def get_sound_devices():
     return res
 
 
-ui = UI(VERSION, CONFIG["IP"], CONFIG["Port"], get_sound_devices(), CONFIG["microphone_index"])
+ui = UI(VERSION, CONFIG["osc_ip"], CONFIG["osc_port"], get_sound_devices(), CONFIG["microphone_index"])
 
 import threading
 import time
@@ -54,10 +55,15 @@ import openvr
 import whisper
 import torch
 import re
+from katosc import KatOsc
 from CustomThread import CustomThread
 
 
-oscClient = udp_client.SimpleUDPClient(CONFIG["IP"], int(CONFIG["Port"]))
+oscClient = udp_client.SimpleUDPClient(CONFIG["osc_ip"], int(CONFIG["osc_port"]))
+kat = None
+textbox = bool(CONFIG["use_textbox"])
+if CONFIG["use_kat"]:
+    kat =  KatOsc(oscClient, CONFIG["osc_ip"], CONFIG["osc_server_port"], True)
 
 model = CONFIG["model"].lower()
 lang = CONFIG["language"].lower()
@@ -97,7 +103,7 @@ except Exception:
     ovr_initialized = False
     ui.set_status_label("COULDNT INITIALIZE OVR, CONTINUING DESKTOP ONLY", "red")
 
-ui.set_conf_label(CONFIG["IP"], CONFIG["Port"], ovr_initialized, use_cpu)
+ui.set_conf_label(CONFIG["osc_ip"], CONFIG["osc_port"], ovr_initialized, use_cpu)
 
 
 def play_sound(filename):
@@ -151,18 +157,32 @@ def transcribe(torch_audio, language):
 
 def clear_chatbox():
     ui.set_status_label("CLEARING OSC TEXTBOX", "#e0ffff")
-    oscClient.send_message(VRC_INPUT_PARAM, ["", True, False])
-    oscClient.send_message(VRC_TYPING_PARAM, False)
+    if textbox:
+        oscClient.send_message(VRC_INPUT_PARAM, ["", True, False])
+        oscClient.send_message(VRC_TYPING_PARAM, False)
+    if kat:
+        kat.clear()
+        kat.hide()
     ui.set_status_label("CLEARED - WAITING FOR INPUT", "#00008b")
     ui.set_text_label("- No Text -")
+
+
+def set_typing_indicator(b: bool):
+    if textbox:
+        oscClient.send_message(VRC_TYPING_PARAM, b)
+    if kat:
+        oscClient.send_message(AV_LISTENING_PARAM, b)
 
 
 def populate_chatbox(text):
     ui.set_text_label(text)
     print("Transcribed: " + text)
     ui.set_status_label("POPULATING TEXTBOX", "#ff8800")
-    oscClient.send_message(VRC_INPUT_PARAM, [text, True, True])
-    oscClient.send_message(VRC_TYPING_PARAM, False)
+    if textbox:
+        oscClient.send_message(VRC_INPUT_PARAM, [text, True, True])
+    if kat:
+        kat.set_text(text)
+    set_typing_indicator(False)
     ui.set_status_label("WAITING FOR INPUT", "#00008b")
 
 
@@ -188,17 +208,17 @@ def get_trigger_state():
 def process_stt():
     global pressed
 
-    oscClient.send_message(VRC_TYPING_PARAM, True)
+    set_typing_indicator(True)
     ui.set_status_label("LISTENING", "#FF00FF")
     play_sound("listen")
     torch_audio = listen()
     if torch_audio is None:
         ui.set_status_label("TIMEOUT - WAITING FOR INPUT", "orange")
         play_sound("timeout")
-        oscClient.send_message(VRC_TYPING_PARAM, False)
+        set_typing_indicator(False)
     else:
         play_sound("donelisten")
-        oscClient.send_message(VRC_TYPING_PARAM, True)
+        set_typing_indicator(True)
         print(torch_audio)
         ui.set_status_label("TRANSCRIBING", "orange")
 
@@ -217,6 +237,8 @@ def process_stt():
         else:
             ui.set_status_label("CANCELED - WAITING FOR INPUT", "orange")
             play_sound("timeout")
+    
+    set_typing_indicator(False)
 
 
 def handle_input():
@@ -253,6 +275,7 @@ def handle_input():
 def on_closing():
     CONFIG["microphone_index"] = get_audiodevice_index()
     json.dump(CONFIG, open(get_absolute_path('config.json'), "w"), indent=4)
+    kat.stop()
     ui.tkui.destroy()
 
 
