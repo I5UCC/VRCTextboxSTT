@@ -279,12 +279,25 @@ def on_closing():
     ui.tkui.destroy()
 
 
+def entrybox_enter_event(text):
+    if text:
+        populate_chatbox(text)
+        play_sound("finished")
+        ui.clear_textfield()
+    else:
+        clear_chatbox()
+        play_sound("clear")
+
+
 curr_time = 0.0
 pressed = False
 holding = False
 held = False
 thread_process = threading.Thread(target=process_stt)
+
 ui.set_status_label("WAITING FOR INPUT", "#00008b")
 ui.tkui.protocol("WM_DELETE_WINDOW", on_closing)
+ui.textfield.bind("<Return>", (lambda event: entrybox_enter_event(ui.textfield.get())))
+ui.textfield.bind("<Key>", (lambda event: set_typing_indicator(True)))
 ui.create_loop(50, handle_input)
 ui.tkui.mainloop()

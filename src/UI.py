@@ -11,15 +11,15 @@ class UI(object):
         print(version)
 
         self.tkui = tk.Tk()
-        self.tkui.minsize(810, 350)
-        self.tkui.maxsize(810, 350)
+        self.tkui.minsize(810, 380)
+        self.tkui.maxsize(810, 380)
         self.tkui.resizable(False, False)
         self.tkui.configure(bg="#333333")
         self.tkui.title("TextboxSTT")
 
         self.text_lbl = tk.Label(self.tkui, wraplength=800, text="- No Text -")
         self.text_lbl.configure(bg="#333333", fg="white", font=(FONT, 27))
-        self.text_lbl.place(relx=0.5, rely=0.53, anchor="center")
+        self.text_lbl.place(relx=0.5, rely=0.45, anchor="center")
 
         self.conf_lbl = tk.Label(self.tkui, text=f"OSC: {ip}:{port}, OVR: Connecting, Device: Loading")
         self.conf_lbl.configure(bg="#333333", fg="#666666", font=(FONT, 10))
@@ -46,6 +46,10 @@ class UI(object):
         self.mic_opt = tk.OptionMenu(self.tkui, self.value_inside, *self.options)
         self.mic_opt.configure(bg="#333333", fg="white", font=(FONT, 10), width=25, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white", indicatoron=0)
         self.mic_opt.place(relx=0.99, rely=0.93, anchor="e")
+
+        self.textfield = tk.Entry(self.tkui)
+        self.textfield.configure(bg="#333333", fg="white", font=(FONT, 10), width=25, highlightthickness=0, insertbackground="#666666")
+        self.textfield.place(relx=0.5, rely=0.845, anchor="center", width=792, height=25)
         self.update()
 
     def update(self):
@@ -74,4 +78,8 @@ class UI(object):
 
     def set_conf_label(self, ip, port, ovr_initialized, use_cpu):
         self.conf_lbl.configure(text=f"OSC: {ip}:{port}, OVR: {'Connected' if ovr_initialized else 'Failed to Connect'}, Device: {'CPU' if use_cpu else 'GPU'}")
+        self.update()
+
+    def clear_textfield(self):
+        self.textfield.delete(0, tk.END)
         self.update()
