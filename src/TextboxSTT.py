@@ -14,6 +14,8 @@ def get_absolute_path(relative_path):
 
 
 VERSION = "v0.4"
+VRC_INPUT_CHARLIMIT = 144
+KAT_CHARLIMIT = 128
 VRC_INPUT_PARAM = "/chatbox/input"
 VRC_TYPING_PARAM = "/chatbox/typing"
 AV_LISTENING_PARAM = "/avatar/parameters/stt_listening"
@@ -175,13 +177,14 @@ def set_typing_indicator(b: bool):
 
 
 def populate_chatbox(text):
+    text = text[:VRC_INPUT_CHARLIMIT]
     ui.set_text_label(text)
     print("Transcribed: " + text)
     ui.set_status_label("POPULATING TEXTBOX", "#ff8800")
     if textbox:
         oscClient.send_message(VRC_INPUT_PARAM, [text, True, True])
     if kat:
-        kat.set_text(text)
+        kat.set_text(text[:KAT_CHARLIMIT])
     set_typing_indicator(False)
     ui.set_status_label("WAITING FOR INPUT", "#00008b")
 
@@ -228,7 +231,6 @@ def process_stt():
                 ui.set_status_label("CANCELED - WAITING FOR INPUT", "orange")
                 play_sound("timeout")
             elif trans:
-                trans = trans[:144]
                 populate_chatbox(trans)
                 play_sound("finished")
             else:
