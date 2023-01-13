@@ -2,8 +2,8 @@ import os
 import sys
 import json
 import logging
-import pyaudio
 from UI import UI
+from settings_UI import settings_ui
 from StreamToLogger import StreamToLogger
 
 
@@ -13,7 +13,7 @@ def get_absolute_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 
-VERSION = "v0.4"
+VERSION = "v0.5"
 VRC_INPUT_CHARLIMIT = 144
 KAT_CHARLIMIT = 128
 VRC_INPUT_PARAM = "/chatbox/input"
@@ -22,29 +22,15 @@ AV_LISTENING_PARAM = "/avatar/parameters/stt_listening"
 ACTIONSETHANDLE = "/actions/textboxstt"
 STTLISTENHANDLE = "/actions/textboxstt/in/sttlisten"
 LOGFILE = get_absolute_path('out.log')
-CONFIG = json.load(open(get_absolute_path('config.json')))
+CONFIG_PATH = get_absolute_path('config.json')
+CONFIG = json.load(open(CONFIG_PATH))
 
 open(LOGFILE, 'w').close()
 log = logging.getLogger('TextboxSTT')
 sys.stdout = StreamToLogger(log, logging.INFO, LOGFILE)
 sys.stderr = StreamToLogger(log, logging.ERROR, LOGFILE)
 
-
-def get_sound_devices():
-    res = ["Default"]
-    p = pyaudio.PyAudio()
-    info = p.get_host_api_info_by_index(0)
-    numdev = info.get("deviceCount")
-
-    for i in range(0, numdev):
-        if (p.get_device_info_by_host_api_device_index(0, i).get('maxInputChannels')) > 0:
-            res.append([i, p.get_device_info_by_host_api_device_index(0, i).get('name')])
-            print(f"Input Device id {i} - {p.get_device_info_by_host_api_device_index(0, i).get('name')}")
-
-    return res
-
-
-ui = UI(VERSION, CONFIG["osc_ip"], CONFIG["osc_port"], get_sound_devices(), CONFIG["microphone_index"])
+ui = UI(VERSION, CONFIG["osc_ip"], CONFIG["osc_port"])
 
 import threading
 import time
@@ -60,52 +46,86 @@ import re
 from katosc import KatOsc
 from CustomThread import CustomThread
 
-
-oscClient = udp_client.SimpleUDPClient(CONFIG["osc_ip"], int(CONFIG["osc_port"]))
+osc_client = None
 kat = None
-textbox = bool(CONFIG["use_textbox"])
-if CONFIG["use_kat"]:
-    kat =  KatOsc(oscClient, CONFIG["osc_ip"], CONFIG["osc_server_port"], True)
-
-model = CONFIG["model"].lower()
-lang = CONFIG["language"].lower()
-if lang == "":
-    lang = None
-elif model != "large" and lang == "english" and ".en" not in model:
-    model = model + ".en"
-ui.set_status_label(f"LOADING \"{model}\" MODEL", "orange")
-# Temporarily output stderr to text label for download progress.
-sys.stderr.write = ui.loading_status
-# Load Whisper model
-model = whisper.load_model(model, download_root=get_absolute_path("whisper_cache/"), in_memory=True)
-use_cpu = True if str(model.device) == "cpu" else False
-
-sys.stderr = StreamToLogger(log, logging.ERROR, LOGFILE)
-
-# load the speech recognizer and set the initial energy threshold and pause threshold
-r = sr.Recognizer()
-r.dynamic_energy_threshold = bool(CONFIG["dynamic_energy_threshold"])
-r.energy_threshold = int(CONFIG["energy_threshold"])
-r.pause_threshold = float(CONFIG["pause_threshold"])
-
-# Initialize OpenVR
-ui.set_status_label("INITIALIZING OVR", "orange")
+textbox = True
+model = "base"
+language = "english"
+use_cpu = False
+rec = None
 ovr_initialized = False
-try:
-    application = openvr.init(openvr.VRApplication_Utility)
-    action_path = get_absolute_path("bindings/textboxstt_actions.json")
-    appmanifest_path = get_absolute_path("app.vrmanifest")
-    openvr.VRApplications().addApplicationManifest(appmanifest_path)
-    openvr.VRInput().setActionManifestPath(action_path)
-    actionSetHandle = openvr.VRInput().getActionSetHandle(ACTIONSETHANDLE)
-    buttonactionhandle = openvr.VRInput().getActionHandle(STTLISTENHANDLE)
-    ovr_initialized = True
-    ui.set_status_label("INITIALZIED", "green")
-except Exception:
-    ovr_initialized = False
-    ui.set_status_label("COULDNT INITIALIZE OVR, CONTINUING DESKTOP ONLY", "red")
+application = None
+action_set_handle = None
+button_action_handle = None
+curr_time = 0.0
+pressed = False
+holding = False
+held = False
+thread_process = threading.Thread()
+config_ui = None
+config_ui_open = False
 
-ui.set_conf_label(CONFIG["osc_ip"], CONFIG["osc_port"], ovr_initialized, use_cpu)
+def init():
+    global ui
+    global osc_client
+    global kat
+    global textbox
+    global model
+    global language
+    global use_cpu
+    global rec
+    global ovr_initialized
+    global application
+    global action_set_handle
+    global button_action_handle
+
+    osc_client = udp_client.SimpleUDPClient(CONFIG["osc_ip"], int(CONFIG["osc_port"]))
+    textbox = bool(CONFIG["use_textbox"])
+    if CONFIG["use_kat"]:
+        kat =  KatOsc(osc_client, CONFIG["osc_ip"], CONFIG["osc_server_port"], True)
+    else:
+        kat = None
+
+    model = CONFIG["model"].lower()
+    language = CONFIG["language"].lower()
+    if language == "":
+        language = None
+    elif model != "large" and language == "english" and ".en" not in model:
+        model = model + ".en"
+    ui.set_status_label(f"LOADING \"{model}\" MODEL", "orange")
+    # Temporarily output stderr to text label for download progress.
+    sys.stderr.write = ui.loading_status
+    # Load Whisper model
+    model = whisper.load_model(model, download_root=get_absolute_path("whisper_cache/"), in_memory=True)
+    use_cpu = True if str(model.device) == "cpu" else False
+
+    sys.stderr = StreamToLogger(log, logging.ERROR, LOGFILE)
+
+    # load the speech recognizer and set the initial energy threshold and pause threshold
+    rec = sr.Recognizer()
+    rec.dynamic_energy_threshold = bool(CONFIG["dynamic_energy_threshold"])
+    rec.energy_threshold = int(CONFIG["energy_threshold"])
+    rec.pause_threshold = float(CONFIG["pause_threshold"])
+
+    # Initialize OpenVR
+    ui.set_status_label("INITIALIZING OVR", "orange")
+    ovr_initialized = False
+    try:
+        application = openvr.init(openvr.VRApplication_Utility)
+        action_path = get_absolute_path("bindings/textboxstt_actions.json")
+        appmanifest_path = get_absolute_path("app.vrmanifest")
+        openvr.VRApplications().addApplicationManifest(appmanifest_path)
+        openvr.VRInput().setActionManifestPath(action_path)
+        action_set_handle = openvr.VRInput().getActionSetHandle(ACTIONSETHANDLE)
+        button_action_handle = openvr.VRInput().getActionHandle(STTLISTENHANDLE)
+        ovr_initialized = True
+        ui.set_status_label("INITIALZIED OVR", "green")
+    except Exception:
+        ovr_initialized = False
+        ui.set_status_label("COULDNT INITIALIZE OVR, CONTINUING DESKTOP ONLY", "red")
+
+    ui.set_conf_label(CONFIG["osc_ip"], CONFIG["osc_port"], ovr_initialized, use_cpu)
+    ui.set_status_label("INITIALIZED - WAITING FOR INPUT", "green")
 
 
 def play_sound(filename):
@@ -115,25 +135,31 @@ def play_sound(filename):
 
 
 def get_audiodevice_index():
-    option = ui.value_inside.get()
-    if option != "Default":
-        return int(option[1:option.index(',')])
+    option = CONFIG["microphone_index"]
+    if option:
+        return int(option)
     else:
         return None
 
 
 def listen():
+    global rec
+
     device_index = get_audiodevice_index()
     with sr.Microphone(device_index, sample_rate=16000) as source:
         try:
-            audio = r.listen(source, timeout=float(CONFIG["timeout_time"]))
+            audio = rec.listen(source, timeout=float(CONFIG["timeout_time"]))
         except sr.WaitTimeoutError:
             return None
 
         return torch.from_numpy(np.frombuffer(audio.get_raw_data(), np.int16).flatten().astype(np.float32) / 32768.0)
 
 
-def transcribe(torch_audio, language):
+def transcribe(torch_audio):
+    global use_cpu
+    global language
+    global model
+
     use_gpu = not use_cpu
     torch_audio = whisper.pad_or_trim(torch_audio)
     options = whisper.DecodingOptions(language=language, fp16=use_gpu, without_timestamps=True)
@@ -158,10 +184,13 @@ def transcribe(torch_audio, language):
 
 
 def clear_chatbox():
+    global textbox
+    global kat
+
     ui.set_status_label("CLEARING OSC TEXTBOX", "#e0ffff")
     if textbox:
-        oscClient.send_message(VRC_INPUT_PARAM, ["", True, False])
-        oscClient.send_message(VRC_TYPING_PARAM, False)
+        osc_client.send_message(VRC_INPUT_PARAM, ["", True, False])
+        osc_client.send_message(VRC_TYPING_PARAM, False)
     if kat:
         kat.clear()
         kat.hide()
@@ -170,19 +199,26 @@ def clear_chatbox():
 
 
 def set_typing_indicator(b: bool):
+    global textbox
+    global kat
+
     if textbox:
-        oscClient.send_message(VRC_TYPING_PARAM, b)
+        osc_client.send_message(VRC_TYPING_PARAM, b)
     if kat:
-        oscClient.send_message(AV_LISTENING_PARAM, b)
+        osc_client.send_message(AV_LISTENING_PARAM, b)
 
 
 def populate_chatbox(text):
+    global ui
+    global textbox
+    global kat
+
     text = text[:VRC_INPUT_CHARLIMIT]
     ui.set_text_label(text)
     print("Transcribed: " + text)
     ui.set_status_label("POPULATING TEXTBOX", "#ff8800")
     if textbox:
-        oscClient.send_message(VRC_INPUT_PARAM, [text, True, True])
+        osc_client.send_message(VRC_INPUT_PARAM, [text, True, True])
     if kat:
         kat.set_text(text[:KAT_CHARLIMIT])
     set_typing_indicator(False)
@@ -190,18 +226,24 @@ def populate_chatbox(text):
 
 
 def get_ovraction_bstate():
-    event = openvr.VREvent_t()
-    has_events = True
-    while has_events:
-        has_events = application.pollNextEvent(event)
+    global action_set_handle
+    global button_action_handle
+    global application
+
+    _event = openvr.VREvent_t()
+    _has_events = True
+    while _has_events:
+        _has_events = application.pollNextEvent(_event)
     _actionsets = (openvr.VRActiveActionSet_t * 1)()
     _actionset = _actionsets[0]
-    _actionset.ulActionSet = actionSetHandle
+    _actionset.ulActionSet = action_set_handle
     openvr.VRInput().updateActionState(_actionsets)
-    return bool(openvr.VRInput().getDigitalActionData(buttonactionhandle, openvr.k_ulInvalidInputValueHandle).bState)
+    return bool(openvr.VRInput().getDigitalActionData(button_action_handle, openvr.k_ulInvalidInputValueHandle).bState)
 
 
 def get_trigger_state():
+    global ovr_initialized
+
     if ovr_initialized and get_ovraction_bstate():
         return True
     else:
@@ -209,29 +251,31 @@ def get_trigger_state():
 
 
 def process_stt():
+    global ui
     global pressed
 
+    ui.set_button_enabled(False)
     set_typing_indicator(True)
     ui.set_status_label("LISTENING", "#FF00FF")
     play_sound("listen")
-    torch_audio = listen()
-    if torch_audio is None:
+    _torch_audio = listen()
+    if _torch_audio is None:
         ui.set_status_label("TIMEOUT - WAITING FOR INPUT", "orange")
         play_sound("timeout")
         set_typing_indicator(False)
     else:
         play_sound("donelisten")
         set_typing_indicator(True)
-        print(torch_audio)
+        print(_torch_audio)
         ui.set_status_label("TRANSCRIBING", "orange")
 
         if not pressed:
-            trans = transcribe(torch_audio, lang)
+            _trans = transcribe(_torch_audio)
             if pressed:
                 ui.set_status_label("CANCELED - WAITING FOR INPUT", "orange")
                 play_sound("timeout")
-            elif trans:
-                populate_chatbox(trans)
+            elif _trans:
+                populate_chatbox(_trans)
                 play_sound("finished")
             else:
                 ui.set_status_label("ERROR TRANSCRIBING - WAITING FOR INPUT", "red")
@@ -241,6 +285,7 @@ def process_stt():
             play_sound("timeout")
     
     set_typing_indicator(False)
+    ui.set_button_enabled(True)
 
 
 def handle_input():
@@ -249,10 +294,11 @@ def handle_input():
     global holding
     global pressed
     global curr_time
+    global config_ui_open
 
     pressed = get_trigger_state()
 
-    if thread_process.is_alive():
+    if thread_process.is_alive() or config_ui_open:
         return
     elif pressed and not holding and not held:
         holding = True
@@ -274,14 +320,17 @@ def handle_input():
         holding = False
 
 
-def on_closing():
-    CONFIG["microphone_index"] = get_audiodevice_index()
-    json.dump(CONFIG, open(get_absolute_path('config.json'), "w"), indent=4)
+def main_window_closing():
+    global ui
+    global kat
+
     kat.stop()
-    ui.tkui.destroy()
+    ui.on_closing()
 
 
 def entrybox_enter_event(text):
+    global ui
+
     if text:
         populate_chatbox(text)
         play_sound("finished")
@@ -291,15 +340,35 @@ def entrybox_enter_event(text):
         play_sound("clear")
 
 
-curr_time = 0.0
-pressed = False
-holding = False
-held = False
-thread_process = threading.Thread(target=process_stt)
+def settings_closing():
+    global kat
+    global config_ui
+    global config_ui_open
+    print("testings")
+    config_ui_open = False
+    kat.stop()
+    config_ui.on_closing()
+    ui.set_button_enabled(True)
+    init()
 
-ui.set_status_label("WAITING FOR INPUT", "#00008b")
-ui.tkui.protocol("WM_DELETE_WINDOW", on_closing)
+
+def open_settings():
+    global ui
+    global config_ui
+    global config_ui_open
+    ui.set_status_label("WAITING FOR SETTINGS MENU TO CLOSE", "orange")
+    config_ui_open = True
+    config_ui = settings_ui(CONFIG, CONFIG_PATH)
+    config_ui.tkui.protocol("WM_DELETE_WINDOW", settings_closing)
+    ui.set_button_enabled(False)
+    config_ui.run()
+
+
+init()
+
+ui.tkui.protocol("WM_DELETE_WINDOW", main_window_closing)
 ui.textfield.bind("<Return>", (lambda event: entrybox_enter_event(ui.textfield.get())))
 ui.textfield.bind("<Key>", (lambda event: set_typing_indicator(True)))
+ui.btn_settings.configure(command=open_settings)
 ui.create_loop(50, handle_input)
 ui.tkui.mainloop()

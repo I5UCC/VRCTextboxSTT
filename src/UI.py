@@ -2,12 +2,10 @@ import tkinter as tk
 
 
 class UI(object):
-    def __init__(self, version, ip, port, options, option_index):
-        option_index = 0 if option_index is None else int(option_index) + 1
+    def __init__(self, version, ip, port):
 
         FONT = "Cascadia Code"
         self.version = version
-        self.options = options
         print(version)
 
         self.tkui = tk.Tk()
@@ -37,15 +35,9 @@ class UI(object):
         self.color_lbl.configure(bg="red", width=2, fg="white", font=(FONT, 12))
         self.color_lbl.place(relx=0.01, rely=0.07, anchor="w")
 
-        self.options_lbl = tk.Label(self.tkui, text="Microphone:")
-        self.options_lbl.configure(bg="#333333", fg="#666666", font=(FONT, 12))
-        self.options_lbl.place(relx=0.72, rely=0.93, anchor="e")
-
-        self.value_inside = tk.StringVar(self.tkui)
-        self.value_inside.set(self.options[option_index])
-        self.mic_opt = tk.OptionMenu(self.tkui, self.value_inside, *self.options)
-        self.mic_opt.configure(bg="#333333", fg="white", font=(FONT, 10), width=25, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white", indicatoron=0)
-        self.mic_opt.place(relx=0.99, rely=0.93, anchor="e")
+        self.btn_settings = tk.Button(self.tkui, text="Settings")
+        self.btn_settings.configure(bg="#333333", fg="white", font=(FONT, 10), width=25, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.btn_settings.place(relx=0.99, rely=0.94, anchor="e")
 
         self.textfield = tk.Entry(self.tkui)
         self.textfield.configure(bg="#333333", fg="white", font=(FONT, 10), width=25, highlightthickness=0, insertbackground="#666666")
@@ -83,3 +75,12 @@ class UI(object):
     def clear_textfield(self):
         self.textfield.delete(0, tk.END)
         self.update()
+
+    def on_closing(self):
+        self.tkui.destroy()
+
+    def set_button_enabled(self, state = False):
+        if state:
+            self.btn_settings.configure(state="normal")
+        else:
+            self.btn_settings.configure(state="disabled")
