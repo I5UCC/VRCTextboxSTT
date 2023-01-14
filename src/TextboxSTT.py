@@ -94,16 +94,16 @@ def init():
         _whisper_model = _whisper_model + ".en"
     
     # Temporarily output stderr to text label for download progress.
-    if os.path.exists(get_absolute_path("whisper_cache" + _whisper_model)):
+    if not os.path.isfile(get_absolute_path(f"whisper_cache/{_whisper_model}.pt")):
         sys.stderr.write = ui.loading_status
     else:
         print("Whisper model already in cache.")
 
-    # Load Whisper model
     ui.set_status_label(f"LOADING \"{_whisper_model}\" MODEL", "orange")
+    # Load Whisper model
     model = whisper.load_model(_whisper_model, download_root=get_absolute_path("whisper_cache/"), in_memory=True)
-    use_cpu = True if str(model.device) == "cpu" else False
     sys.stderr = StreamToLogger(log, logging.ERROR, LOGFILE)
+    use_cpu = True if str(model.device) == "cpu" else False
 
     # load the speech recognizer and set the initial energy threshold and pause threshold
     rec = sr.Recognizer()
