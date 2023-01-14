@@ -14,5 +14,6 @@
     "microphone_index": null,
     "banned_words": [],
     "use_textbox": true,
-    "use_kat": true
+    "use_kat": true,
+    "kat_sync": null
 }

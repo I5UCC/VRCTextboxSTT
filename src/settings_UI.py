@@ -10,7 +10,7 @@ class settings_ui:
         self.config = config
         self.config_path = config_path
         self.FONT = "Cascadia Code"
-        PADX = '15'
+        PADX = '20'
         PADY = '5'
         self.yn_options = ["yes", "no"]
         self.whisper_models = whisper.available_models()
@@ -18,14 +18,14 @@ class settings_ui:
 
 
         self.tkui = tk.Tk()
-        self.tkui.minsize(570, 700)
-        self.tkui.maxsize(570, 700)
+        self.tkui.minsize(570, 740)
+        self.tkui.maxsize(570, 740)
         self.tkui.resizable(False, False)
         self.tkui.configure(bg="#333333")
         self.tkui.title("TextboxSTT - Settings")
 
 
-        self.label_osc_ip = tk.Label(master=self.tkui, bg="#333333", fg="white", text='osc_ip', font=(self.FONT, 15))
+        self.label_osc_ip = tk.Label(master=self.tkui, bg="#333333", fg="white", text='OSC IP', font=(self.FONT, 15))
         self.label_osc_ip.grid(row=0, column=0, padx=PADX, pady=PADY, sticky='es')
         self.entry_osc_ip = tk.Entry(self.tkui)
         self.entry_osc_ip.insert(0, self.config["osc_ip"])
@@ -33,7 +33,7 @@ class settings_ui:
         self.entry_osc_ip.grid(row=0, column=1, padx=PADX, pady=PADY, sticky='ws')
 
 
-        self.label_osc_port = tk.Label(master=self.tkui, bg="#333333", fg="white", text='osc_port', font=(self.FONT, 15))
+        self.label_osc_port = tk.Label(master=self.tkui, bg="#333333", fg="white", text='OSC Port', font=(self.FONT, 15))
         self.label_osc_port.grid(row=1, column=0, padx=PADX, pady=PADY, sticky='es')
         self.entry_osc_port = tk.Entry(self.tkui)
         self.entry_osc_port.insert(0, self.config["osc_port"])
@@ -41,7 +41,7 @@ class settings_ui:
         self.entry_osc_port.grid(row=1, column=1, padx=PADX, pady=PADY, sticky='ws')
 
 
-        self.label_osc_server_port = tk.Label(master=self.tkui, bg="#333333", fg="white", text='osc_server_port', font=(self.FONT, 15))
+        self.label_osc_server_port = tk.Label(master=self.tkui, bg="#333333", fg="white", text='OSC Server Port', font=(self.FONT, 15))
         self.label_osc_server_port.grid(row=2, column=0, padx=PADX, pady=PADY, sticky='es')
         self.entry_osc_server_port = tk.Entry(self.tkui)
         self.entry_osc_server_port.insert(0, self.config["osc_server_port"])
@@ -49,7 +49,7 @@ class settings_ui:
         self.entry_osc_server_port.grid(row=2, column=1, padx=PADX, pady=PADY, sticky='ws')
 
 
-        self.label_model = tk.Label(master=self.tkui, bg="#333333", fg="white", text='model', font=(self.FONT, 15))
+        self.label_model = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Model', font=(self.FONT, 15))
         self.label_model.grid(row=3, column=0, padx=PADX, pady=PADY, sticky='es')
         self.value_model = tk.StringVar(self.tkui)
         self.value_model.set(self.config["model"])
@@ -58,7 +58,7 @@ class settings_ui:
         self.opt_model.grid(row=3, column=1, padx=PADX, pady=PADY, sticky='ws')
 
 
-        self.label_language = tk.Label(master=self.tkui, bg="#333333", fg="white", text='language', font=(self.FONT, 15))
+        self.label_language = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Language', font=(self.FONT, 15))
         self.label_language.grid(row=4, column=0, padx=PADX, pady=PADY, sticky='es')
         self.entry_language = tk.Entry(self.tkui)
         self.entry_language.insert(0, self.config["language"])
@@ -66,14 +66,14 @@ class settings_ui:
         self.entry_language.grid(row=4, column=1, padx=PADX, pady=PADY, sticky='ws')
 
 
-        self.label_hotkey = tk.Label(master=self.tkui, bg="#333333", fg="white", text='hotkey', font=(self.FONT, 15))
+        self.label_hotkey = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Hotkey', font=(self.FONT, 15))
         self.label_hotkey.grid(row=5, column=0, padx=PADX, pady=PADY, sticky='es')
         self.button_hotkey = tk.Button(self.tkui, text= self.config["hotkey"], command=self.button_hotkey_pressed)
-        self.button_hotkey.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, width=23)
+        self.button_hotkey.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, width=23, anchor="center", activebackground="#555555", activeforeground="white")
         self.button_hotkey.grid(row=5, column=1, padx=PADX, pady=PADY, sticky='ws')
 
 
-        self.label_det = tk.Label(master=self.tkui, bg="#333333", fg="white", text='dynamic_energy_threshold', font=(self.FONT, 15))
+        self.label_det = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Dynamic Energy Threshold', font=(self.FONT, 15))
         self.label_det.grid(row=6, column=0, padx=PADX, pady=PADY, sticky='es')
         self.value_det = tk.StringVar(self.tkui)
         self.value_det.set("yes" if bool(self.config["dynamic_energy_threshold"]) else "no")
@@ -82,7 +82,7 @@ class settings_ui:
         self.opt_det.grid(row=6, column=1, padx=PADX, pady=PADY, sticky='ws')
 
 
-        self.label_energy_threshold = tk.Label(master=self.tkui, bg="#333333", fg="white", text='energy_threshold', font=(self.FONT, 15))
+        self.label_energy_threshold = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Energy Threshold', font=(self.FONT, 15))
         self.label_energy_threshold.grid(row=7, column=0, padx=PADX, pady=PADY, sticky='es')
         self.entry_energy_threshold = tk.Entry(self.tkui)
         self.entry_energy_threshold.insert(0, self.config["energy_threshold"])
@@ -90,7 +90,7 @@ class settings_ui:
         self.entry_energy_threshold.grid(row=7, column=1, padx=PADX, pady=PADY, sticky='ws')
 
 
-        self.label_pause_threshold = tk.Label(master=self.tkui, bg="#333333", fg="white", text='pause_threshold', font=(self.FONT, 15))
+        self.label_pause_threshold = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Pause Threshold', font=(self.FONT, 15))
         self.label_pause_threshold.grid(row=8, column=0, padx=PADX, pady=PADY, sticky='es')
         self.entry_pause_threshold = tk.Entry(self.tkui)
         self.entry_pause_threshold.insert(0, self.config["pause_threshold"])
@@ -98,7 +98,7 @@ class settings_ui:
         self.entry_pause_threshold.grid(row=8, column=1, padx=PADX, pady=PADY, sticky='ws')
 
 
-        self.label_timeout_time = tk.Label(master=self.tkui, bg="#333333", fg="white", text='timeout_time', font=(self.FONT, 15))
+        self.label_timeout_time = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Timeout Time', font=(self.FONT, 15))
         self.label_timeout_time.grid(row=9, column=0, padx=PADX, pady=PADY, sticky='es')
         self.entry_timeout_time = tk.Entry(self.tkui)
         self.entry_timeout_time.insert(0, self.config["timeout_time"])
@@ -106,7 +106,7 @@ class settings_ui:
         self.entry_timeout_time.grid(row=9, column=1, padx=PADX, pady=PADY, sticky='ws')
 
 
-        self.label_hold_time = tk.Label(master=self.tkui, bg="#333333", fg="white", text='hold_time', font=(self.FONT, 15))
+        self.label_hold_time = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Hold Time', font=(self.FONT, 15))
         self.label_hold_time.grid(row=10, column=0, padx=PADX, pady=PADY, sticky='es')
         self.entry_hold_time = tk.Entry(self.tkui)
         self.entry_hold_time.insert(0, self.config["hold_time"])
@@ -114,7 +114,7 @@ class settings_ui:
         self.entry_hold_time.grid(row=10, column=1, padx=PADX, pady=PADY, sticky='ws')
 
 
-        self.label_max_transcribe_time = tk.Label(master=self.tkui, bg="#333333", fg="white", text='max_transcribe_time', font=(self.FONT, 15))
+        self.label_max_transcribe_time = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Max. Transcribe Time', font=(self.FONT, 15))
         self.label_max_transcribe_time.grid(row=11, column=0, padx=PADX, pady=PADY, sticky='es')
         self.entry_max_transcribe_time = tk.Entry(self.tkui)
         self.entry_max_transcribe_time.insert(0, self.config["max_transcribe_time"])
@@ -122,18 +122,18 @@ class settings_ui:
         self.entry_max_transcribe_time.grid(row=11, column=1, padx=PADX, pady=PADY, sticky='ws')
 
 
-        self.label_mic = tk.Label(master=self.tkui, bg="#333333", fg="white", text='microphone', font=(self.FONT, 15))
+        self.label_mic = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Microphone', font=(self.FONT, 15))
         self.label_mic.grid(row=12, column=0, padx=PADX, pady=PADY, sticky='es')
-        self.option_index = option_index = 0 if self.config["microphone_index"] is None else int(self.config["microphone_index"]) + 1
+        self.option_index = 0 if self.config["microphone_index"] is None else int(self.config["microphone_index"]) + 1
         self.options_mic = self.get_sound_devices()
         self.value_mic = tk.StringVar(self.tkui)
-        self.value_mic.set(self.options_mic[option_index])
+        self.value_mic.set(self.options_mic[self.option_index])
         self.opt_mic = tk.OptionMenu(self.tkui, self.value_mic, *self.options_mic)
         self.opt_mic.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_mic.grid(row=12, column=1, padx=PADX, pady=PADY, sticky='ws')
 
 
-        self.label_banned_words = tk.Label(master=self.tkui, bg="#333333", fg="white", text='banned_words', font=(self.FONT, 15))
+        self.label_banned_words = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Banned Words', font=(self.FONT, 15))
         self.label_banned_words.grid(row=13, column=0, padx=PADX, pady=PADY, sticky='es')
         self.entry_banned_words = tk.Entry(self.tkui)
         self.entry_banned_words.insert(0, ','.join(self.config["banned_words"]))
@@ -141,7 +141,7 @@ class settings_ui:
         self.entry_banned_words.grid(row=13, column=1, padx=PADX, pady=PADY, sticky='ws')
 
 
-        self.label_use_textbox = tk.Label(master=self.tkui, bg="#333333", fg="white", text='use_textbox', font=(self.FONT, 15))
+        self.label_use_textbox = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Use Textbox', font=(self.FONT, 15))
         self.label_use_textbox.grid(row=14, column=0, padx=PADX, pady=PADY, sticky='es')
         self.value_use_textbox = tk.StringVar(self.tkui)
         self.value_use_textbox.set("yes" if bool(self.config["use_textbox"]) else "no")
@@ -150,13 +150,24 @@ class settings_ui:
         self.opt_use_textbox.grid(row=14, column=1, padx=PADX, pady=PADY, sticky='ws')
 
 
-        self.label_use_kat = tk.Label(master=self.tkui, bg="#333333", fg="white", text='use_kat', font=(self.FONT, 15))
+        self.label_use_kat = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Use KAT', font=(self.FONT, 15))
         self.label_use_kat.grid(row=15, column=0, padx=PADX, pady=PADY, sticky='es')
         self.value_use_kat = tk.StringVar(self.tkui)
         self.value_use_kat.set("yes" if bool(self.config["use_kat"]) else "no")
         self.opt_use_kat = tk.OptionMenu(self.tkui, self.value_use_kat, *self.yn_options)
         self.opt_use_kat.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_use_kat.grid(row=15, column=1, padx=PADX, pady=PADY, sticky='ws')
+
+        
+        self.label_mic = tk.Label(master=self.tkui, bg="#333333", fg="white", text='KAT Sync Params', font=(self.FONT, 15))
+        self.label_mic.grid(row=16, column=0, padx=PADX, pady=PADY, sticky='es')
+        self.option_index = 0 if self.config["microphone_index"] is None else int(self.config["microphone_index"]) + 1
+        self.options_kat_sync = ["Auto Detect", 1, 2, 4, 8, 16]
+        self.value_kat_sync = tk.StringVar(self.tkui)
+        self.value_kat_sync.set("Auto Detect" if self.config["kat_sync"] == None else self.config["kat_sync"])
+        self.opt_kat_sync = tk.OptionMenu(self.tkui, self.value_kat_sync, *self.options_kat_sync)
+        self.opt_kat_sync.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.opt_kat_sync.grid(row=16, column=1, padx=PADX, pady=PADY, sticky='ws')
 
 
     def get_sound_devices(self):
@@ -205,6 +216,8 @@ class settings_ui:
         self.config["banned_words"] = self.get_banned_words()
         self.config["use_textbox"] = True if self.value_use_textbox.get() == "yes" else False
         self.config["use_kat"] = True if self.value_use_kat.get() == "yes" else False
+        sync_param = self.value_kat_sync.get()
+        self.config["kat_sync"] = int(sync_param) if sync_param != "Auto Detect" else None
 
         json.dump(self.config, open(self.config_path, "w"), indent=4)
 
@@ -214,7 +227,8 @@ class settings_ui:
         self.tkui.update_idletasks()
 
 
-    def run(self):
+    def open(self):
+        print("OPEN SETTINGS")
         self.tkui.mainloop()
 
 
@@ -225,10 +239,10 @@ class settings_ui:
 
 
     def button_hotkey_pressed(self):
-        self.button_hotkey.configure(text="ESC to cancel...", state="disabled")
+        self.button_hotkey.configure(text="Press a button\nor ESC to cancel...", state="disabled", disabledforeground="white", height= 2, width=37, font=(self.FONT, 7))
         self.update()
         key = keyboard.read_key()
         if key != "esc":
             self.config["hotkey"] = key
-        self.button_hotkey.configure(text=key, state="normal")
+        self.button_hotkey.configure(text=self.config["hotkey"], state="normal")
         self.update()

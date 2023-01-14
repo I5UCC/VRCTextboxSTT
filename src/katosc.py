@@ -21,7 +21,7 @@ import math, asyncio, threading
 
 
 class KatOsc:
-	def __init__(self, udpclient: udp_client.SimpleUDPClient, osc_server_ip: str, osc_server_port: int, osc_enable_server: bool):
+	def __init__(self, udpclient: udp_client.SimpleUDPClient, osc_server_ip: str, osc_server_port: int, osc_enable_server: bool, sync_params: int = 4):
 		self.osc_enable_server = osc_enable_server # Used to improve sync with in-game avatar and autodetect sync parameter count used for the avatar.
 		self.osc_server_ip = osc_server_ip # OSC server IP to listen too
 		self.osc_server_port = osc_server_port # OSC network port for recieving messages
@@ -30,11 +30,11 @@ class KatOsc:
 		self.sync_params: int = 4 # Default sync parameters. This is automatically updated if the OSC server is enabled.
 
 		self.line_length: int = 32 # Characters per line of text
-		self.line_count: int = 4 # Maximum lines of text
+		self.line_count: int = sync_params # Maximum lines of text
 
 		self.text_length: int = 128 # Maximum length of text
 		self.sync_params_max: int = 16 # Maximum sync parameters
-		self.sync_params_last: int = 4 # Last detected sync parameters
+		self.sync_params_last: int = sync_params # Last detected sync parameters
 
 		self.pointer_count: int = int(self.text_length / self.sync_params)
 		self.pointer_clear: int = 255

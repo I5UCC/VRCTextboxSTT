@@ -2,8 +2,6 @@ import os
 import sys
 import json
 import logging
-from UI import UI
-from settings_UI import settings_ui
 from StreamToLogger import StreamToLogger
 
 
@@ -30,8 +28,6 @@ log = logging.getLogger('TextboxSTT')
 sys.stdout = StreamToLogger(log, logging.INFO, LOGFILE)
 sys.stderr = StreamToLogger(log, logging.ERROR, LOGFILE)
 
-ui = UI(VERSION, CONFIG["osc_ip"], CONFIG["osc_port"])
-
 import threading
 import time
 import keyboard
@@ -45,6 +41,8 @@ import torch
 import re
 from katosc import KatOsc
 from CustomThread import CustomThread
+from UI import UI
+from settings_UI import settings_ui
 
 osc_client = None
 kat = None
@@ -82,23 +80,29 @@ def init():
     osc_client = udp_client.SimpleUDPClient(CONFIG["osc_ip"], int(CONFIG["osc_port"]))
     textbox = bool(CONFIG["use_textbox"])
     if CONFIG["use_kat"]:
-        kat =  KatOsc(osc_client, CONFIG["osc_ip"], CONFIG["osc_server_port"], True)
+        _kat_sync = False if CONFIG["kat_sync"] else True
+        print(_kat_sync)
+        kat =  KatOsc(osc_client, CONFIG["osc_ip"], CONFIG["osc_server_port"], _kat_sync, 4 if _kat_sync else int(CONFIG["kat_sync"]))
     else:
         kat = None
 
-    model = CONFIG["model"].lower()
+    _whisper_model = CONFIG["model"].lower()
     language = CONFIG["language"].lower()
     if language == "":
         language = None
-    elif model != "large" and language == "english" and ".en" not in model:
-        model = model + ".en"
-    ui.set_status_label(f"LOADING \"{model}\" MODEL", "orange")
+    elif _whisper_model != "large" and language == "english" and ".en" not in _whisper_model:
+        _whisper_model = _whisper_model + ".en"
+    
     # Temporarily output stderr to text label for download progress.
-    sys.stderr.write = ui.loading_status
-    # Load Whisper model
-    model = whisper.load_model(model, download_root=get_absolute_path("whisper_cache/"), in_memory=True)
-    use_cpu = True if str(model.device) == "cpu" else False
+    if os.path.exists(get_absolute_path("whisper_cache" + _whisper_model)):
+        sys.stderr.write = ui.loading_status
+    else:
+        print("Whisper model already in cache.")
 
+    # Load Whisper model
+    ui.set_status_label(f"LOADING \"{_whisper_model}\" MODEL", "orange")
+    model = whisper.load_model(_whisper_model, download_root=get_absolute_path("whisper_cache/"), in_memory=True)
+    use_cpu = True if str(model.device) == "cpu" else False
     sys.stderr = StreamToLogger(log, logging.ERROR, LOGFILE)
 
     # load the speech recognizer and set the initial energy threshold and pause threshold
@@ -324,8 +328,10 @@ def main_window_closing():
     global ui
     global kat
 
+    print("Closing...")
     kat.stop()
     ui.on_closing()
+    config_ui.on_closing()
 
 
 def entrybox_enter_event(text):
@@ -344,7 +350,7 @@ def settings_closing():
     global kat
     global config_ui
     global config_ui_open
-    print("testings")
+
     config_ui_open = False
     kat.stop()
     config_ui.on_closing()
@@ -361,9 +367,10 @@ def open_settings():
     config_ui = settings_ui(CONFIG, CONFIG_PATH)
     config_ui.tkui.protocol("WM_DELETE_WINDOW", settings_closing)
     ui.set_button_enabled(False)
-    config_ui.run()
+    config_ui.open()
 
 
+ui = UI(VERSION, CONFIG["osc_ip"], CONFIG["osc_port"])
 init()
 
 ui.tkui.protocol("WM_DELETE_WINDOW", main_window_closing)
@@ -371,4 +378,4 @@ ui.textfield.bind("<Return>", (lambda event: entrybox_enter_event(ui.textfield.g
 ui.textfield.bind("<Key>", (lambda event: set_typing_indicator(True)))
 ui.btn_settings.configure(command=open_settings)
 ui.create_loop(50, handle_input)
-ui.tkui.mainloop()
+ui.open()

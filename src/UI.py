@@ -36,13 +36,18 @@ class UI(object):
         self.color_lbl.place(relx=0.01, rely=0.07, anchor="w")
 
         self.btn_settings = tk.Button(self.tkui, text="Settings")
-        self.btn_settings.configure(bg="#333333", fg="white", font=(FONT, 10), width=25, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.btn_settings.configure(bg="#333333", fg="white", font=(FONT, 10), width=20, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.btn_settings.place(relx=0.99, rely=0.94, anchor="e")
 
         self.textfield = tk.Entry(self.tkui)
         self.textfield.configure(bg="#333333", fg="white", font=(FONT, 10), width=25, highlightthickness=0, insertbackground="#666666")
         self.textfield.place(relx=0.5, rely=0.845, anchor="center", width=792, height=25)
         self.update()
+
+
+    def open(self):
+        self.tkui.mainloop()
+
 
     def update(self):
         self.tkui.update()
@@ -52,15 +57,18 @@ class UI(object):
         func()
         self.tkui.after(intervall, self.create_loop, *[intervall, func])
 
+
     def set_status_label(self, text, color="orange"):
         self.status_lbl.configure(text=text)
         self.color_lbl.configure(bg=color)
         self.update()
         print(text)
 
+
     def set_text_label(self, text):
         self.text_lbl.configure(text=text)
         self.update()
+
 
     def loading_status(self, s: str):
         try:
@@ -68,16 +76,20 @@ class UI(object):
         except Exception:
             self.set_text_label("Done.")
 
+
     def set_conf_label(self, ip, port, ovr_initialized, use_cpu):
         self.conf_lbl.configure(text=f"OSC: {ip}:{port}, OVR: {'Connected' if ovr_initialized else 'Failed to Connect'}, Device: {'CPU' if use_cpu else 'GPU'}")
         self.update()
+
 
     def clear_textfield(self):
         self.textfield.delete(0, tk.END)
         self.update()
 
+
     def on_closing(self):
         self.tkui.destroy()
+
 
     def set_button_enabled(self, state = False):
         if state:
