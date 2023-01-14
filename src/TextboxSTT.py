@@ -210,6 +210,8 @@ def set_typing_indicator(b: bool):
         osc_client.send_message(VRC_TYPING_PARAM, b)
     if kat:
         osc_client.send_message(AV_LISTENING_PARAM, b)
+        if b:
+            kat.clear()
 
 
 def populate_chatbox(text):
@@ -375,7 +377,7 @@ init()
 
 ui.tkui.protocol("WM_DELETE_WINDOW", main_window_closing)
 ui.textfield.bind("<Return>", (lambda event: entrybox_enter_event(ui.textfield.get())))
-ui.textfield.bind("<Key>", (lambda event: set_typing_indicator(True)))
+ui.textfield.bind("<Key>", (lambda event: set_typing_indicator(ui.textfield.get() != "")))
 ui.btn_settings.configure(command=open_settings)
 ui.create_loop(50, handle_input)
 ui.open()
