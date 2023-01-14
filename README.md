@@ -84,3 +84,8 @@ On first launch of the program, it registers as an Overlay app on SteamVR just l
 
 After setting the option to ON it will launch the program on SteamVR startup.
 If it doesnt show up, manually register the ´app.vrmanifest´ file by double clicking it and running it with SteamVR.
+
+# Backlog
+- Add a quick entry box for quick messaging.
+- Create a Settings UI for easy config editing.
+- Enable Integration with [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText).
