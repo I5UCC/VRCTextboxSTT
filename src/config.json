@@ -4,7 +4,7 @@
     "osc_server_port": 9001,
     "model": "base",
     "language": "english",
-    "hotkey": "F1",
+    "hotkey": "f1",
     "dynamic_energy_threshold": false,
     "energy_threshold": 200,
     "pause_threshold": 0.8,
