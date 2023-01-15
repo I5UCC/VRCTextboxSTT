@@ -28,6 +28,7 @@ log = logging.getLogger('TextboxSTT')
 sys.stdout = StreamToLogger(log, logging.INFO, LOGFILE)
 sys.stderr = StreamToLogger(log, logging.ERROR, LOGFILE)
 
+
 import threading
 import time
 import keyboard
@@ -42,6 +43,7 @@ import re
 from katosc import KatOsc
 from customthread import CustomThread
 from ui import MainWindow, SettingsWindow
+
 
 osc_client = None
 kat = None
@@ -61,6 +63,7 @@ held = False
 thread_process = threading.Thread()
 config_ui = None
 config_ui_open = False
+
 
 def init():
     global main_window
