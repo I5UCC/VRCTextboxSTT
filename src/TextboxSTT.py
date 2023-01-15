@@ -84,7 +84,7 @@ def init():
     if CONFIG["use_kat"]:
         _kat_sync = False if CONFIG["kat_sync"] else True
         print(_kat_sync)
-        kat =  KatOsc(osc_client, CONFIG["osc_ip"], CONFIG["osc_server_port"], _kat_sync, 4 if _kat_sync else int(CONFIG["kat_sync"]))
+        kat = KatOsc(osc_client, CONFIG["osc_ip"], CONFIG["osc_server_port"], _kat_sync, 4 if _kat_sync else int(CONFIG["kat_sync"]))
     else:
         kat = None
 
@@ -94,7 +94,7 @@ def init():
         language = None
     elif _whisper_model != "large" and language == "english" and ".en" not in _whisper_model:
         _whisper_model = _whisper_model + ".en"
-    
+
     # Temporarily output stderr to text label for download progress.
     if not os.path.isfile(get_absolute_path(f"whisper_cache/{_whisper_model}.pt")):
         sys.stderr.write = main_window.loading_status
@@ -291,7 +291,7 @@ def process_stt():
         else:
             main_window.set_status_label("CANCELED - WAITING FOR INPUT", "orange")
             play_sound("timeout")
-    
+
     set_typing_indicator(False)
     main_window.set_button_enabled(True)
 
@@ -382,6 +382,7 @@ def open_settings():
     global main_window
     global config_ui
     global config_ui_open
+
     main_window.set_status_label("WAITING FOR SETTINGS MENU TO CLOSE", "orange")
     config_ui_open = True
     config_ui = SettingsWindow(CONFIG, CONFIG_PATH)
