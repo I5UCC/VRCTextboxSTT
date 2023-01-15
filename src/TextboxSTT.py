@@ -3,6 +3,7 @@ import sys
 import json
 import logging
 from streamtologger import StreamToLogger
+from numba import cuda
 
 
 def get_absolute_path(relative_path):
@@ -103,7 +104,8 @@ def init():
 
     main_window.set_status_label(f"LOADING \"{_whisper_model}\" MODEL", "orange")
     # Load Whisper model
-    model = whisper.load_model(_whisper_model, download_root=get_absolute_path("whisper_cache/"), in_memory=True)
+    device = "cpu" if bool(CONFIG["use_cpu"]) or not torch.cuda.is_available() else "cuda"
+    model = whisper.load_model(_whisper_model, download_root=get_absolute_path("whisper_cache/"), in_memory=True, device=device)
     sys.stderr = StreamToLogger(log, logging.ERROR, LOGFILE)
     use_cpu = True if str(model.device) == "cpu" else False
 
@@ -368,6 +370,12 @@ def settings_closing():
     global kat
     global config_ui
     global config_ui_open
+    global model
+
+    if str(model.device) != "cpu":
+        del model
+        model = None
+        torch.cuda.empty_cache()
 
     config_ui_open = False
     kat.stop()

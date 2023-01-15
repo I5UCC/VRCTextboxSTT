@@ -3,6 +3,7 @@ import json
 import whisper
 import pyaudio
 import keyboard
+import torch
 
 
 class MainWindow(object):
@@ -115,8 +116,8 @@ class SettingsWindow:
 
 
         self.tkui = tk.Tk()
-        self.tkui.minsize(570, 740)
-        self.tkui.maxsize(570, 740)
+        self.tkui.minsize(570, 780)
+        self.tkui.maxsize(570, 780)
         self.tkui.resizable(False, False)
         self.tkui.configure(bg="#333333")
         self.tkui.title("TextboxSTT - Settings")
@@ -256,8 +257,8 @@ class SettingsWindow:
         self.opt_use_kat.grid(row=15, column=1, padx=PADX, pady=PADY, sticky='ws')
 
         
-        self.label_mic = tk.Label(master=self.tkui, bg="#333333", fg="white", text='KAT Sync Params', font=(self.FONT, 15))
-        self.label_mic.grid(row=16, column=0, padx=PADX, pady=PADY, sticky='es')
+        self.label_kat_sync = tk.Label(master=self.tkui, bg="#333333", fg="white", text='KAT Sync Params', font=(self.FONT, 15))
+        self.label_kat_sync.grid(row=16, column=0, padx=PADX, pady=PADY, sticky='es')
         self.option_index = 0 if self.config["microphone_index"] is None else int(self.config["microphone_index"]) + 1
         self.options_kat_sync = ["Auto Detect", 1, 2, 4, 8, 16]
         self.value_kat_sync = tk.StringVar(self.tkui)
@@ -265,6 +266,17 @@ class SettingsWindow:
         self.opt_kat_sync = tk.OptionMenu(self.tkui, self.value_kat_sync, *self.options_kat_sync)
         self.opt_kat_sync.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_kat_sync.grid(row=16, column=1, padx=PADX, pady=PADY, sticky='ws')
+
+        cuda_available = torch.cuda.is_available()
+        self.label_use_cpu = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Use CPU', font=(self.FONT, 15))
+        self.label_use_cpu.grid(row=17, column=0, padx=PADX, pady=PADY, sticky='es')
+        self.value_use_cpu = tk.StringVar(self.tkui)
+        self.value_use_cpu.set("yes" if bool(self.config["use_cpu"]) or not cuda_available else "no")
+        self.opt_use_cpu = tk.OptionMenu(self.tkui, self.value_use_cpu, *self.yn_options)
+        self.opt_use_cpu.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.opt_use_cpu.grid(row=17, column=1, padx=PADX, pady=PADY, sticky='ws')
+        if not cuda_available:
+            self.opt_use_cpu.configure(state="disable")
 
 
     def get_sound_devices(self):
@@ -315,6 +327,7 @@ class SettingsWindow:
         self.config["use_kat"] = True if self.value_use_kat.get() == "yes" else False
         sync_param = self.value_kat_sync.get()
         self.config["kat_sync"] = int(sync_param) if sync_param != "Auto Detect" else None
+        self.config["use_cpu"] = True if self.value_use_cpu.get() == "yes" else False
 
         json.dump(self.config, open(self.config_path, "w"), indent=4)
 

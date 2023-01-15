@@ -15,5 +15,6 @@
     "banned_words": [],
     "use_textbox": true,
     "use_kat": true,
-    "kat_sync": null
+    "kat_sync": null,
+    "use_cpu": false
 }
