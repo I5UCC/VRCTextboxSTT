@@ -27,10 +27,10 @@ class KatOsc:
 		self.osc_server_port = osc_server_port # OSC network port for recieving messages
 
 		self.osc_delay: float = 0.25 # Delay between network updates in seconds. Setting this too low will cause issues.
-		self.sync_params: int = 4 # Default sync parameters. This is automatically updated if the OSC server is enabled.
+		self.sync_params: int = sync_params # Default sync parameters. This is automatically updated if the OSC server is enabled.
 
 		self.line_length: int = 32 # Characters per line of text
-		self.line_count: int = sync_params # Maximum lines of text
+		self.line_count: int = 4 # Maximum lines of text
 
 		self.text_length: int = 128 # Maximum length of text
 		self.sync_params_max: int = 16 # Maximum sync parameters

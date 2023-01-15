@@ -2,7 +2,7 @@ import os
 import sys
 import json
 import logging
-from StreamToLogger import StreamToLogger
+from streamtologger import StreamToLogger
 
 
 def get_absolute_path(relative_path):
@@ -40,13 +40,12 @@ import whisper
 import torch
 import re
 from katosc import KatOsc
-from CustomThread import CustomThread
-from UI import UI
-from settings_UI import settings_ui
+from customthread import CustomThread
+from ui import MainWindow, SettingsWindow
 
 osc_client = None
 kat = None
-textbox = True
+use_textbox = True
 model = "base"
 language = "english"
 use_cpu = False
@@ -64,10 +63,10 @@ config_ui = None
 config_ui_open = False
 
 def init():
-    global ui
+    global main_window
     global osc_client
     global kat
-    global textbox
+    global use_textbox
     global model
     global language
     global use_cpu
@@ -78,7 +77,7 @@ def init():
     global button_action_handle
 
     osc_client = udp_client.SimpleUDPClient(CONFIG["osc_ip"], int(CONFIG["osc_port"]))
-    textbox = bool(CONFIG["use_textbox"])
+    use_textbox = bool(CONFIG["use_textbox"])
     if CONFIG["use_kat"]:
         _kat_sync = False if CONFIG["kat_sync"] else True
         print(_kat_sync)
@@ -95,11 +94,11 @@ def init():
     
     # Temporarily output stderr to text label for download progress.
     if not os.path.isfile(get_absolute_path(f"whisper_cache/{_whisper_model}.pt")):
-        sys.stderr.write = ui.loading_status
+        sys.stderr.write = main_window.loading_status
     else:
         print("Whisper model already in cache.")
 
-    ui.set_status_label(f"LOADING \"{_whisper_model}\" MODEL", "orange")
+    main_window.set_status_label(f"LOADING \"{_whisper_model}\" MODEL", "orange")
     # Load Whisper model
     model = whisper.load_model(_whisper_model, download_root=get_absolute_path("whisper_cache/"), in_memory=True)
     sys.stderr = StreamToLogger(log, logging.ERROR, LOGFILE)
@@ -112,7 +111,7 @@ def init():
     rec.pause_threshold = float(CONFIG["pause_threshold"])
 
     # Initialize OpenVR
-    ui.set_status_label("INITIALIZING OVR", "orange")
+    main_window.set_status_label("INITIALIZING OVR", "orange")
     ovr_initialized = False
     try:
         application = openvr.init(openvr.VRApplication_Utility)
@@ -123,13 +122,13 @@ def init():
         action_set_handle = openvr.VRInput().getActionSetHandle(ACTIONSETHANDLE)
         button_action_handle = openvr.VRInput().getActionHandle(STTLISTENHANDLE)
         ovr_initialized = True
-        ui.set_status_label("INITIALZIED OVR", "green")
+        main_window.set_status_label("INITIALZIED OVR", "green")
     except Exception:
         ovr_initialized = False
-        ui.set_status_label("COULDNT INITIALIZE OVR, CONTINUING DESKTOP ONLY", "red")
+        main_window.set_status_label("COULDNT INITIALIZE OVR, CONTINUING DESKTOP ONLY", "red")
 
-    ui.set_conf_label(CONFIG["osc_ip"], CONFIG["osc_port"], ovr_initialized, use_cpu)
-    ui.set_status_label("INITIALIZED - WAITING FOR INPUT", "green")
+    main_window.set_conf_label(CONFIG["osc_ip"], CONFIG["osc_port"], ovr_initialized, use_cpu)
+    main_window.set_status_label("INITIALIZED - WAITING FOR INPUT", "green")
 
 
 def play_sound(filename):
@@ -188,25 +187,25 @@ def transcribe(torch_audio):
 
 
 def clear_chatbox():
-    global textbox
+    global use_textbox
     global kat
 
-    ui.set_status_label("CLEARING OSC TEXTBOX", "#e0ffff")
-    if textbox:
+    main_window.set_status_label("CLEARING OSC TEXTBOX", "#e0ffff")
+    if use_textbox:
         osc_client.send_message(VRC_INPUT_PARAM, ["", True, False])
         osc_client.send_message(VRC_TYPING_PARAM, False)
     if kat:
         kat.clear()
         kat.hide()
-    ui.set_status_label("CLEARED - WAITING FOR INPUT", "#00008b")
-    ui.set_text_label("- No Text -")
+    main_window.set_status_label("CLEARED - WAITING FOR INPUT", "#00008b")
+    main_window.set_text_label("- No Text -")
 
 
 def set_typing_indicator(b: bool):
-    global textbox
+    global use_textbox
     global kat
 
-    if textbox:
+    if use_textbox:
         osc_client.send_message(VRC_TYPING_PARAM, b)
     if kat:
         osc_client.send_message(AV_LISTENING_PARAM, b)
@@ -215,20 +214,20 @@ def set_typing_indicator(b: bool):
 
 
 def populate_chatbox(text):
-    global ui
-    global textbox
+    global main_window
+    global use_textbox
     global kat
 
     text = text[:VRC_INPUT_CHARLIMIT]
-    ui.set_text_label(text)
+    main_window.set_text_label(text)
     print("Transcribed: " + text)
-    ui.set_status_label("POPULATING TEXTBOX", "#ff8800")
-    if textbox:
+    main_window.set_status_label("POPULATING TEXTBOX", "#ff8800")
+    if use_textbox:
         osc_client.send_message(VRC_INPUT_PARAM, [text, True, True])
     if kat:
         kat.set_text(text[:KAT_CHARLIMIT])
     set_typing_indicator(False)
-    ui.set_status_label("WAITING FOR INPUT", "#00008b")
+    main_window.set_status_label("WAITING FOR INPUT", "#00008b")
 
 
 def get_ovraction_bstate():
@@ -257,41 +256,41 @@ def get_trigger_state():
 
 
 def process_stt():
-    global ui
+    global main_window
     global pressed
 
-    ui.set_button_enabled(False)
+    main_window.set_button_enabled(False)
     set_typing_indicator(True)
-    ui.set_status_label("LISTENING", "#FF00FF")
+    main_window.set_status_label("LISTENING", "#FF00FF")
     play_sound("listen")
     _torch_audio = listen()
     if _torch_audio is None:
-        ui.set_status_label("TIMEOUT - WAITING FOR INPUT", "orange")
+        main_window.set_status_label("TIMEOUT - WAITING FOR INPUT", "orange")
         play_sound("timeout")
         set_typing_indicator(False)
     else:
         play_sound("donelisten")
         set_typing_indicator(True)
         print(_torch_audio)
-        ui.set_status_label("TRANSCRIBING", "orange")
+        main_window.set_status_label("TRANSCRIBING", "orange")
 
         if not pressed:
             _trans = transcribe(_torch_audio)
             if pressed:
-                ui.set_status_label("CANCELED - WAITING FOR INPUT", "orange")
+                main_window.set_status_label("CANCELED - WAITING FOR INPUT", "orange")
                 play_sound("timeout")
             elif _trans:
                 populate_chatbox(_trans)
                 play_sound("finished")
             else:
-                ui.set_status_label("ERROR TRANSCRIBING - WAITING FOR INPUT", "red")
+                main_window.set_status_label("ERROR TRANSCRIBING - WAITING FOR INPUT", "red")
                 play_sound("timeout")
         else:
-            ui.set_status_label("CANCELED - WAITING FOR INPUT", "orange")
+            main_window.set_status_label("CANCELED - WAITING FOR INPUT", "orange")
             play_sound("timeout")
     
     set_typing_indicator(False)
-    ui.set_button_enabled(True)
+    main_window.set_button_enabled(True)
 
 
 def handle_input():
@@ -327,22 +326,22 @@ def handle_input():
 
 
 def main_window_closing():
-    global ui
+    global main_window
     global kat
 
     print("Closing...")
     kat.stop()
-    ui.on_closing()
+    main_window.on_closing()
     config_ui.on_closing()
 
 
 def entrybox_enter_event(text):
-    global ui
+    global main_window
 
     if text:
         populate_chatbox(text)
         play_sound("finished")
-        ui.clear_textfield()
+        main_window.clear_textfield()
     else:
         clear_chatbox()
         play_sound("clear")
@@ -356,28 +355,28 @@ def settings_closing():
     config_ui_open = False
     kat.stop()
     config_ui.on_closing()
-    ui.set_button_enabled(True)
+    main_window.set_button_enabled(True)
     init()
 
 
 def open_settings():
-    global ui
+    global main_window
     global config_ui
     global config_ui_open
-    ui.set_status_label("WAITING FOR SETTINGS MENU TO CLOSE", "orange")
+    main_window.set_status_label("WAITING FOR SETTINGS MENU TO CLOSE", "orange")
     config_ui_open = True
-    config_ui = settings_ui(CONFIG, CONFIG_PATH)
+    config_ui = SettingsWindow(CONFIG, CONFIG_PATH)
     config_ui.tkui.protocol("WM_DELETE_WINDOW", settings_closing)
-    ui.set_button_enabled(False)
+    main_window.set_button_enabled(False)
     config_ui.open()
 
 
-ui = UI(VERSION, CONFIG["osc_ip"], CONFIG["osc_port"])
+main_window = MainWindow(VERSION, CONFIG["osc_ip"], CONFIG["osc_port"])
 init()
 
-ui.tkui.protocol("WM_DELETE_WINDOW", main_window_closing)
-ui.textfield.bind("<Return>", (lambda event: entrybox_enter_event(ui.textfield.get())))
-ui.textfield.bind("<Key>", (lambda event: set_typing_indicator(ui.textfield.get() != "")))
-ui.btn_settings.configure(command=open_settings)
-ui.create_loop(50, handle_input)
-ui.open()
+main_window.tkui.protocol("WM_DELETE_WINDOW", main_window_closing)
+main_window.textfield.bind("<Return>", (lambda event: entrybox_enter_event(main_window.textfield.get())))
+main_window.textfield.bind("<Key>", (lambda event: set_typing_indicator(main_window.textfield.get() != "")))
+main_window.btn_settings.configure(command=open_settings)
+main_window.create_loop(50, handle_input)
+main_window.open()
