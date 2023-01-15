@@ -3,7 +3,6 @@ import sys
 import json
 import logging
 from streamtologger import StreamToLogger
-from numba import cuda
 
 
 def get_absolute_path(relative_path):
@@ -370,12 +369,6 @@ def settings_closing():
     global kat
     global config_ui
     global config_ui_open
-    global model
-
-    if str(model.device) != "cpu":
-        del model
-        model = None
-        torch.cuda.empty_cache()
 
     config_ui_open = False
     kat.stop()
