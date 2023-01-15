@@ -195,6 +195,7 @@ def clear_chatbox():
     global kat
 
     main_window.set_status_label("CLEARING OSC TEXTBOX", "#e0ffff")
+    main_window.clear_textfield()
     if use_textbox:
         osc_client.send_message(VRC_INPUT_PARAM, ["", True, False])
         osc_client.send_message(VRC_TYPING_PARAM, False)
