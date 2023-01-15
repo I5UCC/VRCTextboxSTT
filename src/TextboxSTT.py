@@ -204,16 +204,14 @@ def clear_chatbox():
     main_window.set_text_label("- No Text -")
 
 
-def set_typing_indicator(b: bool):
+def set_typing_indicator(state: bool, textfield: bool = False):
     global use_textbox
     global kat
 
     if use_textbox:
-        osc_client.send_message(VRC_TYPING_PARAM, b)
-    if kat:
-        osc_client.send_message(AV_LISTENING_PARAM, b)
-        if b:
-            kat.clear()
+        osc_client.send_message(VRC_TYPING_PARAM, state)
+    if kat and not textfield:
+        osc_client.send_message(AV_LISTENING_PARAM, state)
 
 
 def populate_chatbox(text):
@@ -350,6 +348,22 @@ def entrybox_enter_event(text):
         play_sound("clear")
 
 
+def textfield_keyrelease(text):
+    global kat
+
+    _is_text_empty = text == ""
+
+    set_typing_indicator(not _is_text_empty, True)
+    if kat:
+        if _is_text_empty:
+            kat.clear()
+            kat.hide()
+            main_window.set_text_label("- No Text -")
+        else:
+            kat.set_text(text)
+            main_window.set_text_label(text)
+
+
 def settings_closing():
     global kat
     global config_ui
@@ -379,7 +393,7 @@ init()
 
 main_window.tkui.protocol("WM_DELETE_WINDOW", main_window_closing)
 main_window.textfield.bind("<Return>", (lambda event: entrybox_enter_event(main_window.textfield.get())))
-main_window.textfield.bind("<Key>", (lambda event: set_typing_indicator(main_window.textfield.get() != "")))
+main_window.textfield.bind("<KeyRelease>", (lambda event: textfield_keyrelease(main_window.textfield.get())))
 main_window.btn_settings.configure(command=open_settings)
 main_window.create_loop(50, handle_input)
 main_window.open()
