@@ -105,8 +105,8 @@ class SettingsWindow:
         self.whisper_models = [x for x in self.whisper_models if ".en" not in x]
 
         self.tkui = tk.Tk()
-        self.tkui.minsize(570, 740)
-        self.tkui.maxsize(570, 740)
+        self.tkui.minsize(570, 780)
+        self.tkui.maxsize(570, 780)
         self.tkui.resizable(False, False)
         self.tkui.configure(bg="#333333")
         self.tkui.title("TextboxSTT - Settings")
@@ -239,6 +239,14 @@ class SettingsWindow:
         self.opt_kat_sync.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_kat_sync.grid(row=16, column=1, padx=PADX, pady=PADY, sticky='ws')
 
+        self.label_use_both = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Use Both', font=(self.FONT, 15))
+        self.label_use_both.grid(row=17, column=0, padx=PADX, pady=PADY, sticky='es')
+        self.value_use_both = tk.StringVar(self.tkui)
+        self.value_use_both.set("yes" if bool(self.config["use_both"]) else "no")
+        self.opt_use_both = tk.OptionMenu(self.tkui, self.value_use_both, *self.yn_options)
+        self.opt_use_both.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.opt_use_both.grid(row=17, column=1, padx=PADX, pady=PADY, sticky='ws')
+
     def get_sound_devices(self):
         res = ["Default"]
         p = pyaudio.PyAudio()
@@ -282,6 +290,7 @@ class SettingsWindow:
         self.config["banned_words"] = self.get_banned_words()
         self.config["use_textbox"] = True if self.value_use_textbox.get() == "yes" else False
         self.config["use_kat"] = True if self.value_use_kat.get() == "yes" else False
+        self.config["use_both"] = True if self.value_use_both.get() == "yes" else False
         sync_param = self.value_kat_sync.get()
         self.config["kat_sync"] = int(sync_param) if sync_param != "Auto Detect" else None
 

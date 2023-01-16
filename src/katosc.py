@@ -21,20 +21,22 @@ import math, asyncio, threading
 
 
 class KatOsc:
-	def __init__(self, udpclient: udp_client.SimpleUDPClient, osc_server_ip: str, osc_server_port: int, osc_enable_server: bool, sync_params: int = 4):
+	def __init__(self, udpclient: udp_client.SimpleUDPClient, osc_server_ip: str, osc_server_port: int, osc_enable_server: bool, sync_params: int = None):
+		self.isactive = False if sync_params is None else True
+
 		self.osc_enable_server = osc_enable_server # Used to improve sync with in-game avatar and autodetect sync parameter count used for the avatar.
 		self.osc_server_ip = osc_server_ip # OSC server IP to listen too
 		self.osc_server_port = osc_server_port # OSC network port for recieving messages
 
 		self.osc_delay: float = 0.25 # Delay between network updates in seconds. Setting this too low will cause issues.
-		self.sync_params: int = sync_params # Default sync parameters. This is automatically updated if the OSC server is enabled.
+		self.sync_params: int = 4 if sync_params is None else sync_params # Default sync parameters. This is automatically updated if the OSC server is enabled.
 
 		self.line_length: int = 32 # Characters per line of text
 		self.line_count: int = 4 # Maximum lines of text
 
 		self.text_length: int = 128 # Maximum length of text
 		self.sync_params_max: int = 16 # Maximum sync parameters
-		self.sync_params_last: int = sync_params # Last detected sync parameters
+		self.sync_params_last: int = self.sync_params # Last detected sync parameters
 
 		self.pointer_count: int = int(self.text_length / self.sync_params)
 		self.pointer_clear: int = 255
@@ -462,11 +464,14 @@ class KatOsc:
 		if self.osc_server_test_step > 0:
 			length = len(self.osc_parameter_prefix + self.param_sync)
 			self.sync_params = max(self.sync_params, int(address[length:]) + 1)
+			self.isactive = True
 
 
 	# Handle OSC server to retest sync on avatar change
 	def osc_server_handler_avatar(self, address: tuple[str, int], value: str, *args: list[dispatcher.Any]):
+		print("KAT Detected")
 		self.osc_server_test_step = 1
+		self.isactive = False
 
 
 	# Updates the characters within a pointer

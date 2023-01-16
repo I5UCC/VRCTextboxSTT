@@ -47,7 +47,9 @@ from ui import MainWindow, SettingsWindow
 
 osc_client = None
 kat = None
+use_kat = True
 use_textbox = True
+use_both = True
 model = "base"
 language = "english"
 use_cpu = False
@@ -63,6 +65,7 @@ held = False
 thread_process = threading.Thread()
 config_ui = None
 config_ui_open = False
+enter_pressed = False
 
 
 def init():
@@ -70,6 +73,8 @@ def init():
     global osc_client
     global kat
     global use_textbox
+    global use_kat
+    global use_both
     global model
     global language
     global use_cpu
@@ -81,10 +86,12 @@ def init():
 
     osc_client = udp_client.SimpleUDPClient(CONFIG["osc_ip"], int(CONFIG["osc_port"]))
     use_textbox = bool(CONFIG["use_textbox"])
-    if CONFIG["use_kat"]:
+    use_kat = bool(CONFIG["use_kat"])
+    use_both = bool(CONFIG["use_both"])
+    if use_kat:
         _kat_sync = False if CONFIG["kat_sync"] else True
         print(_kat_sync)
-        kat = KatOsc(osc_client, CONFIG["osc_ip"], CONFIG["osc_server_port"], _kat_sync, 4 if _kat_sync else int(CONFIG["kat_sync"]))
+        kat = KatOsc(osc_client, CONFIG["osc_ip"], CONFIG["osc_server_port"], _kat_sync, None if _kat_sync else int(CONFIG["kat_sync"]))
     else:
         kat = None
 
@@ -181,6 +188,7 @@ def transcribe(torch_audio):
 
     if result:
         result = result.text.strip()
+        print("Transcribed: " + result)
         # Filter by banned words
         for word in CONFIG["banned_words"]:
             tmp = re.compile(word, re.IGNORECASE)
@@ -192,14 +200,16 @@ def transcribe(torch_audio):
 
 def clear_chatbox():
     global use_textbox
+    global use_kat
+    global use_both
     global kat
 
     main_window.set_status_label("CLEARING OSC TEXTBOX", "#e0ffff")
     main_window.clear_textfield()
-    if use_textbox:
+    if use_textbox and use_both or use_textbox and use_kat and not kat.isactive or not use_kat:
         osc_client.send_message(VRC_INPUT_PARAM, ["", True, False])
         osc_client.send_message(VRC_TYPING_PARAM, False)
-    if kat:
+    if use_kat and kat.isactive:
         kat.clear()
         kat.hide()
     main_window.set_status_label("CLEARED - WAITING FOR INPUT", "#00008b")
@@ -208,26 +218,29 @@ def clear_chatbox():
 
 def set_typing_indicator(state: bool, textfield: bool = False):
     global use_textbox
+    global use_kat
+    global use_both
     global kat
 
-    if use_textbox:
+    if use_textbox and use_both or use_textbox and use_kat and not kat.isactive or not use_kat:
         osc_client.send_message(VRC_TYPING_PARAM, state)
-    if kat and not textfield:
+    if use_kat and kat.isactive and not textfield:
         osc_client.send_message(AV_LISTENING_PARAM, state)
 
 
 def populate_chatbox(text):
     global main_window
     global use_textbox
+    global use_kat
+    global use_both
     global kat
 
     text = text[:VRC_INPUT_CHARLIMIT]
     main_window.set_text_label(text)
-    print("Transcribed: " + text)
     main_window.set_status_label("POPULATING TEXTBOX", "#ff8800")
-    if use_textbox:
+    if use_textbox and use_both or use_textbox and use_kat and not kat.isactive or not use_kat:
         osc_client.send_message(VRC_INPUT_PARAM, [text, True, True])
-    if kat:
+    if use_kat and kat.isactive:
         kat.set_text(text[:KAT_CHARLIMIT])
     set_typing_indicator(False)
     main_window.set_status_label("WAITING FOR INPUT", "#00008b")
@@ -328,19 +341,11 @@ def handle_input():
         holding = False
 
 
-def main_window_closing():
-    global main_window
-    global kat
-
-    print("Closing...")
-    kat.stop()
-    main_window.on_closing()
-    config_ui.on_closing()
-
-
 def entrybox_enter_event(text):
     global main_window
+    global enter_pressed
 
+    enter_pressed = True
     if text:
         populate_chatbox(text)
         play_sound("finished")
@@ -352,18 +357,34 @@ def entrybox_enter_event(text):
 
 def textfield_keyrelease(text):
     global kat
+    global use_kat
+    global enter_pressed
 
-    _is_text_empty = text == ""
+    if not enter_pressed:
+        _is_text_empty = text == ""
+        set_typing_indicator(not _is_text_empty, True)
+        if use_kat and kat.isactive:
+            if _is_text_empty:
+                kat.clear()
+                kat.hide()
+                main_window.set_text_label("- No Text -")
+            else:
+                kat.set_text(text)
+                main_window.set_text_label(text)
+    
+    enter_pressed = False
 
-    set_typing_indicator(not _is_text_empty, True)
-    if kat:
-        if _is_text_empty:
-            kat.clear()
-            kat.hide()
-            main_window.set_text_label("- No Text -")
-        else:
-            kat.set_text(text)
-            main_window.set_text_label(text)
+
+def main_window_closing():
+    global main_window
+    global use_kat
+    global kat
+
+    print("Closing...")
+    if use_kat:
+        kat.stop()
+    main_window.on_closing()
+    config_ui.on_closing()
 
 
 def settings_closing():
@@ -372,7 +393,8 @@ def settings_closing():
     global config_ui_open
 
     config_ui_open = False
-    kat.stop()
+    if use_kat:
+        kat.stop()
     config_ui.on_closing()
     main_window.set_button_enabled(True)
     init()
