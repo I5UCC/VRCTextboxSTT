@@ -138,7 +138,7 @@ def init():
         ovr_initialized = False
         main_window.set_status_label("COULDNT INITIALIZE OVR, CONTINUING DESKTOP ONLY", "red")
 
-    main_window.set_conf_label(CONFIG["osc_ip"], CONFIG["osc_port"], ovr_initialized, use_cpu)
+    main_window.set_conf_label(CONFIG["osc_ip"], CONFIG["osc_port"], CONFIG["osc_server_port"], ovr_initialized, use_cpu, _whisper_model)
     main_window.set_status_label("INITIALIZED - WAITING FOR INPUT", "green")
 
 
@@ -361,6 +361,9 @@ def textfield_keyrelease(text):
     global enter_pressed
 
     if not enter_pressed:
+        if len(text) > VRC_INPUT_CHARLIMIT:
+            main_window.textfield.delete(VRC_INPUT_CHARLIMIT, len(text))
+            main_window.textfield.icursor(VRC_INPUT_CHARLIMIT)
         _is_text_empty = text == ""
         set_typing_indicator(not _is_text_empty, True)
         if use_kat and kat.isactive:
@@ -369,6 +372,7 @@ def textfield_keyrelease(text):
                 kat.hide()
                 main_window.set_text_label("- No Text -")
             else:
+                text = text[:VRC_INPUT_CHARLIMIT]
                 kat.set_text(text)
                 main_window.set_text_label(text)
     
@@ -387,7 +391,7 @@ def main_window_closing():
     config_ui.on_closing()
 
 
-def settings_closing():
+def settings_closing_save():
     global kat
     global config_ui
     global config_ui_open
@@ -395,9 +399,25 @@ def settings_closing():
     config_ui_open = False
     if use_kat:
         kat.stop()
+    config_ui.save()
     config_ui.on_closing()
     main_window.set_button_enabled(True)
-    init()
+    try:
+        init()
+    except Exception as e:
+        print(e)
+        main_window.set_status_label("ERROR INITIALIZING, PLEASE CHECK YOUR SETTINGS,\nLOOK INTO out.log for more info on the error", "red")
+
+
+def settings_closing():
+    global kat
+    global config_ui
+    global config_ui_open
+
+    config_ui_open = False
+    config_ui.on_closing()
+    main_window.set_button_enabled(True)
+    main_window.set_status_label("SETTINGS NOT SAVED - WAITING FOR INPUT", "#00008b")
 
 
 def open_settings():
@@ -408,13 +428,18 @@ def open_settings():
     main_window.set_status_label("WAITING FOR SETTINGS MENU TO CLOSE", "orange")
     config_ui_open = True
     config_ui = SettingsWindow(CONFIG, CONFIG_PATH)
+    config_ui.btn_save.configure(command=settings_closing_save)
     config_ui.tkui.protocol("WM_DELETE_WINDOW", settings_closing)
     main_window.set_button_enabled(False)
     config_ui.open()
 
 
-main_window = MainWindow(VERSION, CONFIG["osc_ip"], CONFIG["osc_port"])
-init()
+main_window = MainWindow(VERSION)
+try:
+    init()
+except Exception as e:
+    print(e)
+    main_window.set_status_label("ERROR INITIALIZING, PLEASE CHECK YOUR SETTINGS,\nLOOK INTO out.log for more info on the error", "red")
 
 main_window.tkui.protocol("WM_DELETE_WINDOW", main_window_closing)
 main_window.textfield.bind("<Return>", (lambda event: entrybox_enter_event(main_window.textfield.get())))
