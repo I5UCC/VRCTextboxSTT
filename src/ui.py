@@ -3,7 +3,6 @@ import json
 import whisper
 import pyaudio
 import keyboard
-from tktooltip import ToolTip
 
 class MainWindow(object):
     def __init__(self, version):
@@ -117,7 +116,6 @@ class SettingsWindow:
         self.entry_osc_ip.insert(0, self.config["osc_ip"])
         self.entry_osc_ip.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
         self.entry_osc_ip.grid(row=0, column=1, padx=PADX_R, pady=PADY, sticky='ws')
-        ToolTip(self.label_osc_ip, msg="IP to send the OSC information to.", parent_kwargs={"bg": "black"}, fg="#ffffff", bg="#1c1c1c", font=(self.FONT, 10))
 
         self.label_osc_port = tk.Label(master=self.tkui, bg="#333333", fg="white", text='OSC Port', font=(self.FONT, 12))
         self.label_osc_port.grid(row=1, column=0, padx=PADX_L, pady=PADY, sticky='es')
@@ -125,7 +123,6 @@ class SettingsWindow:
         self.entry_osc_port.insert(0, self.config["osc_port"])
         self.entry_osc_port.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
         self.entry_osc_port.grid(row=1, column=1, padx=PADX_R, pady=PADY, sticky='ws')
-        ToolTip(self.label_osc_port, msg="Port to send the OSC information to.", parent_kwargs={"bg": "black"}, fg="#ffffff", bg="#1c1c1c", font=(self.FONT, 10))
 
         self.label_osc_server_port = tk.Label(master=self.tkui, bg="#333333", fg="white", text='OSC Server Port', font=(self.FONT, 12))
         self.label_osc_server_port.grid(row=2, column=0, padx=PADX_L, pady=PADY, sticky='es')
@@ -133,7 +130,6 @@ class SettingsWindow:
         self.entry_osc_server_port.insert(0, self.config["osc_server_port"])
         self.entry_osc_server_port.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
         self.entry_osc_server_port.grid(row=2, column=1, padx=PADX_R, pady=PADY, sticky='ws')
-        ToolTip(self.label_osc_server_port, msg="Port to get the OSC information from.\nUsed to improve KAT sync with in-game avatar and autodetect sync parameter count used for the avatar.\nOnly used if KAT Sync Params is set to 'Auto Detect' and use KAT set to 'Yes'", parent_kwargs={"bg": "black"}, fg="#ffffff", bg="#1c1c1c", font=(self.FONT, 10))
 
         self.label_model = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Model', font=(self.FONT, 12))
         self.label_model.grid(row=3, column=0, padx=PADX_L, pady=PADY, sticky='es')
@@ -142,7 +138,6 @@ class SettingsWindow:
         self.opt_model = tk.OptionMenu(self.tkui, self.value_model, *self.whisper_models)
         self.opt_model.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_model.grid(row=3, column=1, padx=PADX_R, pady=PADY, sticky='ws')
-        ToolTip(self.label_model, msg="What model of whisper to use. I'd recommend not going over 'tiny,base,small' as it will significantly impact the transcription time.", parent_kwargs={"bg": "black"}, fg="#ffffff", bg="#1c1c1c", font=(self.FONT, 10))
 
         self.label_language = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Language', font=(self.FONT, 12))
         self.label_language.grid(row=4, column=0, padx=PADX_L, pady=PADY, sticky='es')
@@ -150,14 +145,12 @@ class SettingsWindow:
         self.entry_language.insert(0, self.config["language"])
         self.entry_language.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
         self.entry_language.grid(row=4, column=1, padx=PADX_R, pady=PADY, sticky='ws')
-        ToolTip(self.label_language, msg="Language to use, 'english' will be faster then other languages. Leaving it empty will let the program decide what language you are speaking.", parent_kwargs={"bg": "black"}, fg="#ffffff", bg="#1c1c1c", font=(self.FONT, 10))
 
         self.label_hotkey = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Hotkey', font=(self.FONT, 12))
         self.label_hotkey.grid(row=5, column=0, padx=PADX_L, pady=PADY, sticky='es')
         self.button_hotkey = tk.Button(self.tkui, text=self.config["hotkey"], command=self.button_hotkey_pressed)
         self.button_hotkey.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, width=23, anchor="center", activebackground="#555555", activeforeground="white")
         self.button_hotkey.grid(row=5, column=1, padx=PADX_R, pady=PADY, sticky='ws')
-        ToolTip(self.label_hotkey, msg="The key that is used to trigger listening. Klick on the button and press the button you want to use.", parent_kwargs={"bg": "black"}, fg="#ffffff", bg="#1c1c1c", font=(self.FONT, 10))
 
         self.label_det = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Dynamic Energy Threshold', font=(self.FONT, 12))
         self.label_det.grid(row=6, column=0, padx=PADX_L, pady=PADY, sticky='es')
@@ -166,7 +159,6 @@ class SettingsWindow:
         self.opt_det = tk.OptionMenu(self.tkui, self.value_det, *self.yn_options)
         self.opt_det.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_det.grid(row=6, column=1, padx=PADX_R, pady=PADY, sticky='ws')
-        ToolTip(self.label_det, msg="With dynamic_energy_threshold set to 'Yes', the program will continuously try to re-adjust the energy threshold to match the environment based on the ambient noise level at that time. I'd recommend setting the 'energy_threshold' value high when enabling this setting.", parent_kwargs={"bg": "black"}, fg="#ffffff", bg="#1c1c1c", font=(self.FONT, 10))
 
         self.label_energy_threshold = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Energy Threshold', font=(self.FONT, 12))
         self.label_energy_threshold.grid(row=7, column=0, padx=PADX_L, pady=PADY, sticky='es')
@@ -174,7 +166,6 @@ class SettingsWindow:
         self.entry_energy_threshold.insert(0, self.config["energy_threshold"])
         self.entry_energy_threshold.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
         self.entry_energy_threshold.grid(row=7, column=1, padx=PADX_R, pady=PADY, sticky='ws')
-        ToolTip(self.label_energy_threshold, msg="Under 'ideal' conditions (such as in a quiet room), values between 0 and 100 are considered silent or ambient, and values 300 to about 3500 are considered speech.", parent_kwargs={"bg": "black"}, fg="#ffffff", bg="#1c1c1c", font=(self.FONT, 10))
 
         self.label_pause_threshold = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Pause Threshold', font=(self.FONT, 12))
         self.label_pause_threshold.grid(row=8, column=0, padx=PADX_L, pady=PADY, sticky='es')
@@ -182,7 +173,6 @@ class SettingsWindow:
         self.entry_pause_threshold.insert(0, self.config["pause_threshold"])
         self.entry_pause_threshold.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
         self.entry_pause_threshold.grid(row=8, column=1, padx=PADX_R, pady=PADY, sticky='ws')
-        ToolTip(self.label_pause_threshold, msg="Amount of seconds to wait when current energy is under the 'energy_threshold'.", parent_kwargs={"bg": "black"}, fg="#ffffff", bg="#1c1c1c", font=(self.FONT, 10))
 
         self.label_timeout_time = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Timeout Time', font=(self.FONT, 12))
         self.label_timeout_time.grid(row=9, column=0, padx=PADX_L, pady=PADY, sticky='es')
@@ -190,7 +180,6 @@ class SettingsWindow:
         self.entry_timeout_time.insert(0, self.config["timeout_time"])
         self.entry_timeout_time.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
         self.entry_timeout_time.grid(row=9, column=1, padx=PADX_R, pady=PADY, sticky='ws')
-        ToolTip(self.label_timeout_time, msg="Amount of time to wait for the user to speak before timeout.", parent_kwargs={"bg": "black"}, fg="#ffffff", bg="#1c1c1c", font=(self.FONT, 10))
 
         self.label_hold_time = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Hold Time', font=(self.FONT, 12))
         self.label_hold_time.grid(row=10, column=0, padx=PADX_L, pady=PADY, sticky='es')
@@ -198,7 +187,6 @@ class SettingsWindow:
         self.entry_hold_time.insert(0, self.config["hold_time"])
         self.entry_hold_time.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
         self.entry_hold_time.grid(row=10, column=1, padx=PADX_R, pady=PADY, sticky='ws')
-        ToolTip(self.label_hold_time, msg="Amount of time to hold the button to clear the Textbox.", parent_kwargs={"bg": "black"}, fg="#ffffff", bg="#1c1c1c", font=(self.FONT, 10))
 
         self.label_max_transcribe_time = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Max. Transcribe Time', font=(self.FONT, 12))
         self.label_max_transcribe_time.grid(row=11, column=0, padx=PADX_L, pady=PADY, sticky='es')
@@ -206,7 +194,6 @@ class SettingsWindow:
         self.entry_max_transcribe_time.insert(0, self.config["max_transcribe_time"])
         self.entry_max_transcribe_time.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
         self.entry_max_transcribe_time.grid(row=11, column=1, padx=PADX_R, pady=PADY, sticky='ws')
-        ToolTip(self.label_max_transcribe_time, msg="Maximum amount of time for transcribing a message before transcribing gets cancelled. 0.0 is infinite", parent_kwargs={"bg": "black"}, fg="#ffffff", bg="#1c1c1c", font=(self.FONT, 10))
 
         self.label_mic = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Microphone', font=(self.FONT, 12))
         self.label_mic.grid(row=12, column=0, padx=PADX_L, pady=PADY, sticky='es')
@@ -217,7 +204,6 @@ class SettingsWindow:
         self.opt_mic = tk.OptionMenu(self.tkui, self.value_mic, *self.options_mic)
         self.opt_mic.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_mic.grid(row=12, column=1, padx=PADX_R, pady=PADY, sticky='ws')
-        ToolTip(self.label_mic, msg="What microphone to use. 'Default' will use your systems default microphone.", parent_kwargs={"bg": "black"}, fg="#ffffff", bg="#1c1c1c", font=(self.FONT, 10))
 
         self.label_banned_words = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Banned Words', font=(self.FONT, 12))
         self.label_banned_words.grid(row=13, column=0, padx=PADX_L, pady=PADY, sticky='es')
@@ -225,7 +211,6 @@ class SettingsWindow:
         self.entry_banned_words.insert(0, ','.join(self.config["banned_words"]))
         self.entry_banned_words.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
         self.entry_banned_words.grid(row=13, column=1, padx=PADX_R, pady=PADY, sticky='ws')
-        ToolTip(self.label_banned_words, msg="List of Banned words that are gonna get removed from the transcribed text. seperated by comma ','", parent_kwargs={"bg": "black"}, fg="#ffffff", bg="#1c1c1c", font=(self.FONT, 10))
 
         self.label_use_textbox = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Use Textbox', font=(self.FONT, 12))
         self.label_use_textbox.grid(row=14, column=0, padx=PADX_L, pady=PADY, sticky='es')
@@ -234,7 +219,6 @@ class SettingsWindow:
         self.opt_use_textbox = tk.OptionMenu(self.tkui, self.value_use_textbox, *self.yn_options)
         self.opt_use_textbox.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_use_textbox.grid(row=14, column=1, padx=PADX_R, pady=PADY, sticky='ws')
-        ToolTip(self.label_use_textbox, msg="If you want to send your text to VRChats Textbox", parent_kwargs={"bg": "black"}, fg="#ffffff", bg="#1c1c1c", font=(self.FONT, 10))
 
         self.label_use_kat = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Use KAT', font=(self.FONT, 12))
         self.label_use_kat.grid(row=15, column=0, padx=PADX_L, pady=PADY, sticky='es')
@@ -243,7 +227,6 @@ class SettingsWindow:
         self.opt_use_kat = tk.OptionMenu(self.tkui, self.value_use_kat, *self.yn_options)
         self.opt_use_kat.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_use_kat.grid(row=15, column=1, padx=PADX_R, pady=PADY, sticky='ws')
-        ToolTip(self.label_use_kat, msg="If you want to send your text to KillFrenzyAvatarText", parent_kwargs={"bg": "black"}, fg="#ffffff", bg="#1c1c1c", font=(self.FONT, 10))
 
         self.label_kat_sync = tk.Label(master=self.tkui, bg="#333333", fg="white", text='KAT Sync Params', font=(self.FONT, 12))
         self.label_kat_sync.grid(row=16, column=0, padx=PADX_L, pady=PADY, sticky='es')
@@ -254,7 +237,6 @@ class SettingsWindow:
         self.opt_kat_sync = tk.OptionMenu(self.tkui, self.value_kat_sync, *self.options_kat_sync)
         self.opt_kat_sync.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_kat_sync.grid(row=16, column=1, padx=PADX_R, pady=PADY, sticky='ws')
-        ToolTip(self.label_kat_sync, msg="Amount of KAT sync parameters are used. leave to 'Auto Detect' to enable automatic detection of KAT", parent_kwargs={"bg": "black"}, fg="#ffffff", bg="#1c1c1c", font=(self.FONT, 10))
 
         self.label_use_both = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Use Both', font=(self.FONT, 12))
         self.label_use_both.grid(row=17, column=0, padx=PADX_L, pady=PADY, sticky='es')
@@ -263,7 +245,6 @@ class SettingsWindow:
         self.opt_use_both = tk.OptionMenu(self.tkui, self.value_use_both, *self.yn_options)
         self.opt_use_both.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_use_both.grid(row=17, column=1, padx=PADX_R, pady=PADY, sticky='ws')
-        ToolTip(self.label_use_both, msg="If you want to send your text to both options above, if both available and set to 'Yes'.\nIf not, the program will prefer sending to KillFrenzyAvatarText if it is available.", parent_kwargs={"bg": "black"}, fg="#ffffff", bg="#1c1c1c", font=(self.FONT, 10))
 
         self.btn_save = tk.Button(self.tkui, text="Save")
         self.btn_save.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=53, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
