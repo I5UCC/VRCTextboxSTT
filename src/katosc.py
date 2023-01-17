@@ -326,7 +326,7 @@ class KatOsc:
 
 	# Stops the OSC Server
 	def osc_stop_server(self):
-		if self.osc_server != None:
+		if self.osc_server:
 			self.osc_server.shutdown()
 			self.osc_server = False
 			self.osc_enable_server = False
