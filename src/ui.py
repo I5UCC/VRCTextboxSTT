@@ -93,6 +93,108 @@ class MainWindow(object):
 
 class SettingsWindow:
     def __init__(self, config, config_path):
+        self.languages = [
+            'afrikaans',
+            'albanian',
+            'amharic',
+            'arabic',
+            'armenian',
+            'assamese',
+            'azerbaijani',
+            'bashkir',
+            'basque',
+            'belarusian',
+            'bengali',
+            'bosnian',
+            'breton',
+            'bulgarian',
+            'catalan',
+            'chinese',
+            'croatian',
+            'czech',
+            'danish',
+            'dutch',
+            'english',
+            'estonian',
+            'faroese',
+            'finnish',
+            'french',
+            'galician',
+            'georgian',
+            'german',
+            'greek',
+            'gujarati',
+            'haitian creole',
+            'hausa',
+            'hawaiian',
+            'hebrew',
+            'hindi',
+            'hungarian',
+            'icelandic',
+            'indonesian',
+            'italian',
+            'japanese',
+            'javanese',
+            'kannada',
+            'kazakh',
+            'khmer',
+            'korean',
+            'lao',
+            'latin',
+            'latvian',
+            'lingala',
+            'lithuanian',
+            'luxembourgish',
+            'macedonian',
+            'malagasy',
+            'malay',
+            'malayalam',
+            'maltese',
+            'maori',
+            'marathi',
+            'mongolian',
+            'myanmar',
+            'nepali',
+            'norwegian',
+            'nynorsk',
+            'occitan',
+            'pashto',
+            'persian',
+            'polish',
+            'portuguese',
+            'punjabi',
+            'romanian',
+            'russian',
+            'sanskrit',
+            'serbian',
+            'shona',
+            'sindhi',
+            'sinhala',
+            'slovak',
+            'slovenian',
+            'somali',
+            'spanish',
+            'sundanese',
+            'swahili',
+            'swedish',
+            'tagalog',
+            'tajik',
+            'tamil',
+            'tatar',
+            'telugu',
+            'thai',
+            'tibetan',
+            'turkish',
+            'turkmen',
+            'ukrainian',
+            'urdu',
+            'uzbek',
+            'vietnamese',
+            'welsh',
+            'yiddish',
+            'yoruba'
+        ]
+        
         self.config = config
         self.config_path = config_path
         self.FONT = "Cascadia Code"
@@ -150,10 +252,11 @@ class SettingsWindow:
 
         self.label_language = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Language', font=(self.FONT, 12))
         self.label_language.grid(row=4, column=0, padx=PADX_L, pady=PADY, sticky='es')
-        self.entry_language = tk.Entry(self.tkui)
-        self.entry_language.insert(0, self.config["language"])
-        self.entry_language.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
-        self.entry_language.grid(row=4, column=1, padx=PADX_R, pady=PADY, sticky='ws')
+        self.value_language = tk.StringVar(self.tkui)
+        self.value_language.set(self.config["language"])
+        self.opt_language = tk.OptionMenu(self.tkui, self.value_language, *self.languages)
+        self.opt_language.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.opt_language.grid(row=4, column=1, padx=PADX_R, pady=PADY, sticky='ws')
         self.label_language.bind("<Enter>", (lambda event: self.show_tooltip("Language to use, 'english' will be faster then other languages. \nLeaving it empty will let the program decide what language you are speaking.")))
         self.label_language.bind("<Leave>", self.hide_tooltip)
 
@@ -318,7 +421,7 @@ class SettingsWindow:
         self.config["osc_port"] = int(self.entry_osc_port.get())
         self.config["osc_server_port"] = int(self.entry_osc_server_port.get())
         self.config["model"] = self.value_model.get()
-        self.config["language"] = self.entry_language.get()
+        self.config["language"] = self.value_language.get()
         self.config["dynamic_energy_threshold"] = True if self.value_det.get() == "yes" else False
         self.config["energy_threshold"] = int(self.entry_energy_threshold.get())
         self.config["pause_threshold"] = float(self.entry_pause_threshold.get())
