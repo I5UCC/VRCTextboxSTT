@@ -57,7 +57,7 @@ Configuration of this program is located in the ***config.json*** file:
 | "microphone_index" | null, 0-10 | null | Index of the microphone to use. null is the System Default mircophone. |
 | "banned_words" | ["word1", "word2", ...] | [] | Array of banned words that are gonna get removed from the transcribed text. |
 
-# Available models and languages
+# Available models
 
 There are five model sizes, four with English-only versions, offering speed and accuracy tradeoffs. Below are the names of the available models and their approximate memory requirements and relative speed. 
 
