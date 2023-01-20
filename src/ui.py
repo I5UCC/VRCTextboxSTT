@@ -235,7 +235,7 @@ class SettingsWindow:
         self.label_osc_server_port.grid(row=2, column=0, padx=PADX_L, pady=PADY, sticky='es')
         self.entry_osc_server_port = tk.Entry(self.tkui)
         self.entry_osc_server_port.insert(0, self.config["osc_server_port"])
-        self.entry_osc_server_port.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
+        self.entry_osc_server_port.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23, disabledbackground="#444444")
         self.entry_osc_server_port.grid(row=2, column=1, padx=PADX_R, pady=PADY, sticky='ws')
         self.label_osc_server_port.bind("<Enter>", (lambda event: self.show_tooltip("Port to get the OSC information from.\nUsed to improve KAT sync with in-game avatar and autodetect sync parameter count used for the avatar.\nOnly used if KAT Sync Params is set to 'Auto Detect' and use KAT set to 'Yes'")))
         self.label_osc_server_port.bind("<Leave>", self.hide_tooltip)
@@ -338,7 +338,8 @@ class SettingsWindow:
         self.label_banned_words = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Banned Words', font=(self.FONT, 12))
         self.label_banned_words.grid(row=13, column=0, padx=PADX_L, pady=PADY, sticky='es')
         self.entry_banned_words = tk.Entry(self.tkui)
-        self.entry_banned_words.insert(0, ','.join(self.config["banned_words"]))
+        if self.config["banned_words"] is not None:
+            self.entry_banned_words.insert(0, ','.join(self.config["banned_words"]))
         self.entry_banned_words.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
         self.entry_banned_words.grid(row=13, column=1, padx=PADX_R, pady=PADY, sticky='ws')
         self.label_banned_words.bind("<Enter>", (lambda event: self.show_tooltip("List of Banned words that are gonna get removed from the transcribed text. seperated by comma ','")))
@@ -353,6 +354,7 @@ class SettingsWindow:
         self.opt_use_textbox.grid(row=14, column=1, padx=PADX_R, pady=PADY, sticky='ws')
         self.label_use_textbox.bind("<Enter>", (lambda event: self.show_tooltip("If you want to send your text to VRChats Textbox")))
         self.label_use_textbox.bind("<Leave>", self.hide_tooltip)
+        self.value_use_textbox.trace_add("write", (lambda *args: self.changed()))
 
         self.label_use_kat = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Use KAT', font=(self.FONT, 12))
         self.label_use_kat.grid(row=15, column=0, padx=PADX_L, pady=PADY, sticky='es')
@@ -363,6 +365,7 @@ class SettingsWindow:
         self.opt_use_kat.grid(row=15, column=1, padx=PADX_R, pady=PADY, sticky='ws')
         self.label_use_kat.bind("<Enter>", (lambda event: self.show_tooltip("If you want to send your text to KillFrenzyAvatarText")))
         self.label_use_kat.bind("<Leave>", self.hide_tooltip)
+        self.value_use_kat.trace_add("write", (lambda *args: self.changed()))
 
         self.label_kat_sync = tk.Label(master=self.tkui, bg="#333333", fg="white", text='KAT Sync Params', font=(self.FONT, 12))
         self.label_kat_sync.grid(row=16, column=0, padx=PADX_L, pady=PADY, sticky='es')
@@ -375,6 +378,7 @@ class SettingsWindow:
         self.opt_kat_sync.grid(row=16, column=1, padx=PADX_R, pady=PADY, sticky='ws')
         self.label_kat_sync.bind("<Enter>", (lambda event: self.show_tooltip("Amount of KAT sync parameters are used. leave to 'Auto Detect' to enable automatic detection of KAT")))
         self.label_kat_sync.bind("<Leave>", self.hide_tooltip)
+        self.value_kat_sync.trace_add("write", (lambda *args: self.changed()))
 
         self.label_use_both = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Use Both', font=(self.FONT, 12))
         self.label_use_both.grid(row=17, column=0, padx=PADX_L, pady=PADY, sticky='es')
@@ -412,7 +416,7 @@ class SettingsWindow:
     def get_banned_words(self):
         res = self.entry_banned_words.get()
         if res == '':
-            return []
+            return None
         else:
             return res.split(',')
 
@@ -477,3 +481,14 @@ class SettingsWindow:
         # Destroy the tooltip window
         self.tooltip_window.destroy()
         self.tooltip_window = None
+
+    def changed(self):
+        if self.value_use_kat.get() == "no" or self.value_kat_sync.get() != "Auto Detect":
+            self.entry_osc_server_port.configure(state="disabled")
+        else:
+            self.entry_osc_server_port.configure(state="normal")
+
+        if self.value_use_kat.get() == "no" or self.value_use_textbox.get() == "no":
+            self.opt_use_both.configure(state="disabled")
+        else:
+            self.opt_use_both.configure(state="normal")

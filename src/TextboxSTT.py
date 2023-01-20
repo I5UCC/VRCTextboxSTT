@@ -169,6 +169,23 @@ def listen():
         return torch.from_numpy(np.frombuffer(audio.get_raw_data(), np.int16).flatten().astype(np.float32) / 32768.0)
 
 
+def filter_banned_words(text):
+    if not text:
+        return None
+
+    text = text.strip()
+    print(CONFIG["banned_words"] is None)
+    if CONFIG["banned_words"] is None:
+        return text
+
+    for word in CONFIG["banned_words"]:
+        tmp = re.compile(word, re.IGNORECASE)
+        text = tmp.sub("", text)
+    text = re.sub(' +', ' ', text)
+    text = re.sub(' .', '', text)
+    return text
+
+
 def transcribe(torch_audio):
     global use_cpu
     global language
@@ -186,16 +203,7 @@ def transcribe(torch_audio):
         timeout = None
     result = t.join(timeout)
 
-    if result:
-        result = result.text.strip()
-        print("Transcribed: " + result)
-        # Filter by banned words
-        for word in CONFIG["banned_words"]:
-            tmp = re.compile(word, re.IGNORECASE)
-            result = tmp.sub("", result)
-        result = re.sub(' +', ' ', result)
-
-    return result
+    return filter_banned_words(result.text)
 
 
 def clear_chatbox():

@@ -12,7 +12,7 @@
     "hold_time": 1.5,
     "max_transcribe_time": 0.0,
     "microphone_index": null,
-    "banned_words": [],
+    "banned_words": null,
     "use_textbox": true,
     "use_kat": true,
     "use_both": false,
