@@ -1,5 +1,5 @@
 # VRCTextboxSTT [![Github All Releases](https://img.shields.io/github/downloads/i5ucc/VRCTextboxSTT/total.svg)](https://github.com/I5UCC/VRCTextboxSTT/releases/latest) <a href='https://ko-fi.com/i5ucc' target='_blank'><img height='35' style='border:0px;height:25px;' src='https://az743702.vo.msecnd.net/cdn/kofi3.png?v=0' border='0' alt='Buy Me a Coffee at ko-fi.com' />
-### A SpeechToText application that uses [OpenAI's whisper](https://github.com/openai/whisper) to transcribe audio and send that information to VRChats textbox system over OSC.
+### A SpeechToText application that uses [OpenAI's whisper](https://github.com/openai/whisper) to transcribe audio and send that information to VRChats textbox system and/or [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText) over OSC.
 
 ### First startup will take longer, as it will download the configured language model. After that it will start up faster. <br>
 
@@ -46,6 +46,7 @@ Configuration of this program is located in the ***config.json*** file:
 |:------:|:------:|:-------:|:-----------:|
 | "IP" | Any IP-Adress | "127.0.0.1" | IP to send the OSC information to. |
 | "Port" | Any Port | 9000 | Port to send the OSC information to. |
+| "osc_server_port" | Any Port | 9001 | Port to get the OSC information from.Used to improve KAT sync with in-game avatar and autodetect sync parameter count used for the avatar. Only used if KAT Sync Params is set to null and use KAT set to true" |
 | "model" | "tiny", "base", "small", "medium", "large" | base | What model of whisper to use. I'd recommend not going over "base" as it will significantly impact the performance |
 | "language" | "english", "german", "spanish", "" | english | Language to use, "english" will be faster then other languages. Leaving it empty "", will let the program decide what language you are speaking. |
 | "hotkey" | Any key supported by the [python keyboard library](https://github.com/boppreh/keyboard) | F1 | The key that is used to trigger listening. |
@@ -56,7 +57,12 @@ Configuration of this program is located in the ***config.json*** file:
 | "hold_time" | 0.0-10.0 | 1.5 | amount of time to hold the button to clear the Textbox |
 | "max_transcribe_time" | 0.0-20.0 | 0.0 | maximum amount of time for transcribing a message before transcribing gets cancelled. 0.0 is infinite |
 | "microphone_index" | null, 0-10 | null | Index of the microphone to use. null is the System Default mircophone. |
-| "banned_words" | ["word1", "word2", ...] | [] | Array of banned words that are gonna get removed from the transcribed text. |
+| "banned_words" | ["word1", "word2", ...] | null | Array of banned words that are gonna get removed from the transcribed text. |
+| "use_textbox" | true, false | true | If you want to send your text to VRChats Textbox. |
+| "use_kat" | true, false | true | If you want to send your text to [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText). |
+| "use_both" | true, false | false | If you want to send your text to both options above, if both available and set to 'Yes'.If not, the program will prefer sending to [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText) if it is available. |
+| "kat_sync" | null, 1, 2, 4, 8, 16 | null | Amount of KAT sync parameters are used. leave to null to enable automatic detection of KAT |
+| "use_cpu" | true, false | false | Use CPU to transcribe, Always on if you downloaded the CPU version of this program. |
 
 # Available models
 
@@ -79,7 +85,7 @@ You can set it to any action that supports a boolean input. By default it is the
 ![image](https://user-images.githubusercontent.com/43730681/210201138-d60d0936-22e5-4845-bbc1-4d1b0c412c43.png)
 
 # Automatic launch with SteamVR
-On first launch of the program, it registers as an Overlay app on SteamVR just like other well known programs like XSOverlay or OVRAdvancedSettings and can be launched on startup:
+On first launch of the program, it registers as an Overlay app on SteamVR just like other well known programs like XSOverlay or OVRAdvancedSettings and can be launched on startup: <br>
 ![Screenshot 2022-12-04 184629](https://user-images.githubusercontent.com/43730681/205506892-0927ed45-69c6-480f-b4b3-bc02d89c151e.png) <br>
 ![Screenshot 2023-01-02 084823](https://user-images.githubusercontent.com/43730681/210209107-746196dd-7e19-47c4-a668-221824d44a4e.png)
 
@@ -87,7 +93,7 @@ After setting the option to ON it will launch the program on SteamVR startup.
 If it doesnt show up, manually register the ´app.vrmanifest´ file by double clicking it and running it with SteamVR.
 
 # Backlog
-- Add a quick entry box for quick messaging.
-- Create a Settings UI for easy config editing.
-- Enable Integration with [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText). (Or my own version of it)
-- Implement Text To Speech 
+- ~~Add a quick entry box for quick messaging.~~
+- ~~Create a Settings UI for easy config editing.~~
+- ~~Enable Integration with [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText).~~
+- Implement Text To Speech
