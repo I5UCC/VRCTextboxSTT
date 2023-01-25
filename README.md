@@ -40,6 +40,7 @@ If you have problems with this program, try this to fix it:
 - Startup VRChat again and it should work.
 
 # Configuration
+Configuration of this program is located in the ***config.json*** file:
 
 | Option | Values | Default | Explanation |
 |:------:|:------:|:-------:|:-----------:|
