@@ -7,7 +7,7 @@ import keyboard
 class MainWindow(object):
     def __init__(self, version):
 
-        FONT = "Cascadia Code"
+        self.FONT = "Cascadia Code"
         print(version)
 
         self.tkui = tk.Tk()
@@ -18,31 +18,31 @@ class MainWindow(object):
         self.tkui.title("TextboxSTT")
 
         self.text_lbl = tk.Label(self.tkui, wraplength=800, text="- No Text -")
-        self.text_lbl.configure(bg="#333333", fg="white", font=(FONT, 27))
+        self.text_lbl.configure(bg="#333333", fg="white", font=(self.FONT, 27))
         self.text_lbl.place(relx=0.5, rely=0.45, anchor="center")
 
         self.conf_lbl = tk.Label(self.tkui, text=f"Loading...")
-        self.conf_lbl.configure(bg="#333333", fg="#666666", font=(FONT, 10))
+        self.conf_lbl.configure(bg="#333333", fg="#666666", font=(self.FONT, 10))
         self.conf_lbl.place(relx=0.01, rely=0.935, anchor="w")
 
         self.ver_lbl = tk.Label(self.tkui, text=f" VRCTextboxSTT {version} by I5UCC")
-        self.ver_lbl.configure(bg="#333333", fg="#666666", font=(FONT, 10))
+        self.ver_lbl.configure(bg="#333333", fg="#666666", font=(self.FONT, 10))
         self.ver_lbl.place(relx=0.99, rely=0.05, anchor="e")
 
         self.status_lbl = tk.Label(self.tkui, text="INITIALIZING")
-        self.status_lbl.configure(bg="#333333", fg="white", font=(FONT, 12))
+        self.status_lbl.configure(bg="#333333", fg="white", font=(self.FONT, 12))
         self.status_lbl.place(relx=0.047, rely=0.065, anchor="w")
 
         self.color_lbl = tk.Label(self.tkui, text="")
-        self.color_lbl.configure(bg="red", width=2, fg="white", font=(FONT, 12))
+        self.color_lbl.configure(bg="red", width=2, fg="white", font=(self.FONT, 12))
         self.color_lbl.place(relx=0.01, rely=0.07, anchor="w")
 
         self.btn_settings = tk.Button(self.tkui, text="Settings")
-        self.btn_settings.configure(bg="#333333", fg="white", font=(FONT, 10), width=20, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.btn_settings.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=20, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.btn_settings.place(relx=0.99, rely=0.94, anchor="e")
 
         self.textfield = tk.Entry(self.tkui)
-        self.textfield.configure(bg="#333333", fg="white", font=(FONT, 10), width=25, highlightthickness=0, insertbackground="#666666")
+        self.textfield.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=25, highlightthickness=0, insertbackground="#666666")
         self.textfield.place(relx=0.5, rely=0.845, anchor="center", width=792, height=25)
         self.update()
 
