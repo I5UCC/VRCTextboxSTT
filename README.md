@@ -98,3 +98,7 @@ If it doesnt show up, manually register the ´app.vrmanifest´ file by double cl
 - ~~Enable Integration with [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText).~~
 - Demo Gif/Video
 - Implement Text To Speech
+
+# Credit
+- [OpenAI](https://github.com/openai) for their amazing work with anything really.
+- [killfrenzy96](https://github.com/killfrenzy96) for [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText) and [KatOSC](https://github.com/killfrenzy96/KatOscApp)
