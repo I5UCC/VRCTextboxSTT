@@ -8,10 +8,10 @@
 # Requirements
 With default settings, this program has following requirements:
 
-- CPU version (Slower, Lower Requirements, Lower Performance Compromises): <br>
+- CPU version (Slower, Lower Requirements, Smaller Performance Compromises): <br>
   - ~2GB of storage space <br>
   - ~1GB of RAM<br>
-- GPU version (Faster, Higher Requirements, Higher Performance Compromises): <br>
+- GPU version (Faster, Higher Requirements, Bigger Performance Compromises): <br>
   - CUDA enabled GPU (NVIDIA ONLY), otherwise it will fall back to using CPU <br>
   - ~5GB of storage space <br>
   - ~1GB of RAM<br>
