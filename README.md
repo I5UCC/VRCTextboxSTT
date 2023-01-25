@@ -59,7 +59,7 @@ If you have problems with this program, try this to fix it:
 | "banned_words" | ["word1", "word2", ...] | null | Array of banned words that are gonna get removed from the transcribed text. |
 | "use_textbox" | true, false | true | If you want to send your text to VRChats Textbox. |
 | "use_kat" | true, false | true | If you want to send your text to [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText). |
-| "use_both" | true, false | false | If you want to send your text to both options above, if both available and set to 'Yes'.If not, the program will prefer sending to [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText) if it is available. |
+| "use_both" | true, false | false | If you want to send your text to both options above, if both available and set to true.If not, the program will prefer sending to [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText) if it is available. |
 | "kat_sync" | null, 1, 2, 4, 8, 16 | null | Amount of KAT sync parameters are used. leave to null to enable automatic detection of KAT |
 | "use_cpu" | true, false | false | Use CPU to transcribe, Always on if you downloaded the CPU version of this program. |
 
