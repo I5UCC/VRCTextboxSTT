@@ -96,4 +96,5 @@ If it doesnt show up, manually register the ´app.vrmanifest´ file by double cl
 - ~~Add a quick entry box for quick messaging.~~
 - ~~Create a Settings UI for easy config editing.~~
 - ~~Enable Integration with [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText).~~
+- Demo Gif/Video
 - Implement Text To Speech
