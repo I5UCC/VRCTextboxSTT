@@ -12,7 +12,7 @@ With default settings, this program has following requirements:
   - ~2GB of storage space <br>
   - ~1GB of RAM<br>
 - GPU version (Faster, Higher Requirements, Higher Performance Compromises): <br>
-  - CUDA enabled GPU (NVIDIA ONLY) <br>
+  - CUDA enabled GPU (NVIDIA ONLY), otherwise it will fall back to using CPU <br>
   - ~5GB of storage space <br>
   - ~1GB of RAM<br>
   - ~1GB of VRAM<br>
