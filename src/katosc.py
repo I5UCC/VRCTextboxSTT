@@ -21,16 +21,15 @@ import math, asyncio, threading
 
 
 class KatOsc:
-	def __init__(self, udpclient: udp_client.SimpleUDPClient, osc_server_ip: str, osc_server_port: int, osc_auto_update: bool, sync_params: int = None):
-		self.isactive = False if sync_params is None else True
+	def __init__(self, udpclient: udp_client.SimpleUDPClient, osc_server_ip: str, osc_server_port: int):
+		self.isactive = False
 
 		self.osc_enable_server = True # Used to improve sync with in-game avatar and autodetect sync parameter count used for the avatar.
 		self.osc_server_ip = osc_server_ip # OSC server IP to listen too
 		self.osc_server_port = osc_server_port # OSC network port for recieving messages
-		self.osc_auto_update = osc_auto_update
 
 		self.osc_delay: float = 0.25 # Delay between network updates in seconds. Setting this too low will cause issues.
-		self.sync_params: int = 4 if sync_params is None else sync_params # Default sync parameters. This is automatically updated if the OSC server is enabled.
+		self.sync_params: int = 16 # Default sync parameters. This is automatically updated if the OSC server is enabled.
 
 		self.line_length: int = 32 # Characters per line of text
 		self.line_count: int = 4 # Maximum lines of text
@@ -293,7 +292,7 @@ class KatOsc:
 		# Setup OSC Client
 		self.osc_client = udpclient
 		self.osc_timer = RepeatedTimer(self.osc_delay, self.osc_timer_loop)
-		self.update_timer = RepeatedTimer(self.osc_delay, self.auto_update)
+		self.update_timer = RepeatedTimer(5, self.auto_update)
 
 		self.osc_client.send_message(self.osc_parameter_prefix + self.param_pointer, 255) # Clear KAT text
 		for value in range(self.sync_params):
@@ -361,7 +360,7 @@ class KatOsc:
 
 		# Test parameter count if an update is requried
 		if type(self.osc_server) == osc_server.ThreadingOSCUDPServer:
-			if self.osc_server_test_step > 0 and self.osc_auto_update:
+			if self.osc_server_test_step > 0:
 				# Keep text cleared during test
 				self.osc_client.send_message(self.osc_parameter_prefix + self.param_pointer, self.pointer_clear)
 
@@ -457,7 +456,7 @@ class KatOsc:
 		self.osc_update_pointer(pointer_index, gui_text, osc_chars)
 
 	def auto_update(self):
-		if not self.isactive:
+		if not self.isactive and self.osc_server_test_step <= 0:
 			self.osc_server_test_step = 1
 
 	# Starts the OSC server serve
@@ -467,7 +466,7 @@ class KatOsc:
 
 	# Handle OSC server to detect the correct sync parameters to use
 	def osc_server_handler_char(self, address: tuple[str, int], value: str, *args: list[dispatcher.Any]):
-		if self.osc_server_test_step > 0 and self.osc_auto_update:
+		if self.osc_server_test_step > 0:
 			length = len(self.osc_parameter_prefix + self.param_sync)
 			self.sync_params = max(self.sync_params, int(address[length:]) + 1)
 			self.isactive = True
@@ -475,9 +474,8 @@ class KatOsc:
 
 	# Handle OSC server to retest sync on avatar change
 	def osc_server_handler_avatar(self, address: tuple[str, int], value: str, *args: list[dispatcher.Any]):
-		if self.osc_auto_update:
-			self.osc_server_test_step = 1
-			self.isactive = False
+		self.osc_server_test_step = 1
+		self.isactive = False
 
 
 	# Updates the characters within a pointer
