@@ -218,7 +218,6 @@ def filter_banned_words(text):
         tmp = re.compile(word, re.IGNORECASE)
         text = tmp.sub("", text)
     text = re.sub(' +', ' ', text)
-    text = re.sub(' .', '', text)
     return text
 
 
