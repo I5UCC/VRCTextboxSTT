@@ -237,7 +237,7 @@ class SettingsWindow:
         self.entry_osc_server_port.insert(0, self.config["osc_server_port"])
         self.entry_osc_server_port.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23, disabledbackground="#444444")
         self.entry_osc_server_port.grid(row=2, column=1, padx=PADX_R, pady=PADY, sticky='ws')
-        self.label_osc_server_port.bind("<Enter>", (lambda event: self.show_tooltip("Port to get the OSC information from.\nUsed to improve KAT sync with in-game avatar and autodetect sync parameter count used for the avatar.\nOnly used if KAT Sync Params is set to 'Auto Detect' and use KAT set to 'Yes'")))
+        self.label_osc_server_port.bind("<Enter>", (lambda event: self.show_tooltip("Port to get the OSC information from.\nUsed to improve KAT sync with in-game avatar and autodetect sync parameter count used for the avatar.")))
         self.label_osc_server_port.bind("<Leave>", self.hide_tooltip)
 
         self.label_model = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Model', font=(self.FONT, 12))
@@ -483,11 +483,6 @@ class SettingsWindow:
         self.tooltip_window = None
 
     def changed(self):
-        if self.value_use_kat.get() == "no" or self.value_kat_sync.get() != "Auto Detect":
-            self.entry_osc_server_port.configure(state="disabled")
-        else:
-            self.entry_osc_server_port.configure(state="normal")
-
         if self.value_use_kat.get() == "no" or self.value_use_textbox.get() == "no":
             self.opt_use_both.configure(state="disabled")
         else:

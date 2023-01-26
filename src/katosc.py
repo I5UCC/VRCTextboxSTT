@@ -292,10 +292,9 @@ class KatOsc:
 		# Setup OSC Client
 		self.osc_client = udpclient
 		self.osc_timer = RepeatedTimer(self.osc_delay, self.osc_timer_loop)
-
-		self.osc_client.send_message(self.osc_parameter_prefix + self.param_pointer, 255) # Clear KAT text
-		for value in range(self.sync_params):
-			self.osc_client.send_message(self.osc_parameter_prefix + self.param_sync + str(value), 0.0) # Reset KAT characters sync
+		
+		self.update_timer = RepeatedTimer(5, self.update_timer)
+		self.clear_kat_text()
 
 		# Setup OSC Server
 		self.osc_server: osc_server.ThreadingOSCUDPServer = None
@@ -307,6 +306,7 @@ class KatOsc:
 
 		# Start timer loop
 		self.osc_timer.start()
+		self.update_timer.start()
 
 	# Starts the OSC Server
 	def osc_start_server(self):
@@ -320,7 +320,7 @@ class KatOsc:
 
 				self.osc_server = osc_server.ThreadingOSCUDPServer((self.osc_server_ip, self.osc_server_port), self.osc_dispatcher, asyncio.get_event_loop())
 				threading.Thread(target = self.osc_server_serve, daemon = True).start()
-			except:
+			except Exception:
 				self.osc_enable_server = False
 				self.osc_server_test_step = 0
 
@@ -454,6 +454,12 @@ class KatOsc:
 		self.osc_update_pointer(pointer_index, gui_text, osc_chars)
 
 
+	def update_timer(self):
+		if len(self.target_text) == 0:
+			print("update")
+			self.clear_kat_text()
+
+
 	# Starts the OSC server serve
 	def osc_server_serve(self):
 		self.osc_server.serve_forever(2)
@@ -461,15 +467,15 @@ class KatOsc:
 
 	# Handle OSC server to detect the correct sync parameters to use
 	def osc_server_handler_char(self, address: tuple[str, int], value: str, *args: list[dispatcher.Any]):
+		self.isactive = True
 		if self.osc_server_test_step > 0:
 			length = len(self.osc_parameter_prefix + self.param_sync)
 			self.sync_params = max(self.sync_params, int(address[length:]) + 1)
-			self.isactive = True
 
 
 	# Handle OSC server to retest sync on avatar change
 	def osc_server_handler_avatar(self, address: tuple[str, int], value: str, *args: list[dispatcher.Any]):
-		print("KAT Detected")
+		self.clear_kat_text()
 		self.osc_server_test_step = 1
 		self.isactive = False
 
@@ -544,7 +550,13 @@ class KatOsc:
 	def clear(self):
 		self.osc_text = ""
 		self.target_text = ""
+		self.clear_kat_text()
+
+
+	def clear_kat_text(self):
 		self.osc_client.send_message(self.osc_parameter_prefix + self.param_pointer, 255) # Clear KAT text
+		for value in range(self.sync_params):
+			self.osc_client.send_message(self.osc_parameter_prefix + self.param_sync + str(value), 0.0)
 
 
 class RepeatedTimer(object):

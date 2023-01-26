@@ -126,8 +126,7 @@ def init():
     use_both = bool(CONFIG["use_both"])
     if use_kat:
         _kat_sync = False if CONFIG["kat_sync"] else True
-        print(_kat_sync)
-        kat = KatOsc(osc_client, CONFIG["osc_ip"], CONFIG["osc_server_port"], _kat_sync, None if _kat_sync else int(CONFIG["kat_sync"]))
+        kat = KatOsc(osc_client, CONFIG["osc_ip"], CONFIG["osc_server_port"], True, None if _kat_sync else int(CONFIG["kat_sync"]))
     else:
         kat = None
 
@@ -218,7 +217,6 @@ def filter_banned_words(text):
         tmp = re.compile(word, re.IGNORECASE)
         text = tmp.sub("", text)
     text = re.sub(' +', ' ', text)
-    text = re.sub(' .', '', text)
     return text
 
 
