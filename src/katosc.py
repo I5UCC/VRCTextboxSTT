@@ -516,7 +516,6 @@ class KatOsc:
 	# Stop the timer and hide the text overlay
 	def stop(self):
 		self.osc_timer.stop()
-		self.update_timer.stop()
 		self.hide()
 		self.clear()
 		self.osc_stop_server()
@@ -525,7 +524,6 @@ class KatOsc:
 	# Restart the timer for syncing texts and show the overlay
 	def start(self):
 		self.osc_timer.start()
-		self.update_timer.stop()
 		self.hide()
 		self.clear()
 		self.osc_start_server()
