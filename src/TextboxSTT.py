@@ -424,6 +424,7 @@ def textfield_keyrelease(text):
 
 def main_window_closing():
     global main_window
+    global config_ui
     global use_kat
     global kat
 
@@ -431,7 +432,8 @@ def main_window_closing():
     if use_kat:
         kat.stop()
     main_window.on_closing()
-    config_ui.on_closing()
+    if config_ui:
+        config_ui.on_closing()
 
 
 def settings_closing(save=False):
