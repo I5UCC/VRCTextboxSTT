@@ -292,7 +292,6 @@ class KatOsc:
 		# Setup OSC Client
 		self.osc_client = udpclient
 		self.osc_timer = RepeatedTimer(self.osc_delay, self.osc_timer_loop)
-		self.update_timer = RepeatedTimer(5, self.auto_update)
 
 		self.osc_client.send_message(self.osc_parameter_prefix + self.param_pointer, 255) # Clear KAT text
 		for value in range(self.sync_params):
@@ -308,7 +307,6 @@ class KatOsc:
 
 		# Start timer loop
 		self.osc_timer.start()
-		self.update_timer.start()
 
 	# Starts the OSC Server
 	def osc_start_server(self):
@@ -456,10 +454,6 @@ class KatOsc:
 
 		pointer_index = self.pointer_index_resync
 		self.osc_update_pointer(pointer_index, gui_text, osc_chars)
-
-	def auto_update(self):
-		if not self.isactive and self.osc_server_test_step <= 0:
-			self.osc_server_test_step = 1
 
 	# Starts the OSC server serve
 	def osc_server_serve(self):
