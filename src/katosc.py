@@ -392,8 +392,10 @@ class KatOsc:
 					# Finish the parameter sync test
 					if self.sync_params == 0:
 						self.sync_params = self.sync_params_last # Test failed, reuse last detected param count
+						self.isactive = False
 					else:
 						self.sync_params_last = self.sync_params
+						self.isactive = True
 					self.osc_server_test_step = 0
 					self.pointer_count = int(self.text_length / self.sync_params)
 					self.osc_text = " ".ljust(self.text_length) # Resync letters
@@ -469,7 +471,6 @@ class KatOsc:
 		if self.osc_server_test_step > 0:
 			length = len(self.osc_parameter_prefix + self.param_sync)
 			self.sync_params = max(self.sync_params, int(address[length:]) + 1)
-			self.isactive = True
 
 
 	# Handle OSC server to retest sync on avatar change
