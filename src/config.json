@@ -16,6 +16,5 @@
     "use_textbox": true,
     "use_kat": true,
     "use_both": false,
-    "kat_sync": null,
     "use_cpu": false
 }

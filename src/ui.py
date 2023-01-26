@@ -207,8 +207,8 @@ class SettingsWindow:
         self.tooltip_window = None
 
         self.tkui = tk.Tk()
-        self.tkui.minsize(475, 695)
-        self.tkui.maxsize(475, 695)
+        self.tkui.minsize(475, 665)
+        self.tkui.maxsize(475, 665)
         self.tkui.resizable(False, False)
         self.tkui.configure(bg="#333333")
         self.tkui.title("TextboxSTT - Settings")
@@ -367,19 +367,6 @@ class SettingsWindow:
         self.label_use_kat.bind("<Leave>", self.hide_tooltip)
         self.value_use_kat.trace_add("write", (lambda *args: self.changed()))
 
-        self.label_kat_sync = tk.Label(master=self.tkui, bg="#333333", fg="white", text='KAT Sync Params', font=(self.FONT, 12))
-        self.label_kat_sync.grid(row=16, column=0, padx=PADX_L, pady=PADY, sticky='es')
-        self.option_index = 0 if self.config["microphone_index"] is None else int(self.config["microphone_index"]) + 1
-        self.options_kat_sync = ["Auto Detect", 1, 2, 4, 8, 16]
-        self.value_kat_sync = tk.StringVar(self.tkui)
-        self.value_kat_sync.set("Auto Detect" if self.config["kat_sync"] is None else self.config["kat_sync"])
-        self.opt_kat_sync = tk.OptionMenu(self.tkui, self.value_kat_sync, *self.options_kat_sync)
-        self.opt_kat_sync.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
-        self.opt_kat_sync.grid(row=16, column=1, padx=PADX_R, pady=PADY, sticky='ws')
-        self.label_kat_sync.bind("<Enter>", (lambda event: self.show_tooltip("Amount of KAT sync parameters are used. leave to 'Auto Detect' to enable automatic detection of KAT")))
-        self.label_kat_sync.bind("<Leave>", self.hide_tooltip)
-        self.value_kat_sync.trace_add("write", (lambda *args: self.changed()))
-
         self.label_use_both = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Use Both', font=(self.FONT, 12))
         self.label_use_both.grid(row=17, column=0, padx=PADX_L, pady=PADY, sticky='es')
         self.value_use_both = tk.StringVar(self.tkui)
@@ -483,11 +470,6 @@ class SettingsWindow:
         self.tooltip_window = None
 
     def changed(self):
-        if self.value_use_kat.get() == "no" or self.value_kat_sync.get() != "Auto Detect":
-            self.entry_osc_server_port.configure(state="disabled")
-        else:
-            self.entry_osc_server_port.configure(state="normal")
-
         if self.value_use_kat.get() == "no" or self.value_use_textbox.get() == "no":
             self.opt_use_both.configure(state="disabled")
         else:
