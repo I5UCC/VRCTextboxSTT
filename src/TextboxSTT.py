@@ -12,7 +12,7 @@ def get_absolute_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 
-VERSION = "v0.6"
+VERSION = "v0.5"
 VRC_INPUT_CHARLIMIT = 144
 KAT_CHARLIMIT = 128
 VRC_INPUT_PARAM = "/chatbox/input"
