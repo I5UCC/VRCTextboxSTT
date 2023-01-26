@@ -21,13 +21,12 @@ import math, asyncio, threading
 
 
 class KatOsc:
-	def __init__(self, udpclient: udp_client.SimpleUDPClient, osc_server_ip: str, osc_server_port: int, auto_update_sync: bool, sync_params: int = None):
+	def __init__(self, udpclient: udp_client.SimpleUDPClient, osc_server_ip: str, osc_server_port: int, osc_enable_server: bool, sync_params: int = None):
 		self.isactive = False if sync_params is None else True
 
-		self.osc_enable_server = True # Used to improve sync with in-game avatar and autodetect sync parameter count used for the avatar.
+		self.osc_enable_server = osc_enable_server # Used to improve sync with in-game avatar and autodetect sync parameter count used for the avatar.
 		self.osc_server_ip = osc_server_ip # OSC server IP to listen too
 		self.osc_server_port = osc_server_port # OSC network port for recieving messages
-		self.auto_update_sync = auto_update_sync
 
 		self.osc_delay: float = 0.25 # Delay between network updates in seconds. Setting this too low will cause issues.
 		self.sync_params: int = 4 if sync_params is None else sync_params # Default sync parameters. This is automatically updated if the OSC server is enabled.
@@ -469,7 +468,7 @@ class KatOsc:
 	# Handle OSC server to detect the correct sync parameters to use
 	def osc_server_handler_char(self, address: tuple[str, int], value: str, *args: list[dispatcher.Any]):
 		self.isactive = True
-		if self.osc_server_test_step > 0 and self.auto_update_sync:
+		if self.osc_server_test_step > 0:
 			length = len(self.osc_parameter_prefix + self.param_sync)
 			self.sync_params = max(self.sync_params, int(address[length:]) + 1)
 
