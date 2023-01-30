@@ -1,9 +1,11 @@
 # VRCTextboxSTT [![Github All Releases](https://img.shields.io/github/downloads/i5ucc/VRCTextboxSTT/total.svg)](https://github.com/I5UCC/VRCTextboxSTT/releases/latest) <a href='https://ko-fi.com/i5ucc' target='_blank'><img height='35' style='border:0px;height:25px;' src='https://az743702.vo.msecnd.net/cdn/kofi3.png?v=0' border='0' alt='Buy Me a Coffee at ko-fi.com' />
 ### A SpeechToText application that uses [OpenAI's whisper](https://github.com/openai/whisper) to transcribe audio and send that information to VRChats textbox system and/or [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText) over OSC.
 
-### First startup will take longer, as it will download the configured language model. After that it will start up faster. <br>
-
 # [Download Here](https://github.com/I5UCC/VRCTextboxSTT/releases/latest)
+
+# Demo
+
+[soon TM]
 
 # Requirements
 With default settings, this program has following requirements:
@@ -25,10 +27,6 @@ With default settings, this program has following requirements:
 - if you have a lot of background noise you should play around with the "energy_threshold" option in the ***config.json*** file to get it working well.
 - Press A on the left Controller on index or X on Oculus or F1 on your Keyboard.
 - Holding any of those for 1.5s clears the chatbox or cancels the action.
-
-# Demo
-
-[soon TM]
 
 ## OSC Troubleshoot
 
