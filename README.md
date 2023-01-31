@@ -1,6 +1,8 @@
 # VRCTextboxSTT [![Github All Releases](https://img.shields.io/github/downloads/i5ucc/VRCTextboxSTT/total.svg)](https://github.com/I5UCC/VRCTextboxSTT/releases/latest) <a href='https://ko-fi.com/i5ucc' target='_blank'><img height='35' style='border:0px;height:25px;' src='https://az743702.vo.msecnd.net/cdn/kofi3.png?v=0' border='0' alt='Buy Me a Coffee at ko-fi.com' />
 ### A SpeechToText application that uses [OpenAI's whisper](https://github.com/openai/whisper) to transcribe audio and send that information to VRChats textbox system and/or [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText) over OSC.
 
+### This program is supposed to be entirely free(as in money) and independent of Cloud Based Transcription services like Microsoft Azure etc., by using transcription Algorithms running on your own hardware, thus respecting privacy and improving latency and reliability, all to the cost of compromising a bit of performance for running on your hardware.
+
 # [Download Here](https://github.com/I5UCC/VRCTextboxSTT/releases/latest)
 
 # Demo
@@ -12,12 +14,22 @@ With default settings, this program has following requirements:
 
 - CPU version (Slower, Lower Requirements, Smaller Performance Compromises): <br>
   - ~2GB of storage space <br>
-  - ~1GB of RAM<br>
+  - ~1GB of available RAM<br>
 - GPU version (Faster, Higher Requirements, Bigger Performance Compromises): <br>
   - CUDA enabled GPU (NVIDIA ONLY), otherwise it will fall back to using CPU <br>
   - ~5GB of storage space <br>
-  - ~1GB of RAM<br>
-  - ~1GB of VRAM<br>
+  - ~1GB of available RAM<br>
+  - ~1GB of available VRAM<br>
+- SteamVR (IF ran in VR, no Oculus support as of now.)
+
+# Features
+- Customizable button
+  - You can bind the button to start transcription to any action that SteamVR allows you to set.
+  - You can bind it to any key on your keyboard.
+- Audio feedback for each step in the transcription.
+- Multi Language support. whisper supports around [100 different languages](https://github.com/openai/whisper/blob/main/whisper/tokenizer.py#L10), with a few limitations.
+- Sending transcription to either VRChats Ingame Textbox allowing for use with any avatar, or to [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText) that needs to be integrated to an avatar. You can use [Frosty704's Billboard](https://github.com/Frosty704/Billboard) to add a speech bubble to your avatar.
+- Free to use as of the [GPL-3.0 license](https://github.com/I5UCC/VRCTextboxSTT/blob/main/LICENSE)
 
 # How to use
 - Activate OSC in VRChat: <br/><br/>
@@ -38,7 +50,7 @@ If you have problems with this program, try this to fix it:
 - Startup VRChat again and it should work.
 
 # Configuration
-Configuration of this program is located in the ***config.json*** file:
+You can either Edit this configuration manually by editing the ***config.json*** file, or you can change those settings in the Program itself by clicking "Settings" in the bottom right.
 
 | Option | Values | Default | Explanation |
 |:------:|:------:|:-------:|:-----------:|
