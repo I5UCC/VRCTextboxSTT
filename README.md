@@ -1,15 +1,49 @@
 # VRCTextboxSTT [![Github All Releases](https://img.shields.io/github/downloads/i5ucc/VRCTextboxSTT/total.svg)](https://github.com/I5UCC/VRCTextboxSTT/releases/latest) <a href='https://ko-fi.com/i5ucc' target='_blank'><img height='35' style='border:0px;height:25px;' src='https://az743702.vo.msecnd.net/cdn/kofi3.png?v=0' border='0' alt='Buy Me a Coffee at ko-fi.com' />
 ### A SpeechToText application that uses [OpenAI's whisper](https://github.com/openai/whisper) to transcribe audio and send that information to VRChats textbox system and/or [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText) over OSC.
 
-### This program is supposed to be entirely free(as in money) and independent of Cloud Based Transcription services like Microsoft Azure etc., by using transcription Algorithms running on your own hardware, thus respecting privacy and improving latency and reliability, all to the cost of compromising a bit of performance for running on your hardware.
+### This program is supposed to be entirely free (as in money) and independent of Cloud Based Transcription services like Microsoft Azure etc., by using transcription Algorithms running on your own hardware, thus respecting privacy and improving latency and reliability, all at the cost of compromising a bit of performance by running on your own hardware.
 
 # [Download Here](https://github.com/I5UCC/VRCTextboxSTT/releases/latest)
 
-# Demo
+# Contents
 
-[soon TM]
+- [Features](https://github.com/I5UCC/VRCTextboxSTT#features)
+- [Limitations](https://github.com/I5UCC/VRCTextboxSTT#limitations)
+- [Requirements](https://github.com/I5UCC/VRCTextboxSTT#requirements)
+- [How to use](https://github.com/I5UCC/VRCTextboxSTT#how-to-use)
+- [OSC Troubleshoot](https://github.com/I5UCC/VRCTextboxSTT#osc-troubleshoot)
+- [Configuration](https://github.com/I5UCC/VRCTextboxSTT#configuration)
+- [Modifying SteamVR binding](https://github.com/I5UCC/VRCTextboxSTT#modifying-steamvr-binding)
+- [Automatic launch with SteamVR](https://github.com/I5UCC/VRCTextboxSTT#automatic-launch-with-steamvr)
+- [Backlog](https://github.com/I5UCC/VRCTextboxSTT#backlog)
+- [Credit](https://github.com/I5UCC/VRCTextboxSTT#credit)
+
+# Features
+
+- Customizable button
+  - You can bind the button to start transcription to any action that SteamVR allows you to set.
+  - You can bind it to any key on your keyboard.
+- Optional automatic launch with SteamVR.
+- Optional Text to Text for quick typing.
+- Audio feedback for each step in the transcription.
+- Multi Language support. whisper supports around [100 different languages](https://github.com/openai/whisper/blob/main/whisper/tokenizer.py#L10). Here, with a few [limitations](https://github.com/I5UCC/VRCTextboxSTT#limitations).
+- Sending transcription to either 
+  - VRChats Ingame Textbox allowing for use with any avatar 
+  - [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText) that needs to be integrated to an avatar. 
+    - You can use [Frosty704's Billboard](https://github.com/Frosty704/Billboard) to add a speech bubble to your avatar.
+- Free to use as of the [GPL-3.0 license](https://github.com/I5UCC/VRCTextboxSTT/blob/main/LICENSE)
+
+# Limitations
+
+- Limited character availability
+  - VRChats Textbox currently only supports ASCII characters, no support for Japanese, Korean etc. characters.
+  - KillFrenzyAvatarText does support ASCII characters and a certain set of Japanese hiragana.
+- Visibility
+  - VRChats Textbox is only visible to friends by default, consider telling people they can change that in VRChats settings.
+  - KillFrenzyAvatarText is only visible to shown avatars and is PC only, as it uses a custom shader setup.
 
 # Requirements
+
 With default settings, this program has following requirements:
 
 - CPU version (Slower, Lower Requirements, Smaller Performance Compromises): <br>
@@ -22,16 +56,8 @@ With default settings, this program has following requirements:
   - ~1GB of available VRAM<br>
 - SteamVR (IF ran in VR, no Oculus support as of now.)
 
-# Features
-- Customizable button
-  - You can bind the button to start transcription to any action that SteamVR allows you to set.
-  - You can bind it to any key on your keyboard.
-- Audio feedback for each step in the transcription.
-- Multi Language support. whisper supports around [100 different languages](https://github.com/openai/whisper/blob/main/whisper/tokenizer.py#L10), with a few limitations.
-- Sending transcription to either VRChats Ingame Textbox allowing for use with any avatar, or to [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText) that needs to be integrated to an avatar. You can use [Frosty704's Billboard](https://github.com/Frosty704/Billboard) to add a speech bubble to your avatar.
-- Free to use as of the [GPL-3.0 license](https://github.com/I5UCC/VRCTextboxSTT/blob/main/LICENSE)
-
 # How to use
+
 - Activate OSC in VRChat: <br/><br/>
 ![EnableOSC](https://user-images.githubusercontent.com/43730681/172059335-db3fd6f9-86ae-4f6a-9542-2a74f47ff826.gif)
 - Run the program.
@@ -50,6 +76,7 @@ If you have problems with this program, try this to fix it:
 - Startup VRChat again and it should work.
 
 # Configuration
+
 You can either Edit this configuration manually by editing the ***config.json*** file, or you can change those settings in the Program itself by clicking "Settings" in the bottom right.
 
 | Option | Values | Default | Explanation |
@@ -73,10 +100,7 @@ You can either Edit this configuration manually by editing the ***config.json***
 | "use_both" | true, false | false | If you want to send your text to both options above, if both available and set to true. If not, the program will prefer sending to [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText) if it is available. |
 | "use_cpu" | true, false | false | Use CPU to transcribe, Always on if you downloaded the CPU version of this program. |
 
-# Available models
-
 There are five model sizes, four with English-only versions, offering speed and accuracy tradeoffs. Below are the names of the available models and their approximate memory requirements and relative speed. 
-
 
 |  Size  | Parameters | English-only model | Multilingual model | Required VRAM | Relative speed |
 |:------:|:----------:|:------------------:|:------------------:|:-------------:|:--------------:|
@@ -88,7 +112,7 @@ There are five model sizes, four with English-only versions, offering speed and 
 
 For English-only applications, the `.en` models tend to perform better, especially for the `tiny.en` and `base.en` models. OpenAI observed that the difference becomes less significant for the `small.en` and `medium.en` models.
 
-# Modifying the bind for SteamVR
+# Modifying SteamVR binding
 You can set the boolean "sttlisten" in the Binding UI of SteamVR. Anyone who has set up OpenVR-Advanced-Settings might be familiar with that.
 You can set it to any action that supports a boolean input. By default it is the left A button (X button on Oculus/Meta respectively).
 ![image](https://user-images.githubusercontent.com/43730681/210201138-d60d0936-22e5-4845-bbc1-4d1b0c412c43.png)
