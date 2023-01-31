@@ -20,6 +20,11 @@
 
 # Features
 
+- Sending transcription to either 
+  - VRChats Ingame Textbox allowing for use with any avatar 
+  - [KillFrenzyAvatarText (KAT)](https://github.com/killfrenzy96/KillFrenzyAvatarText) that needs to be integrated to an avatar. 
+    - You can use [Frosty704's Billboard](https://github.com/Frosty704/Billboard) to add a speech bubble to your avatar.
+- Automatic Detection of KAT on an avatar. It will use KAT if available, otherwise fall back to VRChat Textbox.
 - Customizable button
   - You can bind the button to start transcription to any action that SteamVR allows you to set.
   - You can bind it to any key on your keyboard.
@@ -27,33 +32,32 @@
 - Optional Text to Text for quick typing.
 - Audio feedback for each step in the transcription.
 - Multi Language support. whisper supports around [100 different languages](https://github.com/openai/whisper/blob/main/whisper/tokenizer.py#L10). Here, with a few [limitations](https://github.com/I5UCC/VRCTextboxSTT#limitations).
-- Sending transcription to either 
-  - VRChats Ingame Textbox allowing for use with any avatar 
-  - [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText) that needs to be integrated to an avatar. 
-    - You can use [Frosty704's Billboard](https://github.com/Frosty704/Billboard) to add a speech bubble to your avatar.
 - Free to use as of the [GPL-3.0 license](https://github.com/I5UCC/VRCTextboxSTT/blob/main/LICENSE)
 
 # Limitations
 
 - Limited character availability
-  - VRChats Textbox currently only supports ASCII characters, no support for Japanese, Korean etc. characters.
-  - KillFrenzyAvatarText does support ASCII characters and a certain set of Japanese hiragana.
+  - VRChats Textbox currently only supports ASCII characters, no support for Japanese, Korean etc. characters. <br>
+    Limited to showing 144 characters at a time.
+  - KillFrenzyAvatarText does support ASCII characters and a certain set of Japanese hiragana. <br>
+    Limited to showing 128 characters at a time.
 - Visibility
   - VRChats Textbox is only visible to friends by default, consider telling people they can change that in VRChats settings.
+  - VRChats Textbox is not visibile in Streamer-Mode.
   - KillFrenzyAvatarText is only visible to shown avatars and is PC only, as it uses a custom shader setup.
 
 # Requirements
 
 With default settings, this program has following requirements:
 
-- CPU version (Slower, Lower Requirements, Smaller Performance Compromises): <br>
-  - ~2GB of storage space <br>
-  - ~1GB of available RAM<br>
-- GPU version (Faster, Higher Requirements, Bigger Performance Compromises): <br>
-  - CUDA enabled GPU (NVIDIA ONLY), otherwise it will fall back to using CPU <br>
-  - ~5GB of storage space <br>
-  - ~1GB of available RAM<br>
-  - ~1GB of available VRAM<br>
+- CPU version:
+  - ~2GB of storage space.
+  - ~1GB of available RAM.
+- GPU version: 
+  - CUDA enabled GPU (NVIDIA ONLY), otherwise it will fall back to using CPU.
+  - ~5GB of storage space.
+  - ~1GB of available RAM.
+  - ~1GB of available VRAM.
 - SteamVR (IF ran in VR, no Oculus support as of now.)
 
 # How to use
@@ -77,7 +81,9 @@ If you have problems with this program, try this to fix it:
 
 # Configuration
 
-You can either Edit this configuration manually by editing the ***config.json*** file, or you can change those settings in the Program itself by clicking "Settings" in the bottom right.
+You can either Edit this configuration manually by editing the ***config.json*** file, or you can change those settings in the Program itself by clicking "Settings" in the bottom right: <br>
+You can hover over any of the options to get a brief explanation on what that option does.
+![image](https://user-images.githubusercontent.com/43730681/214884754-4a4263d6-0ab3-4db3-b886-10c824145ea3.png)
 
 | Option | Values | Default | Explanation |
 |:------:|:------:|:-------:|:-----------:|
@@ -135,3 +141,4 @@ If it doesnt show up, manually register the ´app.vrmanifest´ file by double cl
 # Credit
 - [OpenAI](https://github.com/openai) for their amazing work with anything really.
 - [killfrenzy96](https://github.com/killfrenzy96) for [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText) and [KatOSC](https://github.com/killfrenzy96/KatOscApp)
+- [Frosty704's Billboard](https://github.com/Frosty704/Billboard) for making this project more useful.
