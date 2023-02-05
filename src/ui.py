@@ -286,6 +286,10 @@ class SettingsWindow:
         self.entry_energy_threshold.grid(row=7, column=1, padx=PADX_R, pady=PADY, sticky='ws')
         self.label_energy_threshold.bind("<Enter>", (lambda event: self.show_tooltip("Under 'ideal' conditions (such as in a quiet room), \nvalues between 0 and 100 are considered silent or ambient,\n and values 300 to about 3500 are considered speech.")))
         self.label_energy_threshold.bind("<Leave>", self.hide_tooltip)
+        self.button_refresh = tk.Button(self.tkui, text="⭯")
+        self.button_refresh.configure(bg="#333333", fg="white", highlightthickness=0, anchor="center", activebackground="#555555", activeforeground="white")
+        self.button_refresh.grid(row=7, column=2, padx=PADX_R, pady=PADY, sticky='ws')
+
 
         self.label_pause_threshold = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Pause Threshold', font=(self.FONT, 12))
         self.label_pause_threshold.grid(row=8, column=0, padx=PADX_L, pady=PADY, sticky='es')
@@ -472,3 +476,8 @@ class SettingsWindow:
             self.opt_use_both.configure(state="disabled")
         else:
             self.opt_use_both.configure(state="normal")
+
+    def set_energy_threshold(self, text):
+        self.entry_energy_threshold.delete(0, tk.END)
+        self.entry_energy_threshold.insert(0, str(text))
+        self.update()

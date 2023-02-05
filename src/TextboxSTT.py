@@ -464,10 +464,21 @@ def open_settings():
     main_window.set_status_label("WAITING FOR SETTINGS MENU TO CLOSE", "orange")
     config_ui_open = True
     config_ui = SettingsWindow(CONFIG, CONFIG_PATH)
+    config_ui.button_refresh.configure(command=determine_energy_threshold)
     config_ui.btn_save.configure(command=(lambda: settings_closing(True)))
     config_ui.tkui.protocol("WM_DELETE_WINDOW", settings_closing)
     main_window.set_button_enabled(False)
     config_ui.open()
+
+
+def determine_energy_threshold():
+    global config_ui
+
+    config_ui.set_energy_threshold("Be quiet for 5 seconds...")
+    with sr.Microphone(get_audiodevice_index(), sample_rate=16000) as source:
+        rec.adjust_for_ambient_noise(source, 5)
+        value = round(rec.energy_threshold)
+        config_ui.set_energy_threshold(str(value))
 
 
 main_window = MainWindow(VERSION)
