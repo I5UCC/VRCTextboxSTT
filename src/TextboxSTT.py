@@ -79,6 +79,7 @@ import re
 from katosc import KatOsc
 from customthread import CustomThread
 from ui import MainWindow, SettingsWindow
+from numba import cuda
 
 
 osc_client = None
@@ -144,6 +145,7 @@ def init():
 
     main_window.set_status_label(f"LOADING \"{_whisper_model}\" MODEL", "orange")
     # Load Whisper model
+    print(bool(CONFIG["use_cpu"]) or not torch.cuda.is_available())
     device = "cpu" if bool(CONFIG["use_cpu"]) or not torch.cuda.is_available() else "cuda"
     model = whisper.load_model(_whisper_model, download_root=get_absolute_path("whisper_cache/"), in_memory=True, device=device)
     sys.stderr = StreamToLogger(log, logging.ERROR, LOGFILE)
@@ -438,11 +440,24 @@ def settings_closing(save=False):
     global kat
     global config_ui
     global config_ui_open
+    global use_cpu
+    global model
+    global osc_client
+    global rec
 
     if save:
         if use_kat:
             kat.stop()
         config_ui.save()
+        if not use_cpu and torch.cuda.is_available():
+            print("Clearing CUDA cache...")
+            cuda.select_device(model.device.index)
+            cuda.close()
+        del osc_client
+        del kat
+        del model
+        del use_cpu
+        del rec
         try:
             init()
         except Exception as e:
