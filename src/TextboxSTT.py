@@ -78,9 +78,8 @@ import torch
 import re
 from katosc import KatOsc
 from customthread import CustomThread
-from ui import MainWindow, SettingsWindow
+from ui import MainWindow, SettingsWindow, EmoteWindow
 from numba import cuda
-
 
 osc_client = None
 kat = None
@@ -209,8 +208,9 @@ def filter_banned_words(text):
     if not text:
         return None
 
+    text = re.sub('\\.|,', '', text)
+
     text = text.strip()
-    print(CONFIG["banned_words"] is None)
     if CONFIG["banned_words"] is None:
         return text
 
@@ -238,7 +238,7 @@ def transcribe(torch_audio):
         timeout = None
     result = t.join(timeout)
 
-    return filter_banned_words(result.text)
+    return result.text
 
 
 def clear_chatbox():
@@ -271,6 +271,22 @@ def set_typing_indicator(state: bool, textfield: bool = False):
         osc_client.send_message(AV_LISTENING_PARAM, state)
 
 
+
+def replace_emotes(text):
+    if not text:
+        return None
+    
+    if CONFIG["emotes"] is None:
+        return text
+
+    for i in range(len(CONFIG["emotes"])):
+        word = CONFIG["emotes"][str(i)]
+        tmp = re.compile(word, re.IGNORECASE)
+        text = re.sub(f'{word}.', '', text)
+        text = tmp.sub(kat.emote_keys[i], text)
+
+    return text
+
 def populate_chatbox(text):
     global main_window
     global use_textbox
@@ -278,12 +294,14 @@ def populate_chatbox(text):
     global use_both
     global kat
 
+    text = filter_banned_words(text)
     text = text[:VRC_INPUT_CHARLIMIT]
     main_window.set_text_label(text)
     main_window.set_status_label("POPULATING TEXTBOX", "#ff8800")
     if use_textbox and use_both or use_textbox and use_kat and not kat.isactive or not use_kat:
         osc_client.send_message(VRC_INPUT_PARAM, [text, True, True])
     if use_kat and kat.isactive:
+        text = replace_emotes(text)
         kat.set_text(text[:KAT_CHARLIMIT])
     set_typing_indicator(False)
     main_window.set_status_label("WAITING FOR INPUT", "#00008b")
@@ -449,15 +467,18 @@ def settings_closing(save=False):
         if use_kat:
             kat.stop()
         config_ui.save()
-        if not use_cpu and torch.cuda.is_available():
-            print("Clearing CUDA cache...")
-            cuda.select_device(model.device.index)
-            cuda.close()
-        del osc_client
-        del kat
-        del model
-        del use_cpu
-        del rec
+        try:
+            if not use_cpu and torch.cuda.is_available():
+                print("Clearing CUDA cache...")
+                cuda.select_device(model.device.index)
+                cuda.close()
+            del osc_client
+            del kat
+            del model
+            del use_cpu
+            del rec
+        except Exception as e:
+            pass
         try:
             init()
         except Exception as e:

@@ -16,5 +16,22 @@
     "use_textbox": true,
     "use_kat": true,
     "use_both": false,
-    "use_cpu": false
+    "use_cpu": false,
+    "emotes": {
+        "0": "wicked emoji",
+        "1": "clueless emoji",
+        "2": "aware emoji",
+        "3": "shy emoji",
+        "4": "pog emoji",
+        "5": "happy emoji",
+        "6": "cry emoji",
+        "7": "weird emoji",
+        "8": "okay emoji",
+        "9": "think emoji",
+        "10": "dead emoji",
+        "11": "sleep emoji",
+        "12": "woke emoji",
+        "13": "wtf emoji",
+        "14": "stare emoji"
+    }
 }
