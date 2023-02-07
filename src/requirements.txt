@@ -13,4 +13,3 @@ keyboard
 openvr
 colorama
 python-osc
-numba
