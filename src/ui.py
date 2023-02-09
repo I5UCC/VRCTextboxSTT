@@ -208,8 +208,8 @@ class SettingsWindow:
         self.ew = None
 
         self.tkui = tk.Tk()
-        self.tkui.minsize(475, 690)
-        self.tkui.maxsize(475, 690)
+        self.tkui.minsize(480, 690)
+        self.tkui.maxsize(480, 690)
         self.tkui.resizable(False, False)
         self.tkui.configure(bg="#333333")
         self.tkui.title("TextboxSTT - Settings")

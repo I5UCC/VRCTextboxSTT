@@ -2,7 +2,7 @@ import os
 import sys
 import json
 import logging
-from streamtologger import StreamToLogger
+from logtofile import LogToFile
 from ctypes import windll, byref, create_unicode_buffer, create_string_buffer
 
 
@@ -26,8 +26,8 @@ CONFIG = json.load(open(CONFIG_PATH))
 
 open(LOGFILE, 'w').close()
 log = logging.getLogger('TextboxSTT')
-sys.stdout = StreamToLogger(log, logging.INFO, LOGFILE)
-sys.stderr = StreamToLogger(log, logging.ERROR, LOGFILE)
+sys.stdout = LogToFile(log, logging.INFO, LOGFILE)
+sys.stderr = LogToFile(log, logging.ERROR, LOGFILE)
 
 
 def loadfont(fontpath, private=True, enumerable=False):
@@ -76,9 +76,10 @@ import openvr
 import whisper
 import torch
 import re
-from katosc import KatOsc
-from customthread import CustomThread
+from osc import OscHandler
+from customthread import ReturnThread
 from ui import MainWindow, SettingsWindow
+from queue import Queue
 
 osc_client = None
 kat = None
@@ -89,6 +90,8 @@ model = "base"
 language = "english"
 use_cpu = False
 rec = None
+source = None
+data_queue = Queue()
 ovr_initialized = False
 application = None
 action_set_handle = None
@@ -114,6 +117,8 @@ def init():
     global language
     global use_cpu
     global rec
+    global source
+    global data_queue
     global ovr_initialized
     global application
     global action_set_handle
@@ -124,7 +129,7 @@ def init():
     use_kat = bool(CONFIG["use_kat"])
     use_both = bool(CONFIG["use_both"])
     if use_kat:
-        kat = KatOsc(osc_client, CONFIG["osc_ip"], CONFIG["osc_server_port"])
+        kat = OscHandler(osc_client, CONFIG["osc_ip"], CONFIG["osc_server_port"])
     else:
         kat = None
 
@@ -145,7 +150,7 @@ def init():
     # Load Whisper model
     device = "cpu" if bool(CONFIG["use_cpu"]) or not torch.cuda.is_available() else "cuda"
     model = whisper.load_model(_whisper_model, download_root=get_absolute_path("whisper_cache/"), in_memory=True, device=device)
-    sys.stderr = StreamToLogger(log, logging.ERROR, LOGFILE)
+    sys.stderr = LogToFile(log, logging.ERROR, LOGFILE)
     use_cpu = True if str(model.device) == "cpu" else False
 
     # load the speech recognizer and set the initial energy threshold and pause threshold
@@ -153,6 +158,9 @@ def init():
     rec.dynamic_energy_threshold = bool(CONFIG["dynamic_energy_threshold"])
     rec.energy_threshold = int(CONFIG["energy_threshold"])
     rec.pause_threshold = float(CONFIG["pause_threshold"])
+
+    source = sr.Microphone(sample_rate=16000, device_index=int(CONFIG["microphone_index"]) if CONFIG["microphone_index"] else None)
+    data_queue = Queue()
 
     # Initialize OpenVR
     main_window.set_status_label("INITIALIZING OVR", "orange")
@@ -181,42 +189,16 @@ def play_sound(filename):
     winsound.PlaySound(get_absolute_path(filename), winsound.SND_FILENAME | winsound.SND_ASYNC)
 
 
-def get_audiodevice_index():
-    option = CONFIG["microphone_index"]
-    if option:
-        return int(option)
-    else:
-        return None
-
-
-def listen():
+def listen_once():
     global rec
 
-    device_index = get_audiodevice_index()
-    with sr.Microphone(device_index, sample_rate=16000) as source:
+    with source:
         try:
             audio = rec.listen(source, timeout=float(CONFIG["timeout_time"]))
         except sr.WaitTimeoutError:
             return None
 
         return torch.from_numpy(np.frombuffer(audio.get_raw_data(), np.int16).flatten().astype(np.float32) / 32768.0)
-
-
-def filter_banned_words(text):
-    if not text:
-        return None
-
-    text = re.sub('\\.|,', '', text)
-
-    text = text.strip()
-    if CONFIG["banned_words"] is None:
-        return text
-
-    for word in CONFIG["banned_words"]:
-        tmp = re.compile(word, re.IGNORECASE)
-        text = tmp.sub("", text)
-    text = re.sub(' +', ' ', text)
-    return text
 
 
 def transcribe(torch_audio):
@@ -228,7 +210,7 @@ def transcribe(torch_audio):
     torch_audio = whisper.pad_or_trim(torch_audio)
     options = whisper.DecodingOptions(language=language, fp16=use_gpu, without_timestamps=True)
     mel = whisper.log_mel_spectrogram(torch_audio).to(model.device)
-    t = CustomThread(target=whisper.decode, args=[model, mel, options])
+    t = ReturnThread(target=whisper.decode, args=[model, mel, options])
     t.start()
 
     timeout = float(CONFIG["max_transcribe_time"])
@@ -239,22 +221,34 @@ def transcribe(torch_audio):
     return result.text
 
 
-def clear_chatbox():
-    global use_textbox
-    global use_kat
-    global use_both
-    global kat
+def replace_emotes(text):
+    if not text:
+        return None
 
-    main_window.set_status_label("CLEARING OSC TEXTBOX", "#e0ffff")
-    main_window.clear_textfield()
-    if use_textbox and use_both or use_textbox and use_kat and not kat.isactive or not use_kat:
-        osc_client.send_message(VRC_INPUT_PARAM, ["", True, False])
-        osc_client.send_message(VRC_TYPING_PARAM, False)
-    if use_kat and kat.isactive:
-        kat.clear()
-        kat.hide()
-    main_window.set_status_label("CLEARED - WAITING FOR INPUT", "#00008b")
-    main_window.set_text_label("- No Text -")
+    if CONFIG["emotes"] is None:
+        return text
+
+    for i in range(len(CONFIG["emotes"])):
+        word = CONFIG["emotes"][str(i)]
+        tmp = re.compile(word, re.IGNORECASE)
+        text = tmp.sub(kat.emote_keys[i], text)
+
+    return text
+
+
+def filter_banned_words(text):
+    if not text:
+        return None
+
+    text = text.strip()
+    if CONFIG["banned_words"] is None:
+        return text
+
+    for word in CONFIG["banned_words"]:
+        tmp = re.compile(word, re.IGNORECASE)
+        text = tmp.sub("", text)
+    text = re.sub(' +', ' ', text)
+    return text
 
 
 def set_typing_indicator(state: bool, textfield: bool = False):
@@ -269,22 +263,21 @@ def set_typing_indicator(state: bool, textfield: bool = False):
         osc_client.send_message(AV_LISTENING_PARAM, state)
 
 
+def clear_chatbox():
+    global use_textbox
+    global use_kat
+    global use_both
+    global kat
 
-def replace_emotes(text):
-    if not text:
-        return None
-    
-    if CONFIG["emotes"] is None:
-        return text
+    main_window.clear_textfield()
+    if use_textbox and use_both or use_textbox and use_kat and not kat.isactive or not use_kat:
+        kat.textbox_target_text = ""
+    if use_kat and kat.isactive:
+        kat.clear_kat()
+    main_window.set_text_label("- No Text -")
 
-    for i in range(len(CONFIG["emotes"])):
-        word = CONFIG["emotes"][str(i)]
-        tmp = re.compile(word, re.IGNORECASE)
-        text = tmp.sub(kat.emote_keys[i], text)
 
-    return text
-
-def populate_chatbox(text):
+def populate_chatbox(text, cutoff: bool = False):
     global main_window
     global use_textbox
     global use_kat
@@ -292,16 +285,135 @@ def populate_chatbox(text):
     global kat
 
     text = filter_banned_words(text)
-    text = text[:VRC_INPUT_CHARLIMIT]
-    main_window.set_text_label(text)
-    main_window.set_status_label("POPULATING TEXTBOX", "#ff8800")
+
+    if cutoff:
+        _chatbox_text = text[-VRC_INPUT_CHARLIMIT:]
+        _kat_text = text[-KAT_CHARLIMIT:]
+    else:
+        _chatbox_text = text[:VRC_INPUT_CHARLIMIT]
+        _kat_text = text[:KAT_CHARLIMIT]
+
+    main_window.set_text_label(_chatbox_text)
+
     if use_textbox and use_both or use_textbox and use_kat and not kat.isactive or not use_kat:
-        osc_client.send_message(VRC_INPUT_PARAM, [text, True, True])
+        kat.set_textbox_text(_chatbox_text)
+
     if use_kat and kat.isactive:
-        text = replace_emotes(text)
-        kat.set_text(text[:KAT_CHARLIMIT])
+        _kat_text = replace_emotes(_kat_text)
+        kat.set_kat_text(_kat_text[-KAT_CHARLIMIT:])
+
     set_typing_indicator(False)
-    main_window.set_status_label("WAITING FOR INPUT", "#00008b")
+
+
+def transcribe_loop():
+    global data_queue
+    global source
+    global rec
+    global main_window
+    global pressed
+
+    timeout = True
+    timeout_time = time.time()
+    phrase_time = None
+    last_sample = bytes()
+
+    def record_callback(_, audio:sr.AudioData) -> None:
+        data = audio.get_raw_data()
+        data_queue.put(data)
+
+    stop_listening = rec.listen_in_background(source, record_callback, phrase_time_limit=CONFIG["record_timeout"])
+
+    main_window.set_button_enabled(False)
+    set_typing_indicator(True)
+    main_window.set_status_label("LISTENING", "#FF00FF")
+    play_sound("listen")
+
+    res = True
+    while True:
+        now = time.time()
+
+        if pressed:
+            main_window.set_status_label("CANCELED - WAITING FOR INPUT", "orange")
+            play_sound("clear")
+            set_typing_indicator(False)
+            clear_chatbox()
+            res = False
+            break
+
+        if not data_queue.empty():
+            timeout = False
+
+            while not data_queue.empty():
+                data = data_queue.get()
+                last_sample += data
+
+            torch_audio = torch.from_numpy(np.frombuffer(last_sample, np.int16).flatten().astype(np.float32) / 32768.0)
+
+            text = transcribe(torch_audio)
+            print(text)
+                
+            phrase_time = time.time()
+
+            populate_chatbox(text, True)
+
+        if data_queue.empty() and now - timeout_time > CONFIG["timeout_time"] and timeout:
+            main_window.set_status_label("TIMEOUT - WAITING FOR INPUT", "orange")
+            play_sound("timeout")
+            set_typing_indicator(False)
+            res = False
+            break
+
+        if data_queue.empty() and phrase_time and now - phrase_time > CONFIG["pause_threshold"]:
+            main_window.set_status_label("FINISHED - WAITING FOR INPUT", "#00008b")
+            play_sound("finished")
+            set_typing_indicator(False)
+            res = True
+            break
+
+        time.sleep(0.1)
+
+    stop_listening(wait_for_stop=False)
+    main_window.set_button_enabled(True)
+    return res
+
+
+def transcribe_once():
+    global main_window
+    global pressed
+
+    main_window.set_button_enabled(False)
+    set_typing_indicator(True)
+    main_window.set_status_label("LISTENING", "#FF00FF")
+    play_sound("listen")
+    _torch_audio = listen_once()
+    if _torch_audio is None:
+        main_window.set_status_label("TIMEOUT - WAITING FOR INPUT", "orange")
+        play_sound("timeout")
+        set_typing_indicator(False)
+    else:
+        play_sound("donelisten")
+        set_typing_indicator(True)
+        print(_torch_audio)
+        main_window.set_status_label("TRANSCRIBING", "orange")
+
+        if not pressed:
+            _trans = transcribe(_torch_audio)
+            if pressed:
+                main_window.set_status_label("CANCELED - WAITING FOR INPUT", "orange")
+                play_sound("timeout")
+            elif _trans:
+                main_window.set_status_label("FINISHED - WAITING FOR INPUT", "blue")
+                populate_chatbox(_trans)
+                play_sound("finished")
+            else:
+                main_window.set_status_label("ERROR TRANSCRIBING - WAITING FOR INPUT", "red")
+                play_sound("timeout")
+        else:
+            main_window.set_status_label("CANCELED - WAITING FOR INPUT", "orange")
+            play_sound("timeout")
+
+    set_typing_indicator(False)
+    main_window.set_button_enabled(True)
 
 
 def get_ovraction_bstate():
@@ -329,44 +441,6 @@ def get_trigger_state():
         return keyboard.is_pressed(CONFIG["hotkey"])
 
 
-def process_stt():
-    global main_window
-    global pressed
-
-    main_window.set_button_enabled(False)
-    set_typing_indicator(True)
-    main_window.set_status_label("LISTENING", "#FF00FF")
-    play_sound("listen")
-    _torch_audio = listen()
-    if _torch_audio is None:
-        main_window.set_status_label("TIMEOUT - WAITING FOR INPUT", "orange")
-        play_sound("timeout")
-        set_typing_indicator(False)
-    else:
-        play_sound("donelisten")
-        set_typing_indicator(True)
-        print(_torch_audio)
-        main_window.set_status_label("TRANSCRIBING", "orange")
-
-        if not pressed:
-            _trans = transcribe(_torch_audio)
-            if pressed:
-                main_window.set_status_label("CANCELED - WAITING FOR INPUT", "orange")
-                play_sound("timeout")
-            elif _trans:
-                populate_chatbox(_trans)
-                play_sound("finished")
-            else:
-                main_window.set_status_label("ERROR TRANSCRIBING - WAITING FOR INPUT", "red")
-                play_sound("timeout")
-        else:
-            main_window.set_status_label("CANCELED - WAITING FOR INPUT", "orange")
-            play_sound("timeout")
-
-    set_typing_indicator(False)
-    main_window.set_button_enabled(True)
-
-
 def handle_input():
     global thread_process
     global held
@@ -384,15 +458,16 @@ def handle_input():
         curr_time = time.time()
     elif pressed and holding and not held:
         holding = True
-        if time.time() - curr_time > float(CONFIG["hold_time"]):
+        if time.time() - curr_time > CONFIG["hold_time"]:
             clear_chatbox()
+            main_window.set_status_label("CLEARED - WAITING FOR INPUT", "#00008b")
             play_sound("clear")
             held = True
             holding = False
     elif not pressed and holding and not held:
         held = True
         holding = False
-        thread_process = threading.Thread(target=process_stt)
+        thread_process = threading.Thread(target=transcribe_loop if CONFIG["continuous"] else transcribe_once)
         thread_process.start()
     elif not pressed and held:
         held = False
@@ -424,15 +499,10 @@ def textfield_keyrelease(text):
             main_window.textfield.icursor(VRC_INPUT_CHARLIMIT)
         _is_text_empty = text == ""
         set_typing_indicator(not _is_text_empty, True)
-        if use_kat and kat.isactive:
-            if _is_text_empty:
-                kat.clear()
-                kat.hide()
-                main_window.set_text_label("- No Text -")
-            else:
-                text = text[:VRC_INPUT_CHARLIMIT]
-                kat.set_text(text)
-                main_window.set_text_label(text)
+        if _is_text_empty:
+            clear_chatbox()
+        else:
+            populate_chatbox(text)
     
     enter_pressed = False
 
@@ -492,7 +562,7 @@ def determine_energy_threshold():
     global config_ui
 
     config_ui.set_energy_threshold("Be quiet for 5 seconds...")
-    with sr.Microphone(get_audiodevice_index(), sample_rate=16000) as source:
+    with source:
         rec.adjust_for_ambient_noise(source, 5)
         value = round(rec.energy_threshold)
         config_ui.set_energy_threshold(str(value))

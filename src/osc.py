@@ -1,26 +1,13 @@
 # Code taken and modified katosc.py from https://github.com/killfrenzy96/KatOscApp
-
 # Copyright (C) 2022 KillFrenzy / Evan Tran
-
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-
-# You should have received a copy of the GNU General Public License
-# along with this program. If not, see <https://www.gnu.org/licenses/>.
+# This code is provided under the GPL-3.0 license
 
 from threading import Timer
 from pythonosc import udp_client, osc_server, dispatcher
 import math, asyncio, threading
 
 
-class KatOsc:
+class OscHandler:
 	def __init__(self, udpclient: udp_client.SimpleUDPClient, osc_server_ip: str, osc_server_port: int):
 		self.isactive = False
 
@@ -29,6 +16,7 @@ class KatOsc:
 		self.osc_server_port = osc_server_port # OSC network port for recieving messages
 
 		self.osc_delay: float = 0.25 # Delay between network updates in seconds. Setting this too low will cause issues.
+		self.osc_chatbox_delay: float = 1.25 # Delay between chatbox updates in seconds. Setting this too low will cause issues.
 		self.sync_params: int = 16 # Default sync parameters. This is automatically updated if the OSC server is enabled.
 
 		self.line_length: int = 32 # Characters per line of text
@@ -50,8 +38,11 @@ class KatOsc:
 
 		self.osc_parameter_prefix: str = "/avatar/parameters/"
 		self.osc_avatar_change_path: str = "/avatar/change"
+		self.osc_chatbox_path: str = "/chatbox/input"
+		self.osc_chatbox_text: str = ""
 		self.osc_text: str = ""
-		self.target_text: str = ""
+		self.kat_target_text: str = ""
+		self.textbox_target_text: str = ""
 
 		self.invalid_char: str = "?" # character used to replace invalid characters
 
@@ -338,6 +329,9 @@ class KatOsc:
 		# OSC Setup
 		# --------------
 
+		# Setup OSC Chatbox
+		self.osc_chatbox_timer = RepeatedTimer(self.osc_chatbox_delay, self.osc_chatbox_loop)
+
 		# Setup OSC Client
 		self.osc_client = udpclient
 		self.osc_timer = RepeatedTimer(self.osc_delay, self.osc_timer_loop)
@@ -355,6 +349,7 @@ class KatOsc:
 			self.osc_start_server()
 
 		# Start timer loop
+		self.osc_chatbox_timer.start()
 		self.osc_timer.start()
 
 	# Starts the OSC Server
@@ -382,8 +377,13 @@ class KatOsc:
 
 
 	# Set the text to any value
-	def set_text(self, text: str):
-		self.target_text = text
+	def set_textbox_text(self, text: str):
+		self.textbox_target_text = text
+
+
+	# Set the text to any value
+	def set_kat_text(self, text: str):
+		self.kat_target_text = text
 
 
 	# Sets the sync parameter count
@@ -401,9 +401,19 @@ class KatOsc:
 			self.osc_stop_server()
 
 
+	# Chatbox loop
+	def osc_chatbox_loop(self):
+		gui_text = self.textbox_target_text.replace("\n", " ")
+		if self.osc_chatbox_text == gui_text and self.osc_chatbox_text != "":
+			return
+
+		self.osc_client.send_message(self.osc_chatbox_path, [gui_text, True, True if self.textbox_target_text == "" else False])
+		self.osc_chatbox_text = gui_text
+
+
 	# Syncronisation loop
 	def osc_timer_loop(self):
-		gui_text = self.target_text
+		gui_text = self.kat_target_text
 
 		# Test parameter count if an update is requried
 		if type(self.osc_server) == osc_server.ThreadingOSCUDPServer:
@@ -566,7 +576,7 @@ class KatOsc:
 	def stop(self):
 		self.osc_timer.stop()
 		self.hide()
-		self.clear()
+		self.clear_kat()
 		self.osc_stop_server()
 
 
@@ -574,7 +584,7 @@ class KatOsc:
 	def start(self):
 		self.osc_timer.start()
 		self.hide()
-		self.clear()
+		self.clear_kat()
 		self.osc_start_server()
 
 
@@ -589,10 +599,14 @@ class KatOsc:
 
 
 	# clear text
-	def clear(self):
+	def clear_kat(self):
 		self.osc_text = ""
-		self.target_text = ""
+		self.kat_target_text = ""
 		self.osc_client.send_message(self.osc_parameter_prefix + self.param_pointer, 255) # Clear KAT text
+		self.hide()
+
+	def clear_chatbox(self):
+		self.textbox_target_text = ""
 
 
 class RepeatedTimer(object):

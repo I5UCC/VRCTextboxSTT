@@ -2,7 +2,7 @@ import threading
 
 
 # Custom Thread with return value
-class CustomThread(threading.Thread):
+class ReturnThread(threading.Thread):
 
     def __init__(self, group=None, target=None, name=None, args=(), kwargs={}, Verbose=None):
         threading.Thread.__init__(self, group, target, name, args, kwargs)
