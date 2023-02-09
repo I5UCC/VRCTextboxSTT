@@ -12,7 +12,7 @@ def get_absolute_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 
-VERSION = "v0.6"
+VERSION = "v0.7"
 VRC_INPUT_CHARLIMIT = 144
 KAT_CHARLIMIT = 128
 VRC_INPUT_PARAM = "/chatbox/input"
@@ -77,12 +77,12 @@ import whisper
 import torch
 import re
 from osc import OscHandler
-from customthread import ReturnThread
 from ui import MainWindow, SettingsWindow
 from queue import Queue
 
+
 osc_client: udp_client.SimpleUDPClient = None
-kat: OscHandler = None
+osc: OscHandler = None
 use_kat: bool = True
 use_textbox: bool = True
 use_both: bool = True
@@ -109,7 +109,7 @@ enter_pressed: bool = False
 def init():
     global main_window
     global osc_client
-    global kat
+    global osc
     global use_textbox
     global use_kat
     global use_both
@@ -129,9 +129,9 @@ def init():
     use_kat = bool(CONFIG["use_kat"])
     use_both = bool(CONFIG["use_both"])
     if use_kat:
-        kat = OscHandler(osc_client, CONFIG["osc_ip"], CONFIG["osc_server_port"])
+        osc = OscHandler(osc_client, CONFIG["osc_ip"], CONFIG["osc_server_port"])
     else:
-        kat = None
+        osc = None
 
     _whisper_model = CONFIG["model"].lower()
     language = CONFIG["language"].lower()
@@ -199,7 +199,7 @@ def replace_emotes(text):
     for i in range(len(CONFIG["emotes"])):
         word = CONFIG["emotes"][str(i)]
         tmp = re.compile(word, re.IGNORECASE)
-        text = tmp.sub(kat.emote_keys[i], text)
+        text = tmp.sub(osc.emote_keys[i], text)
 
     return text
 
@@ -223,11 +223,11 @@ def set_typing_indicator(state: bool, textfield: bool = False):
     global use_textbox
     global use_kat
     global use_both
-    global kat
+    global osc
 
-    if use_textbox and use_both or use_textbox and use_kat and not kat.isactive or not use_kat:
+    if use_textbox and use_both or use_textbox and use_kat and not osc.isactive or not use_kat:
         osc_client.send_message(VRC_TYPING_PARAM, state)
-    if use_kat and kat.isactive and not textfield:
+    if use_kat and osc.isactive and not textfield:
         osc_client.send_message(AV_LISTENING_PARAM, state)
 
 
@@ -235,13 +235,13 @@ def clear_chatbox():
     global use_textbox
     global use_kat
     global use_both
-    global kat
+    global osc
 
     main_window.clear_textfield()
-    if use_textbox and use_both or use_textbox and use_kat and not kat.isactive or not use_kat:
-        kat.textbox_target_text = ""
-    if use_kat and kat.isactive:
-        kat.clear_kat()
+    if use_textbox and use_both or use_textbox and use_kat and not osc.isactive or not use_kat:
+        osc.textbox_target_text = ""
+    if use_kat and osc.isactive:
+        osc.clear_kat()
     main_window.set_text_label("- No Text -")
 
 
@@ -250,7 +250,7 @@ def populate_chatbox(text, cutoff: bool = False):
     global use_textbox
     global use_kat
     global use_both
-    global kat
+    global osc
 
     text = filter_banned_words(text)
 
@@ -266,12 +266,12 @@ def populate_chatbox(text, cutoff: bool = False):
 
     main_window.set_text_label(_chatbox_text)
 
-    if use_textbox and use_both or use_textbox and use_kat and not kat.isactive or not use_kat:
-        kat.set_textbox_text(_chatbox_text)
+    if use_textbox and use_both or use_textbox and use_kat and not osc.isactive or not use_kat:
+        osc.set_textbox_text(_chatbox_text)
 
-    if use_kat and kat.isactive:
+    if use_kat and osc.isactive:
         _kat_text = replace_emotes(_kat_text)
-        kat.set_kat_text(_kat_text[-KAT_CHARLIMIT:])
+        osc.set_kat_text(_kat_text[-KAT_CHARLIMIT:])
 
     set_typing_indicator(False)
 
@@ -320,7 +320,7 @@ def process_loop():
         _data = audio.get_raw_data()
         data_queue.put(_data)
 
-    _stop_listening = rec.listen_in_background(source, record_callback, phrase_time_limit=CONFIG["record_timeout"])
+    _stop_listening = rec.listen_in_background(source, record_callback, phrase_time_limit=CONFIG["phrase_time_limit"])
 
     _time_last = time.time()
     while True:
@@ -353,7 +353,7 @@ def process_loop():
             _time_last = time.time()
             populate_chatbox(_text, True)
         elif _last_sample != bytes() and time.time() - _time_last > CONFIG["pause_threshold"]:
-            main_window.set_status_label("FINISHED - WAITING FOR INPUT", "#00008b")
+            main_window.set_status_label("FINISHED - WAITING FOR INPUT", "blue")
             print(_text)
             play_sound("finished")
             break
@@ -482,7 +482,7 @@ def entrybox_enter_event(text):
 
 
 def textfield_keyrelease(text):
-    global kat
+    global osc
     global use_kat
     global enter_pressed
 
@@ -504,24 +504,24 @@ def main_window_closing():
     global main_window
     global config_ui
     global use_kat
-    global kat
+    global osc
 
     print("Closing...")
     if use_kat:
-        kat.stop()
+        osc.stop()
     main_window.on_closing()
     if config_ui:
         config_ui.on_closing()
 
 
 def settings_closing(save=False):
-    global kat
+    global osc
     global config_ui
     global config_ui_open
 
     if save:
         if use_kat:
-            kat.stop()
+            osc.stop()
         config_ui.save()
         try:
             init()
