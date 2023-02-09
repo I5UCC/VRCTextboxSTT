@@ -304,24 +304,19 @@ class OscHandler:
 			"°": 255
 		}
 
-		self.emote_keys = {
-			0: "ÀÁ",
-			1: "ÂÃ",
-			2: "ÄÅ",
-			3: "ÆÇ",
-			4: "ÈÉ",
-			5: "ÊË",
-			6: "ÌÍ",
-			7: "ÎÏ",
-			8: "ÐÑ",
-			9: "ÒÓ",
-			10: "ÔÕ",
-			11: "Ö×",
-			12: "ØÙ",
-			13: "ÚÛ",
-			14: "ÜÝ"
-		}
-
+		self.emote_keys = dict()
+		i = 0
+		tmp = ""
+		for key, value in self.keys.items():
+			if value >= 96:
+				if value % 2 == 0:
+					tmp = str(key)
+				else:
+					tmp = tmp + str(key)
+					self.emote_keys[i] = tmp
+					tmp = ""
+					i = i + 1
+				
 		# Character to use in place of unknown characters
 		self.invalid_char_value: int = self.keys.get(self.invalid_char, 0)
 

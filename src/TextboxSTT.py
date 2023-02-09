@@ -198,6 +198,8 @@ def replace_emotes(text):
 
     for i in range(len(CONFIG["emotes"])):
         word = CONFIG["emotes"][str(i)]
+        if word == "":
+            continue
         tmp = re.compile(word, re.IGNORECASE)
         text = tmp.sub(osc.emote_keys[i], text)
 
@@ -270,7 +272,8 @@ def populate_chatbox(text, cutoff: bool = False):
         osc.set_textbox_text(_chatbox_text)
 
     if use_kat and osc.isactive:
-        _kat_text = replace_emotes(_kat_text)
+        if CONFIG["enable_emotes"]:
+            _kat_text = replace_emotes(_kat_text)
         osc.set_kat_text(_kat_text[-KAT_CHARLIMIT:])
 
     set_typing_indicator(False)
