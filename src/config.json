@@ -1,7 +1,7 @@
 {
     "osc_ip": "127.0.0.1",
     "osc_port": 9000,
-    "osc_server_port": 9100,
+    "osc_server_port": 9001,
     "model": "base",
     "language": "english",
     "hotkey": "f1",

@@ -81,29 +81,29 @@ from customthread import ReturnThread
 from ui import MainWindow, SettingsWindow
 from queue import Queue
 
-osc_client = None
-kat = None
-use_kat = True
-use_textbox = True
-use_both = True
-model = "base"
-language = "english"
-use_cpu = False
-rec = None
-source = None
-data_queue = Queue()
-ovr_initialized = False
-application = None
-action_set_handle = None
-button_action_handle = None
-curr_time = 0.0
-pressed = False
-holding = False
-held = False
-thread_process = threading.Thread()
-config_ui = None
-config_ui_open = False
-enter_pressed = False
+osc_client: udp_client.SimpleUDPClient = None
+kat: OscHandler = None
+use_kat: bool = True
+use_textbox: bool = True
+use_both: bool = True
+model: whisper = "base"
+language: str = "english"
+use_cpu: bool = False
+rec: sr.Recognizer = None
+source: sr.Microphone = None
+data_queue: Queue = Queue()
+ovr_initialized: bool = False
+application: openvr.IVRSystem = None
+action_set_handle: int = None
+button_action_handle: int = None
+curr_time: float = 0.0
+pressed: bool = False
+holding: bool = False
+held: bool = False
+thread_process: threading.Thread = threading.Thread()
+config_ui: SettingsWindow = None
+config_ui_open: bool = False
+enter_pressed: bool = False
 
 
 def init():
@@ -189,38 +189,6 @@ def play_sound(filename):
     winsound.PlaySound(get_absolute_path(filename), winsound.SND_FILENAME | winsound.SND_ASYNC)
 
 
-def listen_once():
-    global rec
-
-    with source:
-        try:
-            audio = rec.listen(source, timeout=float(CONFIG["timeout_time"]))
-        except sr.WaitTimeoutError:
-            return None
-
-        return torch.from_numpy(np.frombuffer(audio.get_raw_data(), np.int16).flatten().astype(np.float32) / 32768.0)
-
-
-def transcribe(torch_audio):
-    global use_cpu
-    global language
-    global model
-
-    use_gpu = not use_cpu
-    torch_audio = whisper.pad_or_trim(torch_audio)
-    options = whisper.DecodingOptions(language=language, fp16=use_gpu, without_timestamps=True)
-    mel = whisper.log_mel_spectrogram(torch_audio).to(model.device)
-    t = ReturnThread(target=whisper.decode, args=[model, mel, options])
-    t.start()
-
-    timeout = float(CONFIG["max_transcribe_time"])
-    if timeout == 0.0:
-        timeout = None
-    result = t.join(timeout)
-
-    return result.text
-
-
 def replace_emotes(text):
     if not text:
         return None
@@ -286,6 +254,9 @@ def populate_chatbox(text, cutoff: bool = False):
 
     text = filter_banned_words(text)
 
+    if not text:
+        return
+
     if cutoff:
         _chatbox_text = text[-VRC_INPUT_CHARLIMIT:]
         _kat_text = text[-KAT_CHARLIMIT:]
@@ -305,79 +276,101 @@ def populate_chatbox(text, cutoff: bool = False):
     set_typing_indicator(False)
 
 
-def transcribe_loop():
+def listen_once():
+    global rec
+
+    with source:
+        try:
+            audio = rec.listen(source, timeout=float(CONFIG["timeout_time"]))
+        except sr.WaitTimeoutError:
+            return None
+
+        return torch.from_numpy(np.frombuffer(audio.get_raw_data(), np.int16).flatten().astype(np.float32) / 32768.0)
+
+
+def transcribe(torch_audio):
+    global use_cpu
+    global language
+    global model
+
+    use_gpu = not use_cpu
+    options = {"without_timestamps": True}
+    result = model.transcribe(torch_audio, fp16=use_gpu, language=language, **options)
+
+    return result['text']
+
+
+def process_loop():
     global data_queue
     global source
     global rec
     global main_window
     global pressed
 
-    timeout = True
-    timeout_time = time.time()
-    phrase_time = None
-    last_sample = bytes()
-
-    def record_callback(_, audio:sr.AudioData) -> None:
-        data = audio.get_raw_data()
-        data_queue.put(data)
-
-    stop_listening = rec.listen_in_background(source, record_callback, phrase_time_limit=CONFIG["record_timeout"])
+    _text = ""
+    _time_last = None
+    _last_sample = bytes()
 
     main_window.set_button_enabled(False)
     set_typing_indicator(True)
     main_window.set_status_label("LISTENING", "#FF00FF")
     play_sound("listen")
 
-    res = True
+    def record_callback(_, audio:sr.AudioData) -> None:
+        _data = audio.get_raw_data()
+        data_queue.put(_data)
+
+    _stop_listening = rec.listen_in_background(source, record_callback, phrase_time_limit=CONFIG["record_timeout"])
+
+    _time_last = time.time()
     while True:
-        now = time.time()
-
         if pressed:
-            main_window.set_status_label("CANCELED - WAITING FOR INPUT", "orange")
-            play_sound("clear")
-            set_typing_indicator(False)
-            clear_chatbox()
-            res = False
-            break
-
-        if not data_queue.empty():
-            timeout = False
-
+            _time_last = time.time()
+            _held = False
+            while pressed:
+                if time.time() - _time_last > CONFIG["hold_time"]:
+                    _held = True
+                    break
+                time.sleep(0.05)
+            if _held:
+                main_window.set_status_label("CLEARED - WAITING FOR INPUT", "#00008b")
+                play_sound("clear")
+                clear_chatbox()
+                break
+            elif _last_sample == bytes():
+                main_window.set_status_label("CANCELED - WAITING FOR INPUT", "#00008b")
+                play_sound("timeout")
+                break
+        elif not data_queue.empty():
             while not data_queue.empty():
                 data = data_queue.get()
-                last_sample += data
+                _last_sample += data
 
-            torch_audio = torch.from_numpy(np.frombuffer(last_sample, np.int16).flatten().astype(np.float32) / 32768.0)
+            torch_audio = torch.from_numpy(np.frombuffer(_last_sample, np.int16).flatten().astype(np.float32) / 32768.0)
 
-            text = transcribe(torch_audio)
-            print(text)
+            _text = transcribe(torch_audio)
                 
-            phrase_time = time.time()
-
-            populate_chatbox(text, True)
-
-        if data_queue.empty() and now - timeout_time > CONFIG["timeout_time"] and timeout:
-            main_window.set_status_label("TIMEOUT - WAITING FOR INPUT", "orange")
-            play_sound("timeout")
-            set_typing_indicator(False)
-            res = False
-            break
-
-        if data_queue.empty() and phrase_time and now - phrase_time > CONFIG["pause_threshold"]:
+            _time_last = time.time()
+            populate_chatbox(_text, True)
+        elif _last_sample != bytes() and time.time() - _time_last > CONFIG["pause_threshold"]:
             main_window.set_status_label("FINISHED - WAITING FOR INPUT", "#00008b")
+            print(_text)
             play_sound("finished")
-            set_typing_indicator(False)
-            res = True
             break
+        elif _last_sample == bytes() and time.time() - _time_last > CONFIG["timeout_time"]:
+            main_window.set_status_label("TIMEOUT - WAITING FOR INPUT", "#00008b")
+            play_sound("timeout")
+            break
+        time.sleep(0.05)
 
-        time.sleep(0.1)
-
-    stop_listening(wait_for_stop=False)
+    set_typing_indicator(False)
     main_window.set_button_enabled(True)
-    return res
+    _stop_listening(wait_for_stop=False)
+    data_queue.queue.clear()
+    time.sleep(1)
 
 
-def transcribe_once():
+def process_once():
     global main_window
     global pressed
 
@@ -467,7 +460,7 @@ def handle_input():
     elif not pressed and holding and not held:
         held = True
         holding = False
-        thread_process = threading.Thread(target=transcribe_loop if CONFIG["continuous"] else transcribe_once)
+        thread_process = threading.Thread(target=process_loop if CONFIG["continuous"] else process_once)
         thread_process.start()
     elif not pressed and held:
         held = False

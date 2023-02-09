@@ -575,6 +575,7 @@ class OscHandler:
 	# Stop the timer and hide the text overlay
 	def stop(self):
 		self.osc_timer.stop()
+		self.osc_chatbox_timer.stop()
 		self.hide()
 		self.clear_kat()
 		self.osc_stop_server()
@@ -583,6 +584,7 @@ class OscHandler:
 	# Restart the timer for syncing texts and show the overlay
 	def start(self):
 		self.osc_timer.start()
+		self.osc_chatbox_timer.start()
 		self.hide()
 		self.clear_kat()
 		self.osc_start_server()
