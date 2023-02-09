@@ -106,7 +106,6 @@ class SettingsWindow:
         self.whisper_models = whisper.available_models()
         self.whisper_models = [x for x in self.whisper_models if ".en" not in x]
         self.tooltip_window = None
-        self.ew = None
 
         self.tkui = tk.Tk()
         self.tkui.minsize(480, 730)
@@ -296,8 +295,8 @@ class SettingsWindow:
 
         self.label_emotes = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Emotes', font=(self.FONT, 12))
         self.label_emotes.grid(row=18, column=0, padx=PADX_L, pady=PADY, sticky='es')
-        self.button_emotes = tk.Button(self.tkui, text="Edit Emotes", command=self.button_hotkey_pressed)
-        self.button_emotes.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, width=23, anchor="center", activebackground="#555555", activeforeground="white", command=self.open_emote_window)
+        self.button_emotes = tk.Button(self.tkui, text="Edit Emotes", command=self.open_emote_window)
+        self.button_emotes.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, width=23, anchor="center", activebackground="#555555", activeforeground="white")
         self.button_emotes.grid(row=18, column=1, padx=PADX_R, pady=PADY, sticky='ws')
         self.label_emotes.bind("<Enter>", (lambda event: self.show_tooltip("The key that is used to trigger listening.\nKlick on the button and press the button you want to use.")))
         self.label_emotes.bind("<Leave>", self.hide_tooltip)
@@ -307,27 +306,7 @@ class SettingsWindow:
         self.btn_save.place(relx=0.5, rely=0.96, anchor="center")
 
     def open_emote_window(self):
-        self.ew = EmoteWindow(self.config, self.config_path)
-        self.ew.btn_save.configure(command=self.emote_window_save)
-    
-    def emote_window_save(self):
-        self.config["emotes"]["0"] = self.ew.entry_one.get()
-        self.config["emotes"]["1"] = self.ew.entry_two.get()
-        self.config["emotes"]["2"] = self.ew.entry_three.get()
-        self.config["emotes"]["3"] = self.ew.entry_four.get()
-        self.config["emotes"]["4"] = self.ew.entry_five.get()
-        self.config["emotes"]["5"] = self.ew.entry_six.get()
-        self.config["emotes"]["6"] = self.ew.entry_seven.get()
-        self.config["emotes"]["7"] = self.ew.entry_eight.get()
-        self.config["emotes"]["8"] = self.ew.entry_nine.get()
-        self.config["emotes"]["9"] = self.ew.entry_ten.get()
-        self.config["emotes"]["10"] = self.ew.entry_eleven.get()
-        self.config["emotes"]["11"] = self.ew.entry_twelve.get()
-        self.config["emotes"]["12"] = self.ew.entry_thirteen.get()
-        self.config["emotes"]["13"] = self.ew.entry_fourteen.get()
-        self.config["emotes"]["14"] = self.ew.entry_fifteen.get()
-        json.dump(self.config, open(self.config_path, "w"), indent=4)
-        self.ew.on_closing()
+        _ = EmoteWindow(self.config, self.config_path)
 
     def get_sound_devices(self):
         res = ["Default"]
@@ -430,129 +409,57 @@ class SettingsWindow:
 
 class EmoteWindow:
     def __init__(self, config, config_path):
-        self.config = config
         self.config_path = config_path
+        self.config = config
         self.FONT = "Cascadia Code"
 
-        PADX_R = '0'
-        PADX_L = '30'
-        PADY = '4'
-
         self.tkui = tk.Tk()
-        self.tkui.minsize(350, 570)
-        self.tkui.maxsize(350, 570)
+        self.tkui.minsize(650, 390)
+        self.tkui.maxsize(650, 390)
         self.tkui.resizable(False, False)
         self.tkui.configure(bg="#333333")
         self.tkui.title("TextboxSTT - Emotes")
 
-        self.label_one = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Emote 1', font=(self.FONT, 12))
-        self.label_one.grid(row=0, column=0, padx=PADX_L, pady=PADY, sticky='es')
-        self.entry_one = tk.Entry(self.tkui)
-        self.entry_one.insert(0, self.config["emotes"]["0"])
-        self.entry_one.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
-        self.entry_one.grid(row=0, column=1, padx=PADX_R, pady=PADY, sticky='ws')
+        self.current_selection = None
+        
+        self.entry = tk.Entry(self.tkui)
+        self.entry.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666", width=55)
+        self.entry.place(relx=0.415, rely=0.05, anchor="center")
 
-        self.label_two = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Emote 2', font=(self.FONT, 12))
-        self.label_two.grid(row=1, column=0, padx=PADX_L, pady=PADY, sticky='es')
-        self.entry_two = tk.Entry(self.tkui)
-        self.entry_two.insert(0, self.config["emotes"]["1"])
-        self.entry_two.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
-        self.entry_two.grid(row=1, column=1, padx=PADX_R, pady=PADY, sticky='ws')
+        self.button = tk.Button(self.tkui, text="Edit")
+        self.button.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=12, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white", state="disabled", command=self.edit_entry)
+        self.button.place(relx=0.91, rely=0.05, anchor="center")
 
-        self.label_three = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Emote 3', font=(self.FONT, 12))
-        self.label_three.grid(row=2, column=0, padx=PADX_L, pady=PADY, sticky='es')
-        self.entry_three = tk.Entry(self.tkui)
-        self.entry_three.insert(0, self.config["emotes"]["2"])
-        self.entry_three.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
-        self.entry_three.grid(row=2, column=1, padx=PADX_R, pady=PADY, sticky='ws')
+        self.values = list(self.config["emotes"].items())
+        self.lbox = tk.Listbox(self.tkui, font=(self.FONT, 12), width=70, height=15, bg="#333333", fg="#FFFFFF", selectbackground="#777777", selectforeground="#FFFFFF", bd=0, activestyle="none")
+        self.lbox.place(relx=0.5, rely=0.53, anchor="center")
+        self.lbox.bind('<<ListboxSelect>>', self.item_selected)
+        
+        self.update_lbox()
 
-        self.label_four = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Emote 4', font=(self.FONT, 12))
-        self.label_four.grid(row=3, column=0, padx=PADX_L, pady=PADY, sticky='es')
-        self.entry_four = tk.Entry(self.tkui)
-        self.entry_four.insert(0, self.config["emotes"]["3"])
-        self.entry_four.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
-        self.entry_four.grid(row=3, column=1, padx=PADX_R, pady=PADY, sticky='ws')
+        self.tkui.mainloop()
 
-        self.label_five = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Emote 5', font=(self.FONT, 12))
-        self.label_five.grid(row=4, column=0, padx=PADX_L, pady=PADY, sticky='es')
-        self.entry_five = tk.Entry(self.tkui)
-        self.entry_five.insert(0, self.config["emotes"]["4"])
-        self.entry_five.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
-        self.entry_five.grid(row=4, column=1, padx=PADX_R, pady=PADY, sticky='ws')
+    def item_selected(self, event):
+        if self.lbox.curselection():
+            self.current_selection = self.lbox.curselection()[0]
+            self.set_entry(self.config["emotes"][str(self.current_selection)])
+            self.button.configure(state="normal")
 
-        self.label_six = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Emote 6', font=(self.FONT, 12))
-        self.label_six.grid(row=5, column=0, padx=PADX_L, pady=PADY, sticky='es')
-        self.entry_six = tk.Entry(self.tkui)
-        self.entry_six.insert(0, self.config["emotes"]["5"])
-        self.entry_six.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
-        self.entry_six.grid(row=5, column=1, padx=PADX_R, pady=PADY, sticky='ws')
+    def set_entry(self, text):
+        self.entry.delete(0, tk.END)
+        self.entry.insert(0, text)
 
-        self.label_seven = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Emote 7', font=(self.FONT, 12))
-        self.label_seven.grid(row=6, column=0, padx=PADX_L, pady=PADY, sticky='es')
-        self.entry_seven = tk.Entry(self.tkui)
-        self.entry_seven.insert(0, self.config["emotes"]["6"])
-        self.entry_seven.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
-        self.entry_seven.grid(row=6, column=1, padx=PADX_R, pady=PADY, sticky='ws')
+    def edit_entry(self):
+        self.config["emotes"][str(self.current_selection)] = self.entry.get()
+        self.update_lbox()
+        self.button.configure(state="disabled")
+        self.entry.delete(0, tk.END)
+        json.dump(self.config, open(self.config_path, "w"), indent=4)
 
-        self.label_eight = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Emote 8', font=(self.FONT, 12))
-        self.label_eight.grid(row=7, column=0, padx=PADX_L, pady=PADY, sticky='es')
-        self.entry_eight = tk.Entry(self.tkui)
-        self.entry_eight.insert(0, self.config["emotes"]["7"])
-        self.entry_eight.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
-        self.entry_eight.grid(row=7, column=1, padx=PADX_R, pady=PADY, sticky='ws')
-
-        self.label_nine = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Emote 9', font=(self.FONT, 12))
-        self.label_nine.grid(row=8, column=0, padx=PADX_L, pady=PADY, sticky='es')
-        self.entry_nine = tk.Entry(self.tkui)
-        self.entry_nine.insert(0, self.config["emotes"]["8"])
-        self.entry_nine.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
-        self.entry_nine.grid(row=8, column=1, padx=PADX_R, pady=PADY, sticky='ws')
-
-        self.label_ten = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Emote 10', font=(self.FONT, 12))
-        self.label_ten.grid(row=9, column=0, padx=PADX_L, pady=PADY, sticky='es')
-        self.entry_ten = tk.Entry(self.tkui)
-        self.entry_ten.insert(0, self.config["emotes"]["9"])
-        self.entry_ten.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
-        self.entry_ten.grid(row=9, column=1, padx=PADX_R, pady=PADY, sticky='ws')
-
-        self.label_eleven = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Emote 11', font=(self.FONT, 12))
-        self.label_eleven.grid(row=10, column=0, padx=PADX_L, pady=PADY, sticky='es')
-        self.entry_eleven = tk.Entry(self.tkui)
-        self.entry_eleven.insert(0, self.config["emotes"]["10"])
-        self.entry_eleven.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
-        self.entry_eleven.grid(row=10, column=1, padx=PADX_R, pady=PADY, sticky='ws')
-
-        self.label_twelve = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Emote 12', font=(self.FONT, 12))
-        self.label_twelve.grid(row=11, column=0, padx=PADX_L, pady=PADY, sticky='es')
-        self.entry_twelve = tk.Entry(self.tkui)
-        self.entry_twelve.insert(0, self.config["emotes"]["11"])
-        self.entry_twelve.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
-        self.entry_twelve.grid(row=11, column=1, padx=PADX_R, pady=PADY, sticky='ws')
-
-        self.label_thirteen = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Emote 13', font=(self.FONT, 12))
-        self.label_thirteen.grid(row=12, column=0, padx=PADX_L, pady=PADY, sticky='es')
-        self.entry_thirteen = tk.Entry(self.tkui)
-        self.entry_thirteen.insert(0, self.config["emotes"]["12"])
-        self.entry_thirteen.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
-        self.entry_thirteen.grid(row=12, column=1, padx=PADX_R, pady=PADY, sticky='ws')
-
-        self.label_fourteen = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Emote 14', font=(self.FONT, 12))
-        self.label_fourteen.grid(row=13, column=0, padx=PADX_L, pady=PADY, sticky='es')
-        self.entry_fourteen = tk.Entry(self.tkui)
-        self.entry_fourteen.insert(0, self.config["emotes"]["13"])
-        self.entry_fourteen.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
-        self.entry_fourteen.grid(row=13, column=1, padx=PADX_R, pady=PADY, sticky='ws')
-
-        self.label_fifteen = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Emote 15', font=(self.FONT, 12))
-        self.label_fifteen.grid(row=14, column=0, padx=PADX_L, pady=PADY, sticky='es')
-        self.entry_fifteen = tk.Entry(self.tkui)
-        self.entry_fifteen.insert(0, self.config["emotes"]["14"])
-        self.entry_fifteen.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
-        self.entry_fifteen.grid(row=14, column=1, padx=PADX_R, pady=PADY, sticky='ws')
-
-        self.btn_save = tk.Button(self.tkui, text="Save")
-        self.btn_save.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=33, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
-        self.btn_save.place(relx=0.5, rely=0.96, anchor="center")
+    def update_lbox(self):
+        self.values = list(self.config["emotes"].items())
+        self.lbox.delete(0, tk.END)
+        self.lbox.insert(0, *self.values)
 
     def on_closing(self):
         self.tkui.destroy()
