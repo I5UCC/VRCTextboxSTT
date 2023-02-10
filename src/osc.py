@@ -8,12 +8,14 @@ import math, asyncio, threading
 
 
 class OscHandler:
-	def __init__(self, udpclient: udp_client.SimpleUDPClient, osc_server_ip: str, osc_server_port: int):
+	def __init__(self, osc_ip: str, osc_port: int, osc_server_ip: str, osc_server_port: int):
 		self.isactive = False
 
 		self.osc_enable_server = True # Used to improve sync with in-game avatar and autodetect sync parameter count used for the avatar.
 		self.osc_server_ip = osc_server_ip # OSC server IP to listen too
 		self.osc_server_port = osc_server_port # OSC network port for recieving messages
+		self.osc_ip = osc_ip # OSC server IP to send too
+		self.osc_port = osc_port # OSC network port for sending messages
 
 		self.osc_delay: float = 0.25 # Delay between network updates in seconds. Setting this too low will cause issues.
 		self.osc_chatbox_delay: float = 1.25 # Delay between chatbox updates in seconds. Setting this too low will cause issues.
@@ -22,11 +24,12 @@ class OscHandler:
 		self.line_length: int = 32 # Characters per line of text
 		self.line_count: int = 4 # Maximum lines of text
 
-		self.text_length: int = 128 # Maximum length of text
+		self.kat_charlimit: int = 128 # Maximum length of text for KAT
+		self.textbox_charlimit: int = 144 # Maximum length of text for textbox
 		self.sync_params_max: int = 16 # Maximum sync parameters
 		self.sync_params_last: int = self.sync_params # Last detected sync parameters
 
-		self.pointer_count: int = int(self.text_length / self.sync_params)
+		self.pointer_count: int = int(self.kat_charlimit / self.sync_params)
 		self.pointer_clear: int = 255
 		self.pointer_index_resync: int = 0
 
@@ -39,6 +42,8 @@ class OscHandler:
 		self.osc_parameter_prefix: str = "/avatar/parameters/"
 		self.osc_avatar_change_path: str = "/avatar/change"
 		self.osc_chatbox_path: str = "/chatbox/input"
+		self.osc_chatbox_typing_path = "/chatbox/typing"
+		self.osc_parameter_listening = "/avatar/parameters/stt_listening"
 		self.osc_chatbox_text: str = ""
 		self.osc_text: str = ""
 		self.kat_target_text: str = ""
@@ -328,7 +333,7 @@ class OscHandler:
 		self.osc_chatbox_timer = RepeatedTimer(self.osc_chatbox_delay, self.osc_chatbox_loop)
 
 		# Setup OSC Client
-		self.osc_client = udpclient
+		self.osc_client = udp_client.SimpleUDPClient(self.osc_ip, self.osc_port)
 		self.osc_timer = RepeatedTimer(self.osc_delay, self.osc_timer_loop)
 
 		self.osc_client.send_message(self.osc_parameter_prefix + self.param_pointer, 255) # Clear KAT text
@@ -372,13 +377,19 @@ class OscHandler:
 
 
 	# Set the text to any value
-	def set_textbox_text(self, text: str):
-		self.textbox_target_text = text
+	def set_textbox_text(self, text: str, cutoff: bool = False):
+		if cutoff:
+			self.textbox_target_text = text[-self.textbox_charlimit:]
+		else:
+			self.textbox_target_text = text[:self.textbox_charlimit]
 
 
 	# Set the text to any value
-	def set_kat_text(self, text: str):
-		self.kat_target_text = text
+	def set_kat_text(self, text: str, cutoff: bool = False):
+		if cutoff:
+			self.kat_target_text = text[-self.kat_charlimit:]
+		else:
+			self.kat_target_text = text[:self.kat_charlimit]
 
 
 	# Sets the sync parameter count
@@ -390,7 +401,7 @@ class OscHandler:
 			# Manual sync parameter setting
 			self.sync_params = sync_params
 			self.sync_params_last = self.sync_params
-			self.pointer_count = int(self.text_length / self.sync_params)
+			self.pointer_count = int(self.kat_charlimit / self.sync_params)
 
 			self.osc_server_test_step = -1 # Reset parameters and clear text
 			self.osc_stop_server()
@@ -405,6 +416,11 @@ class OscHandler:
 		self.osc_client.send_message(self.osc_chatbox_path, [gui_text, True, True if self.textbox_target_text == "" else False])
 		self.osc_chatbox_text = gui_text
 
+	def set_kat_typing_indicator(self, state: bool):
+		self.osc_client.send_message(self.osc_parameter_listening, state)
+
+	def set_textbox_typing_indicator(self, state: bool):
+		self.osc_client.send_message(self.osc_chatbox_typing_path, state)
 
 	# Syncronisation loop
 	def osc_timer_loop(self):
@@ -449,8 +465,8 @@ class OscHandler:
 						self.sync_params_last = self.sync_params
 						self.isactive = True
 					self.osc_server_test_step = 0
-					self.pointer_count = int(self.text_length / self.sync_params)
-					self.osc_text = " ".ljust(self.text_length) # Resync letters
+					self.pointer_count = int(self.kat_charlimit / self.sync_params)
+					self.osc_text = " ".ljust(self.kat_charlimit) # Resync letters
 
 		# Do not process anything if sync parameters are not setup
 		if self.sync_params == 0:
@@ -467,7 +483,7 @@ class OscHandler:
 
 			# Clear text
 			self.osc_client.send_message(self.osc_parameter_prefix + self.param_pointer, self.pointer_clear)
-			self.osc_text = " ".ljust(self.text_length)
+			self.osc_text = " ".ljust(self.kat_charlimit)
 			return
 
 		# Make sure KAT is visible even after avatar change
@@ -480,8 +496,8 @@ class OscHandler:
 		gui_text = self._list_to_string(text_lines)
 
 		# Pad text with spaces up to the text limit
-		gui_text = gui_text.ljust(self.text_length)
-		osc_text = self.osc_text.ljust(self.text_length)
+		gui_text = gui_text.ljust(self.kat_charlimit)
+		osc_text = self.osc_text.ljust(self.kat_charlimit)
 
 		# Text syncing
 		osc_chars = list(osc_text)
@@ -569,20 +585,43 @@ class OscHandler:
 
 	# Stop the timer and hide the text overlay
 	def stop(self):
-		self.osc_timer.stop()
-		self.osc_chatbox_timer.stop()
+		try:
+			self.osc_timer.stop()
+		except Exception as e:
+			print(e)
+		try:
+			self.osc_chatbox_timer.stop()
+		except Exception as e:
+			print(e)
+		try:
+			self.osc_stop_server()
+		except Exception as e:
+			print(e)
 		self.hide()
 		self.clear_kat()
-		self.osc_stop_server()
+		self.clear_chatbox()
+		
 
 
 	# Restart the timer for syncing texts and show the overlay
 	def start(self):
+		try:
+			self.osc_timer.start()
+		except Exception as e:
+			print(e)
+		try:
+			self.osc_chatbox_timer.start()
+		except Exception as e:
+			print(e)
+		try:
+			self.osc_start_server()
+		except Exception as e:
+			print(e)
 		self.osc_timer.start()
 		self.osc_chatbox_timer.start()
 		self.hide()
 		self.clear_kat()
-		self.osc_start_server()
+		self.clear_chatbox()
 
 
 	# show overlay

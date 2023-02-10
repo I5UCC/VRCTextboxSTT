@@ -13,11 +13,6 @@ def get_absolute_path(relative_path):
 
 
 VERSION = "v0.7"
-VRC_INPUT_CHARLIMIT = 144
-KAT_CHARLIMIT = 128
-VRC_INPUT_PARAM = "/chatbox/input"
-VRC_TYPING_PARAM = "/chatbox/typing"
-AV_LISTENING_PARAM = "/avatar/parameters/stt_listening"
 ACTIONSETHANDLE = "/actions/textboxstt"
 STTLISTENHANDLE = "/actions/textboxstt/in/sttlisten"
 LOGFILE = get_absolute_path('out.log')
@@ -82,7 +77,6 @@ from ui import MainWindow, SettingsWindow
 from queue import Queue
 
 
-osc_client: udp_client.SimpleUDPClient = None
 osc: OscHandler = None
 use_kat: bool = True
 use_textbox: bool = True
@@ -109,7 +103,6 @@ enter_pressed: bool = False
 
 def init():
     global main_window
-    global osc_client
     global osc
     global use_textbox
     global use_kat
@@ -125,14 +118,10 @@ def init():
     global action_set_handle
     global button_action_handle
 
-    osc_client = udp_client.SimpleUDPClient(CONFIG["osc_ip"], int(CONFIG["osc_port"]))
+    osc = OscHandler(CONFIG["osc_ip"], CONFIG["osc_port"], CONFIG["osc_ip"], CONFIG["osc_server_port"])
     use_textbox = bool(CONFIG["use_textbox"])
     use_kat = bool(CONFIG["use_kat"])
     use_both = bool(CONFIG["use_both"])
-    if use_kat:
-        osc = OscHandler(osc_client, CONFIG["osc_ip"], CONFIG["osc_server_port"])
-    else:
-        osc = None
 
     _whisper_model = CONFIG["model"].lower()
     language = CONFIG["language"].lower()
@@ -154,7 +143,8 @@ def init():
     sys.stderr = LogToFile(log, logging.ERROR, LOGFILE)
     use_cpu = True if str(model.device) == "cpu" else False
 
-    model.transcribe(torch.zeros(16000), fp16=not use_cpu, language=language, without_timestamps=True)
+    main_window.set_status_label(f"Testing Whisper Configuration", "orange")
+    model.transcribe(torch.zeros(256), fp16=not use_cpu, language=language, without_timestamps=True)
 
     # load the speech recognizer and set the initial energy threshold and pause threshold
     rec = sr.Recognizer()
@@ -232,9 +222,9 @@ def set_typing_indicator(state: bool, textfield: bool = False):
     global osc
 
     if use_textbox and use_both or use_textbox and use_kat and not osc.isactive or not use_kat:
-        osc_client.send_message(VRC_TYPING_PARAM, state)
+        osc.set_textbox_typing_indicator(state)
     if use_kat and osc.isactive and not textfield:
-        osc_client.send_message(AV_LISTENING_PARAM, state)
+        osc.set_kat_typing_indicator(state)
 
 
 def clear_chatbox():
@@ -263,22 +253,18 @@ def populate_chatbox(text, cutoff: bool = False):
     if not text:
         return
 
-    if cutoff:
-        _chatbox_text = text[-VRC_INPUT_CHARLIMIT:]
-        _kat_text = text[-KAT_CHARLIMIT:]
-    else:
-        _chatbox_text = text[:VRC_INPUT_CHARLIMIT]
-        _kat_text = text[:KAT_CHARLIMIT]
-
-    main_window.set_text_label(_chatbox_text)
-
     if use_textbox and use_both or use_textbox and use_kat and not osc.isactive or not use_kat:
-        osc.set_textbox_text(_chatbox_text)
+        osc.set_textbox_text(text, cutoff)
 
     if use_kat and osc.isactive:
         if CONFIG["enable_emotes"]:
-            _kat_text = replace_emotes(_kat_text)
-        osc.set_kat_text(_kat_text[-KAT_CHARLIMIT:])
+            text = replace_emotes(text)
+        osc.set_kat_text(text, cutoff)
+
+    if cutoff:
+        main_window.set_text_label(text[-osc.textbox_charlimit:])
+    else:
+        main_window.set_text_label(text[:osc.textbox_charlimit])
 
     set_typing_indicator(False)
 
@@ -466,7 +452,7 @@ def handle_input():
     elif not pressed and holding and not held:
         held = True
         holding = False
-        thread_process = threading.Thread(target=process_loop if CONFIG["continuous"] else process_once)
+        thread_process = threading.Thread(target=process_loop if CONFIG["realtime"] else process_once)
         thread_process.start()
     elif not pressed and held:
         held = False
@@ -493,9 +479,9 @@ def textfield_keyrelease(text):
     global enter_pressed
 
     if not enter_pressed:
-        if len(text) > VRC_INPUT_CHARLIMIT:
-            main_window.textfield.delete(VRC_INPUT_CHARLIMIT, len(text))
-            main_window.textfield.icursor(VRC_INPUT_CHARLIMIT)
+        if len(text) > osc.textbox_charlimit:
+            main_window.textfield.delete(osc.textbox_charlimit, len(text))
+            main_window.textfield.icursor(osc.textbox_charlimit)
         _is_text_empty = text == ""
         set_typing_indicator(not _is_text_empty, True)
         if _is_text_empty:
@@ -513,11 +499,12 @@ def main_window_closing():
     global osc
 
     print("Closing...")
-    if use_kat:
+    try:
         osc.stop()
-    main_window.on_closing()
-    if config_ui:
+        main_window.on_closing()
         config_ui.on_closing()
+    except Exception as e:
+        print(e)
 
 
 def settings_closing(save=False):
@@ -526,20 +513,20 @@ def settings_closing(save=False):
     global config_ui_open
 
     if save:
-        if use_kat:
-            osc.stop()
+        osc.stop()
         config_ui.save()
+        config_ui.on_closing()
         try:
             init()
         except Exception as e:
             print(e)
             main_window.set_status_label("ERROR INITIALIZING, PLEASE CHECK YOUR SETTINGS,\nLOOK INTO out.log for more info on the error", "red")
     else:
+        config_ui.on_closing()
         main_window.set_status_label("SETTINGS NOT SAVED - WAITING FOR INPUT", "#00008b")
     
     main_window.set_button_enabled(True)
     config_ui_open = False
-    config_ui.on_closing()
 
 
 def open_settings():

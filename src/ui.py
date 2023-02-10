@@ -183,21 +183,22 @@ class SettingsWindow:
         self.button_hotkey.bind("<Enter>", (lambda event: self.show_tooltip("The key that is used to trigger listening.\nKlick on the button and press the button you want to use.")))
         self.button_hotkey.bind("<Leave>", self.hide_tooltip)
 
-        self.label_continuous = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Transcription Mode', font=(self.FONT, 12))
-        self.label_continuous.grid(row=6, column=0, padx=PADX_L, pady=PADY, sticky='es')
-        self.label_continuous.bind("<Enter>", (lambda event: self.show_tooltip("If set to 'continuous' it will show interim results while you are talking until you are done talking.\nIf set to 'once' it will only listen once and then stop listening, like it used to be.")))
-        self.label_continuous.bind("<Leave>", self.hide_tooltip)
-        self.value_continuous = tk.StringVar(self.tkui)
-        self.value_continuous.set("continuous" if bool(self.config["continuous"]) else "once")
-        self.opt_continuous = tk.OptionMenu(self.tkui, self.value_continuous, *["continuous", "once"])
-        self.opt_continuous.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
-        self.opt_continuous.grid(row=6, column=1, padx=PADX_R, pady=PADY, sticky='ws')
-        self.opt_continuous.bind("<Enter>", (lambda event: self.show_tooltip("If set to 'continuous' it will show interim results while you are talking until you are done talking.\nIf set to 'once' it will only listen once and then stop listening, like it used to be.")))
-        self.opt_continuous.bind("<Leave>", self.hide_tooltip)
-        self.value_continuous.trace_add("write", (lambda *args: self.changed()))
+        self.label_realtime = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Transcription Mode', font=(self.FONT, 12))
+        self.label_realtime.grid(row=6, column=0, padx=PADX_L, pady=PADY, sticky='es')
+        self.label_realtime.bind("<Enter>", (lambda event: self.show_tooltip("If set to 'realtime' it will show interim results while you are talking until you are done talking.\nIf set to 'once' it will only listen once and then stop listening, like it used to be.")))
+        self.label_realtime.bind("<Leave>", self.hide_tooltip)
+        self.value_realtime = tk.StringVar(self.tkui)
+        self.value_realtime.set("realtime" if bool(self.config["realtime"]) else "once")
+        self.value_realtime.trace("w", self.mode_changed)
+        self.opt_realtime = tk.OptionMenu(self.tkui, self.value_realtime, *["realtime", "once"])
+        self.opt_realtime.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.opt_realtime.grid(row=6, column=1, padx=PADX_R, pady=PADY, sticky='ws')
+        self.opt_realtime.bind("<Enter>", (lambda event: self.show_tooltip("If set to 'realtime' it will show interim results while you are talking until you are done talking.\nIf set to 'once' it will only listen once and then stop listening, like it used to be.")))
+        self.opt_realtime.bind("<Leave>", self.hide_tooltip)
+        self.value_realtime.trace_add("write", (lambda *args: self.changed()))
 
         self.label_det = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Dynamic Energy Threshold', font=(self.FONT, 12))
-        self.label_det.bind("<Enter>", (lambda event: self.show_tooltip("With dynamic_energy_threshold set to 'Yes', \nthe program will continuously try to re-adjust the energy threshold\n to match the environment based on the ambient noise level at that time.\nI'd recommend setting the 'energy_threshold' value \nhigh when enabling this setting.")))
+        self.label_det.bind("<Enter>", (lambda event: self.show_tooltip("With dynamic_energy_threshold set to 'Yes', \nthe program will realtimely try to re-adjust the energy threshold\n to match the environment based on the ambient noise level at that time.\nI'd recommend setting the 'energy_threshold' value \nhigh when enabling this setting.")))
         self.label_det.bind("<Leave>", self.hide_tooltip)
         self.label_det.grid(row=7, column=0, padx=PADX_L, pady=PADY, sticky='es')
         self.value_det = tk.StringVar(self.tkui)
@@ -205,7 +206,7 @@ class SettingsWindow:
         self.opt_det = tk.OptionMenu(self.tkui, self.value_det, *self.yn_options)
         self.opt_det.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_det.grid(row=7, column=1, padx=PADX_R, pady=PADY, sticky='ws')
-        self.opt_det.bind("<Enter>", (lambda event: self.show_tooltip("With dynamic_energy_threshold set to 'Yes', \nthe program will continuously try to re-adjust the energy threshold\n to match the environment based on the ambient noise level at that time.\nI'd recommend setting the 'energy_threshold' value \nhigh when enabling this setting.")))
+        self.opt_det.bind("<Enter>", (lambda event: self.show_tooltip("With dynamic_energy_threshold set to 'Yes', \nthe program will realtimely try to re-adjust the energy threshold\n to match the environment based on the ambient noise level at that time.\nI'd recommend setting the 'energy_threshold' value \nhigh when enabling this setting.")))
         self.opt_det.bind("<Leave>", self.hide_tooltip)
 
         self.label_energy_threshold = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Energy Threshold', font=(self.FONT, 12))
@@ -353,6 +354,18 @@ class SettingsWindow:
     def open_replacement_window(self):
         _ = ReplacementWindow(self.config, self.config_path)
 
+    def mode_changed(self, *args):
+        if self.value_realtime.get() == "realtime":
+            self.entry_timeout_time.delete(0, tk.END)
+            self.entry_timeout_time.insert(0, 5.0)
+            self.entry_pause_threshold.delete(0, tk.END)
+            self.entry_pause_threshold.insert(0, 3.0)
+        else:
+            self.entry_timeout_time.delete(0, tk.END)
+            self.entry_timeout_time.insert(0, 3.0)
+            self.entry_pause_threshold.delete(0, tk.END)
+            self.entry_pause_threshold.insert(0, 0.8)
+
     def get_sound_devices(self):
         res = ["Default"]
         p = pyaudio.PyAudio()
@@ -379,7 +392,7 @@ class SettingsWindow:
         self.config["model"] = self.value_model.get()
         self.config["language"] = self.value_language.get()
         self.config["hotkey"] = self.set_key
-        self.config["continuous"] = True if self.value_continuous.get() == "continuous" else False
+        self.config["realtime"] = True if self.value_realtime.get() == "realtime" else False
         self.config["dynamic_energy_threshold"] = True if self.value_det.get() == "yes" else False
         self.config["energy_threshold"] = int(self.entry_energy_threshold.get())
         self.config["pause_threshold"] = float(self.entry_pause_threshold.get())
@@ -570,14 +583,16 @@ class ReplacementWindow:
             self.button_delete.configure(state="normal")
 
     def add_edit_entry(self):
-        if self.entry_word.get() == "" or self.entry_replace.get() == "":
+        if self.entry_word.get() == "" and self.entry_replace.get() == "":
             return
 
         if self.button_edit["text"] == "Add":
             self.config["word_replacements"][self.entry_word.get()] = self.entry_replace.get()
         elif self.current_key != self.entry_word.get() or self.config["word_replacements"][self.current_key] != self.entry_replace.get():
-            self.config["word_replacements"][self.entry_word.get()] = self.entry_replace.get()
             del self.config["word_replacements"][self.current_key]
+            self.config["word_replacements"][self.entry_word.get()] = self.entry_replace.get()
+        
+        self.button_deselect_pressed()
         self.update_lbox()
         self.entry_replace.delete(0, tk.END)
         self.entry_word.delete(0, tk.END)
