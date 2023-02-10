@@ -13,7 +13,7 @@
     "hold_time": 1.5,
     "phrase_time_limit": 2.0,
     "microphone_index": null,
-    "banned_words": null,
+    "word_replacements": {},
     "use_textbox": true,
     "use_kat": true,
     "use_both": false,

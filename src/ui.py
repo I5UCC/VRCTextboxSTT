@@ -108,8 +108,8 @@ class SettingsWindow:
         self.tooltip_window = None
 
         self.tkui = tk.Tk()
-        self.tkui.minsize(480, 730)
-        self.tkui.maxsize(480, 730)
+        self.tkui.minsize(480, 767)
+        self.tkui.maxsize(480, 767)
         self.tkui.resizable(False, False)
         self.tkui.configure(bg="#333333")
         self.tkui.title("TextboxSTT - Settings")
@@ -251,15 +251,13 @@ class SettingsWindow:
         self.label_mic.bind("<Enter>", (lambda event: self.show_tooltip("What microphone to use. 'Default' will use your systems default microphone.")))
         self.label_mic.bind("<Leave>", self.hide_tooltip)
 
-        self.label_banned_words = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Banned Words', font=(self.FONT, 12))
-        self.label_banned_words.grid(row=14, column=0, padx=PADX_L, pady=PADY, sticky='es')
-        self.entry_banned_words = tk.Entry(self.tkui)
-        if self.config["banned_words"] is not None:
-            self.entry_banned_words.insert(0, ','.join(self.config["banned_words"]))
-        self.entry_banned_words.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
-        self.entry_banned_words.grid(row=14, column=1, padx=PADX_R, pady=PADY, sticky='ws')
-        self.label_banned_words.bind("<Enter>", (lambda event: self.show_tooltip("List of Banned words that are gonna get removed from the transcribed text. seperated by comma ','")))
-        self.label_banned_words.bind("<Leave>", self.hide_tooltip)
+        self.label_word_replacements = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Word Replacement', font=(self.FONT, 12))
+        self.label_word_replacements.grid(row=14, column=0, padx=PADX_L, pady=PADY, sticky='es')
+        self.button_word_replacements = tk.Button(self.tkui, text="Edit Word Replacements", command=self.open_emote_window)
+        self.button_word_replacements.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, width=23, anchor="center", activebackground="#555555", activeforeground="white", command=self.open_replacement_window)
+        self.button_word_replacements.grid(row=14, column=1, padx=PADX_R, pady=PADY, sticky='ws')
+        self.label_word_replacements.bind("<Enter>", (lambda event: self.show_tooltip("List of Word replacements.")))
+        self.label_word_replacements.bind("<Leave>", self.hide_tooltip)
 
         self.label_use_textbox = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Use Textbox', font=(self.FONT, 12))
         self.label_use_textbox.grid(row=15, column=0, padx=PADX_L, pady=PADY, sticky='es')
@@ -293,12 +291,17 @@ class SettingsWindow:
         self.label_use_both.bind("<Enter>", (lambda event: self.show_tooltip("If you want to send your text to both options above, if both available and set to 'Yes'.\nIf not, the program will prefer sending to KillFrenzyAvatarText if it is available.")))
         self.label_use_both.bind("<Leave>", self.hide_tooltip)
 
-        self.label_emotes = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Emotes', font=(self.FONT, 12))
+        self.label_emotes = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Use Emotes', font=(self.FONT, 12))
         self.label_emotes.grid(row=18, column=0, padx=PADX_L, pady=PADY, sticky='es')
+        self.value_emotes = tk.StringVar(self.tkui)
+        self.value_emotes.set("yes" if bool(self.config["enable_emotes"]) else "no")
+        self.opt_emotes = tk.OptionMenu(self.tkui, self.value_emotes, *self.yn_options)
+        self.opt_emotes.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.opt_emotes.grid(row=18, column=1, padx=PADX_R, pady=PADY, sticky='ws')
         self.button_emotes = tk.Button(self.tkui, text="Edit Emotes", command=self.open_emote_window)
         self.button_emotes.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, width=23, anchor="center", activebackground="#555555", activeforeground="white")
-        self.button_emotes.grid(row=18, column=1, padx=PADX_R, pady=PADY, sticky='ws')
-        self.label_emotes.bind("<Enter>", (lambda event: self.show_tooltip("The key that is used to trigger listening.\nKlick on the button and press the button you want to use.")))
+        self.button_emotes.grid(row=19, column=1, padx=PADX_R, pady=PADY, sticky='ws')
+        self.label_emotes.bind("<Enter>", (lambda event: self.show_tooltip("If you want to use emotes on KAT")))
         self.label_emotes.bind("<Leave>", self.hide_tooltip)
 
         self.btn_save = tk.Button(self.tkui, text="Save")
@@ -307,6 +310,9 @@ class SettingsWindow:
 
     def open_emote_window(self):
         _ = EmoteWindow(self.config, self.config_path)
+
+    def open_replacement_window(self):
+        _ = ReplacementWindow(self.config, self.config_path)
 
     def get_sound_devices(self):
         res = ["Default"]
@@ -463,3 +469,106 @@ class EmoteWindow:
 
     def on_closing(self):
         self.tkui.destroy()
+
+class ReplacementWindow:
+    def __init__(self, config, config_path):
+        self.config_path = config_path
+        self.config = config
+        self.FONT = "Cascadia Code"
+
+        self.tkui = tk.Tk()
+        self.tkui.minsize(760, 430)
+        self.tkui.maxsize(760, 430)
+        self.tkui.resizable(False, False)
+        self.tkui.configure(bg="#333333")
+        self.tkui.title("TextboxSTT - Word Replacement")
+
+        self.current_selection = None
+        self.current_key = None
+
+        self.label_word = tk.Label(self.tkui, text="Word", bg="#333333", fg="white", font=(self.FONT, 12))
+        self.label_word.grid(row=0, column=1, padx=5, pady=5, sticky='ws')
+        self.label_replace = tk.Label(self.tkui, text="Replacement", bg="#333333", fg="white", font=(self.FONT, 12))
+        self.label_replace.grid(row=1, column=1, padx=5, pady=5, sticky='ws')
+        
+        self.entry_word = tk.Entry(self.tkui)
+        self.entry_word.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666", width=45)
+        self.entry_word.grid(row=0, column=2, padx=5, pady=5, sticky='ws')
+
+        self.entry_replace = tk.Entry(self.tkui)
+        self.entry_replace.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666", width=45)
+        self.entry_replace.grid(row=1, column=2, padx=5, pady=5, sticky='ws')
+
+        self.button_edit = tk.Button(self.tkui, text="Add")
+        self.button_edit.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=12, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white", command=self.add_edit_entry)
+        self.button_edit.grid(row=0, column=3, padx=5, pady=5, sticky='ws')
+
+        self.button_deselect = tk.Button(self.tkui, text="Deselect")
+        self.button_deselect.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=12, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white", state="disabled", command=self.button_deselect_pressed)
+        self.button_deselect.grid(row=1, column=3, padx=5, pady=5, sticky='ws')
+
+        self.button_delete = tk.Button(self.tkui, text="Remove")
+        self.button_delete.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=12, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white", state="disabled", command=self.button_delete_pressed)
+        self.button_delete.grid(row=1, column=4, padx=5, pady=5, sticky='ws')
+
+        self.lbox = tk.Listbox(self.tkui, font=(self.FONT, 12), width=82, height=15, bg="#333333", fg="#FFFFFF", selectbackground="#777777", selectforeground="#FFFFFF", bd=0, activestyle="none")
+        self.lbox.place(relx=0.5, rely=0.58, anchor="center")
+        self.lbox.bind('<<ListboxSelect>>', self.item_selected)
+        
+        self.update_lbox()
+
+        self.tkui.mainloop()
+
+    def item_selected(self, event):
+        if self.lbox.curselection():
+            self.button_edit.configure(text="Edit")
+            self.entry_replace.delete(0, tk.END)
+            self.entry_word.delete(0, tk.END)
+            
+            self.current_selection = self.lbox.curselection()[0]
+            self.current_key = list(self.config["word_replacements"])[self.current_selection]
+
+            
+            self.entry_word.insert(0, self.current_key)
+            self.entry_replace.insert(0, self.config["word_replacements"][self.current_key])
+            
+            self.button_deselect.configure(state="normal")
+            self.button_delete.configure(state="normal")
+            return
+
+    def add_edit_entry(self):
+        if self.entry_word.get() == "" or self.entry_replace.get() == "":
+            return
+
+        if self.button_edit["text"] == "Add":
+            self.config["word_replacements"][self.entry_word.get()] = self.entry_replace.get()
+        elif self.current_key != self.entry_word.get() or self.config["word_replacements"][self.current_key] != self.entry_replace.get():
+            self.config["word_replacements"][self.entry_word.get()] = self.entry_replace.get()
+            del self.config["word_replacements"][self.current_key]
+        self.update_lbox()
+        self.entry_replace.delete(0, tk.END)
+        self.entry_word.delete(0, tk.END)
+        json.dump(self.config, open(self.config_path, "w"), indent=4)
+    
+    def button_deselect_pressed(self):
+        self.button_edit.configure(text="Add")
+        self.entry_replace.delete(0, tk.END)
+        self.entry_word.delete(0, tk.END)
+        self.lbox.selection_clear(0, tk.END)
+        self.button_deselect.configure(state="disabled")
+        self.button_delete.configure(state="disabled")
+
+    def button_delete_pressed(self):
+        del self.config["word_replacements"][self.current_key]
+        json.dump(self.config, open(self.config_path, "w"), indent=4)
+        self.entry_replace.delete(0, tk.END)
+        self.entry_word.delete(0, tk.END)
+        self.button_deselect_pressed()
+        self.update_lbox()
+        pass
+
+    def update_lbox(self):
+        self.values = list(self.config["word_replacements"].items())
+        self.lbox.delete(0, tk.END)
+        for key, value in self.values:
+            self.lbox.insert(0, f"{key} -> {value}")

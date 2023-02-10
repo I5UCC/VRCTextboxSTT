@@ -206,17 +206,18 @@ def replace_emotes(text):
     return text
 
 
-def filter_banned_words(text):
+def replace_words(text):
     if not text:
         return None
 
     text = text.strip()
-    if CONFIG["banned_words"] is None:
+    if CONFIG["word_replacements"] == {}:
         return text
 
-    for word in CONFIG["banned_words"]:
-        tmp = re.compile(word, re.IGNORECASE)
-        text = tmp.sub("", text)
+    for key, value in CONFIG["word_replacements"].items():
+        tmp = re.compile(key, re.IGNORECASE)
+        text = tmp.sub(value, text)
+
     text = re.sub(' +', ' ', text)
     return text
 
@@ -254,7 +255,7 @@ def populate_chatbox(text, cutoff: bool = False):
     global use_both
     global osc
 
-    text = filter_banned_words(text)
+    text = replace_words(text)
 
     if not text:
         return
