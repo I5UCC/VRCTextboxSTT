@@ -1,7 +1,7 @@
 from cx_Freeze import setup, Executable
 
 packages = ["torch", "whisper"]
-file_include = ["config.json", "bindings/", "resources/", "app.vrmanifest"]
+file_include = ["config.json", "bindings/", "resources/", "app.vrmanifest", "KAT_Emote_Texture_Sheet/"]
 
 build_exe_options = {"packages": packages, "include_files": file_include}
 setup(
