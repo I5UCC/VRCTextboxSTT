@@ -154,6 +154,8 @@ def init():
     sys.stderr = LogToFile(log, logging.ERROR, LOGFILE)
     use_cpu = True if str(model.device) == "cpu" else False
 
+    model.transcribe(torch.zeros(16000), fp16=not use_cpu, language=language, without_timestamps=True)
+
     # load the speech recognizer and set the initial energy threshold and pause threshold
     rec = sr.Recognizer()
     rec.dynamic_energy_threshold = bool(CONFIG["dynamic_energy_threshold"])
@@ -298,9 +300,8 @@ def transcribe(torch_audio):
     global language
     global model
 
-    use_gpu = not use_cpu
     options = {"without_timestamps": True}
-    result = model.transcribe(torch_audio, fp16=use_gpu, language=language, **options)
+    result = model.transcribe(torch_audio, fp16=not use_cpu, language=language, **options)
 
     return result['text']
 
