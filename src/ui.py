@@ -333,13 +333,6 @@ class SettingsWindow:
         else:
             return None
 
-    def get_banned_words(self):
-        res = self.entry_banned_words.get()
-        if res == '':
-            return None
-        else:
-            return res.split(',')
-
     def save(self):
         self.config["osc_ip"] = self.entry_osc_ip.get()
         self.config["osc_port"] = int(self.entry_osc_port.get())
@@ -355,10 +348,10 @@ class SettingsWindow:
         self.config["hold_time"] = float(self.entry_hold_time.get())
         self.config["phrase_time_limit"] = float(self.entry_phrase_time_limit.get())
         self.config["microphone_index"] = self.get_audiodevice_index()
-        self.config["banned_words"] = self.get_banned_words()
         self.config["use_textbox"] = True if self.value_use_textbox.get() == "yes" else False
         self.config["use_kat"] = True if self.value_use_kat.get() == "yes" else False
         self.config["use_both"] = True if self.value_use_both.get() == "yes" else False
+        self.config["enable_emotes"] = True if self.value_emotes.get() == "yes" else False
 
         json.dump(self.config, open(self.config_path, "w"), indent=4)
 
@@ -465,7 +458,9 @@ class EmoteWindow:
     def update_lbox(self):
         self.values = list(self.config["emotes"].items())
         self.lbox.delete(0, tk.END)
-        self.lbox.insert(0, *self.values)
+        for key, value in self.values:
+            self.lbox.insert(tk.END, f"{key}: \"{value}\"")
+
 
     def on_closing(self):
         self.tkui.destroy()
@@ -534,7 +529,6 @@ class ReplacementWindow:
             
             self.button_deselect.configure(state="normal")
             self.button_delete.configure(state="normal")
-            return
 
     def add_edit_entry(self):
         if self.entry_word.get() == "" or self.entry_replace.get() == "":
@@ -571,4 +565,4 @@ class ReplacementWindow:
         self.values = list(self.config["word_replacements"].items())
         self.lbox.delete(0, tk.END)
         for key, value in self.values:
-            self.lbox.insert(0, f"{key} -> {value}")
+            self.lbox.insert(tk.END, f"{key} -> {value}")
