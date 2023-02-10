@@ -24,6 +24,7 @@ LOGFILE = get_absolute_path('out.log')
 CONFIG_PATH = get_absolute_path('config.json')
 CONFIG = json.load(open(CONFIG_PATH))
 
+
 open(LOGFILE, 'w').close()
 log = logging.getLogger('TextboxSTT')
 sys.stdout = LogToFile(log, logging.INFO, LOGFILE)
@@ -560,8 +561,10 @@ def determine_energy_threshold():
 
     config_ui.set_energy_threshold("Be quiet for 5 seconds...")
     with source:
+        _last = rec.energy_threshold
         rec.adjust_for_ambient_noise(source, 5)
-        value = round(rec.energy_threshold)
+        value = round(rec.energy_threshold) + 20
+        rec.energy_threshold = _last
         config_ui.set_energy_threshold(str(value))
 
 
