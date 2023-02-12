@@ -65,7 +65,6 @@ import threading
 import time
 import keyboard
 import numpy as np
-from pythonosc import udp_client
 import winsound
 import speech_recognition as sr
 import openvr

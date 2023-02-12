@@ -4,6 +4,8 @@ import whisper
 from whisper import tokenizer
 import pyaudio
 import keyboard
+import glob
+import shutil
 
 class MainWindow(object):
     def __init__(self, version):
@@ -108,8 +110,8 @@ class SettingsWindow:
         self.tooltip_window = None
 
         self.tkui = tk.Tk()
-        self.tkui.minsize(480, 767)
-        self.tkui.maxsize(480, 767)
+        self.tkui.minsize(480, 805)
+        self.tkui.maxsize(480, 805)
         self.tkui.resizable(False, False)
         self.tkui.configure(bg="#333333")
         self.tkui.title("TextboxSTT - Settings")
@@ -343,6 +345,14 @@ class SettingsWindow:
         self.button_emotes.grid(row=19, column=1, padx=PADX_R, pady=PADY, sticky='ws')
         self.opt_emotes.bind("<Enter>", (lambda event: self.show_tooltip("If you want to use emotes on KAT")))
         self.opt_emotes.bind("<Leave>", self.hide_tooltip)
+        self.button_emotes.bind("<Enter>", (lambda event: self.show_tooltip("Edit the emotes you want to use on KAT")))
+        self.button_emotes.bind("<Leave>", self.hide_tooltip)
+
+        self.button_reset_config = tk.Button(self.tkui, text="Reset OSC config", command=self.reset_osc_config)
+        self.button_reset_config.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, width=23, anchor="center", activebackground="#555555", activeforeground="white")
+        self.button_reset_config.grid(row=20, column=1, padx=PADX_R, pady=PADY, sticky='ws')
+        self.button_reset_config.bind("<Enter>", (lambda event: self.show_tooltip("Resets OSC config by deleting the all the usr_ folders in %APPDATA%\\..\\LocalLow\\VRChat\\VRChat\\OSC")))
+        self.button_reset_config.bind("<Leave>", self.hide_tooltip)
 
         self.btn_save = tk.Button(self.tkui, text="Save")
         self.btn_save.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=53, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
@@ -457,6 +467,14 @@ class SettingsWindow:
         self.entry_energy_threshold.delete(0, tk.END)
         self.entry_energy_threshold.insert(0, str(text))
         self.update()
+
+    def reset_osc_config(self):
+        print("RESET OSC CONFIG")
+        
+        dirs = glob.glob("C:/Users/ROOT/AppData/LocalLow/VRChat/VRChat/OSC/usr_*/")
+        print(dirs)
+        for dir in dirs:
+            shutil.rmtree(dir)
 
 class EmoteWindow:
     def __init__(self, config, config_path):
