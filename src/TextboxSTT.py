@@ -142,7 +142,7 @@ def init():
     sys.stderr = LogToFile(log, logging.ERROR, LOGFILE)
     use_cpu = True if str(model.device) == "cpu" else False
 
-    main_window.set_status_label(f"Testing Whisper Configuration", "orange")
+    main_window.set_status_label(f"TESTING CONFIGURATION", "orange")
     model.transcribe(torch.zeros(256), fp16=not use_cpu, language=language, without_timestamps=True)
 
     # load the speech recognizer and set the initial energy threshold and pause threshold
