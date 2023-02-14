@@ -5,7 +5,7 @@
     "model": "base",
     "language": "english",
     "hotkey": "f1",
-    "realtime": false,
+    "mode": 0,
     "dynamic_energy_threshold": false,
     "energy_threshold": 200,
     "pause_threshold": 0.8,

@@ -246,6 +246,72 @@ def transcribe(torch_audio):
     return result['text']
 
 
+def process_forever():
+    global data_queue
+    global source
+    global rec
+    global main_window
+    global pressed
+    global config_ui_open
+
+    play_sound("listen", __file__)
+
+    _text = ""
+    _time_last = None
+    _last_sample = bytes()
+
+    main_window.set_button_enabled(True)
+    set_typing_indicator(True)
+    main_window.set_status_label("LISTENING", "#FF00FF")
+
+    def record_callback(_, audio:sr.AudioData) -> None:
+        _data = audio.get_raw_data()
+        data_queue.put(_data)
+
+    _stop_listening = rec.listen_in_background(source, record_callback, phrase_time_limit=CONFIG["phrase_time_limit"])
+
+    _time_last = time.time()
+    while True:
+        if config_ui_open:
+            break
+        
+        if pressed:
+            _time_last = time.time()
+            _held = False
+            while pressed:
+                if time.time() - _time_last > CONFIG["hold_time"]:
+                    _held = True
+                    break
+                time.sleep(0.05)
+            if _held:
+                main_window.set_status_label("CLEARED", "#00008b")
+                play_sound("clear", __file__)
+                clear_chatbox()
+                break
+        elif not data_queue.empty():
+            while not data_queue.empty():
+                data = data_queue.get()
+                _last_sample += data
+
+            torch_audio = torch.from_numpy(np.frombuffer(_last_sample, np.int16).flatten().astype(np.float32) / 32768.0)
+
+            _text = transcribe(torch_audio)
+                
+            _time_last = time.time()
+            populate_chatbox(_text, True)
+        elif _last_sample != bytes() and time.time() - _time_last > CONFIG["pause_threshold"]:
+            print(_text)
+            _last_sample = bytes()
+            
+        time.sleep(0.05)
+
+    set_typing_indicator(False)
+    main_window.set_button_enabled(True)
+    _stop_listening(wait_for_stop=False)
+    data_queue.queue.clear()
+    time.sleep(1)
+
+
 def process_loop():
     global data_queue
     global source
@@ -313,8 +379,7 @@ def process_loop():
     main_window.set_button_enabled(True)
     _stop_listening(wait_for_stop=False)
     data_queue.queue.clear()
-    time.sleep(1)
-
+    time.sleep(0.1)
 
 def process_once():
     global main_window
@@ -390,7 +455,10 @@ def handle_input():
 
     pressed = get_trigger_state()
 
-    if thread_process.is_alive() or config_ui_open:
+    if not thread_process.is_alive() and CONFIG["mode"] == 2 and not config_ui_open:
+        thread_process = threading.Thread(target=process_forever)
+        thread_process.start()
+    elif thread_process.is_alive() or config_ui_open:
         return
     elif pressed and not holding and not held:
         holding = True
@@ -406,7 +474,7 @@ def handle_input():
     elif not pressed and holding and not held:
         held = True
         holding = False
-        thread_process = threading.Thread(target=process_loop if CONFIG["realtime"] else process_once)
+        thread_process = threading.Thread(target=process_loop if CONFIG["mode"] else process_once)
         thread_process.start()
     elif not pressed and held:
         held = False
