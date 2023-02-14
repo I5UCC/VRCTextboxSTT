@@ -2,21 +2,14 @@ import os
 import sys
 import json
 import logging
-from logtofile import LogToFile
-from ctypes import windll, byref, create_unicode_buffer, create_string_buffer
-
-
-def get_absolute_path(relative_path):
-    """Gets absolute path from relative path"""
-    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
-    return os.path.join(base_path, relative_path)
+from tools import LogToFile, loadfont, get_absolute_path, play_sound
 
 
 VERSION = "v0.7"
 ACTIONSETHANDLE = "/actions/textboxstt"
 STTLISTENHANDLE = "/actions/textboxstt/in/sttlisten"
-LOGFILE = get_absolute_path('out.log')
-CONFIG_PATH = get_absolute_path('config.json')
+LOGFILE = get_absolute_path('out.log', __file__)
+CONFIG_PATH = get_absolute_path('config.json', __file__)
 CONFIG = json.load(open(CONFIG_PATH))
 
 
@@ -26,46 +19,14 @@ sys.stdout = LogToFile(log, logging.INFO, LOGFILE)
 sys.stderr = LogToFile(log, logging.ERROR, LOGFILE)
 
 
-def loadfont(fontpath, private=True, enumerable=False):
-    '''
-    Makes fonts located in file `fontpath` available to the font system.
-
-    `private`     if True, other processes cannot see this font, and this
-                  font will be unloaded when the process dies
-    `enumerable`  if True, this font will appear when enumerating fonts
-
-    See https://msdn.microsoft.com/en-us/library/dd183327(VS.85).aspx
-
-    '''
-    # This function was taken from
-    # https://github.com/ifwe/digsby/blob/f5fe00244744aa131e07f09348d10563f3d8fa99/digsby/src/gui/native/win/winfonts.py#L15
-    # "Copyright (c) 2006-2012 Tagged, Inc; All Rights Reserved"
-    FR_PRIVATE  = 0x10
-    FR_NOT_ENUM = 0x20
-
-    if isinstance(fontpath, bytes):
-        pathbuf = create_string_buffer(fontpath)
-        add_font_resource_ex = windll.gdi32.AddFontResourceExA
-    elif isinstance(fontpath, str):
-        pathbuf = create_unicode_buffer(fontpath)
-        add_font_resource_ex = windll.gdi32.AddFontResourceExW
-    else:
-        raise TypeError('fontpath must be of type str or bytes')
-
-    flags = (FR_PRIVATE if private else 0) | (FR_NOT_ENUM if not enumerable else 0)
-    num_fonts_added = add_font_resource_ex(byref(pathbuf), flags, 0)
-    return bool(num_fonts_added)
-
-
 if os.name == 'nt':
-    loadfont(get_absolute_path("resources/CascadiaCode.ttf"))
+    loadfont(get_absolute_path("resources/CascadiaCode.ttf", __file__))
 
 
 import threading
 import time
 import keyboard
 import numpy as np
-import winsound
 import speech_recognition as sr
 import openvr
 import whisper
@@ -130,7 +91,7 @@ def init():
         _whisper_model = _whisper_model + ".en"
 
     # Temporarily output stderr to text label for download progress.
-    if not os.path.isfile(get_absolute_path(f"whisper_cache/{_whisper_model}.pt")):
+    if not os.path.isfile(get_absolute_path(f"whisper_cache/{_whisper_model}.pt", __file__)):
         sys.stderr.write = main_window.loading_status
     else:
         print("Whisper model already in cache.")
@@ -138,7 +99,7 @@ def init():
     main_window.set_status_label(f"LOADING \"{_whisper_model}\" MODEL", "orange")
     # Load Whisper model
     device = "cpu" if bool(CONFIG["use_cpu"]) or not torch.cuda.is_available() else "cuda"
-    model = whisper.load_model(_whisper_model, download_root=get_absolute_path("whisper_cache/"), in_memory=True, device=device)
+    model = whisper.load_model(_whisper_model, download_root=get_absolute_path("whisper_cache/", __file__), in_memory=True, device=device)
     sys.stderr = LogToFile(log, logging.ERROR, LOGFILE)
     use_cpu = True if str(model.device) == "cpu" else False
 
@@ -159,8 +120,8 @@ def init():
     ovr_initialized = False
     try:
         application = openvr.init(openvr.VRApplication_Utility)
-        action_path = get_absolute_path("bindings/textboxstt_actions.json")
-        appmanifest_path = get_absolute_path("app.vrmanifest")
+        action_path = get_absolute_path("bindings/textboxstt_actions.json", __file__)
+        appmanifest_path = get_absolute_path("app.vrmanifest", __file__)
         openvr.VRApplications().addApplicationManifest(appmanifest_path)
         openvr.VRInput().setActionManifestPath(action_path)
         action_set_handle = openvr.VRInput().getActionSetHandle(ACTIONSETHANDLE)
@@ -173,12 +134,6 @@ def init():
 
     main_window.set_conf_label(CONFIG["osc_ip"], CONFIG["osc_port"], CONFIG["osc_server_port"], ovr_initialized, use_cpu, _whisper_model)
     main_window.set_status_label("INITIALIZED - WAITING FOR INPUT", "green")
-
-
-def play_sound(filename):
-    """Plays a wave file."""
-    filename = f"resources/{filename}.wav"
-    winsound.PlaySound(get_absolute_path(filename), winsound.SND_FILENAME | winsound.SND_ASYNC)
 
 
 def replace_emotes(text):
@@ -305,7 +260,7 @@ def process_loop():
     main_window.set_button_enabled(False)
     set_typing_indicator(True)
     main_window.set_status_label("LISTENING", "#FF00FF")
-    play_sound("listen")
+    play_sound("listen", __file__)
 
     def record_callback(_, audio:sr.AudioData) -> None:
         _data = audio.get_raw_data()
@@ -325,12 +280,12 @@ def process_loop():
                 time.sleep(0.05)
             if _held:
                 main_window.set_status_label("CLEARED - WAITING FOR INPUT", "#00008b")
-                play_sound("clear")
+                play_sound("clear", __file__)
                 clear_chatbox()
                 break
             elif _last_sample == bytes():
                 main_window.set_status_label("CANCELED - WAITING FOR INPUT", "#00008b")
-                play_sound("timeout")
+                play_sound("timeout", __file__)
                 break
         elif not data_queue.empty():
             while not data_queue.empty():
@@ -346,11 +301,11 @@ def process_loop():
         elif _last_sample != bytes() and time.time() - _time_last > CONFIG["pause_threshold"]:
             main_window.set_status_label("FINISHED - WAITING FOR INPUT", "blue")
             print(_text)
-            play_sound("finished")
+            play_sound("finished", __file__)
             break
         elif _last_sample == bytes() and time.time() - _time_last > CONFIG["timeout_time"]:
             main_window.set_status_label("TIMEOUT - WAITING FOR INPUT", "#00008b")
-            play_sound("timeout")
+            play_sound("timeout", __file__)
             break
         time.sleep(0.05)
 
@@ -368,14 +323,14 @@ def process_once():
     main_window.set_button_enabled(False)
     set_typing_indicator(True)
     main_window.set_status_label("LISTENING", "#FF00FF")
-    play_sound("listen")
+    play_sound("listen", __file__)
     _torch_audio = listen_once()
     if _torch_audio is None:
         main_window.set_status_label("TIMEOUT - WAITING FOR INPUT", "orange")
-        play_sound("timeout")
+        play_sound("timeout", __file__)
         set_typing_indicator(False)
     else:
-        play_sound("donelisten")
+        play_sound("donelisten", __file__)
         set_typing_indicator(True)
         print(_torch_audio)
         main_window.set_status_label("TRANSCRIBING", "orange")
@@ -384,17 +339,17 @@ def process_once():
             _trans = transcribe(_torch_audio)
             if pressed:
                 main_window.set_status_label("CANCELED - WAITING FOR INPUT", "orange")
-                play_sound("timeout")
+                play_sound("timeout", __file__)
             elif _trans:
                 main_window.set_status_label("FINISHED - WAITING FOR INPUT", "blue")
                 populate_chatbox(_trans)
-                play_sound("finished")
+                play_sound("finished", __file__)
             else:
                 main_window.set_status_label("ERROR TRANSCRIBING - WAITING FOR INPUT", "red")
-                play_sound("timeout")
+                play_sound("timeout", __file__)
         else:
             main_window.set_status_label("CANCELED - WAITING FOR INPUT", "orange")
-            play_sound("timeout")
+            play_sound("timeout", __file__)
 
     set_typing_indicator(False)
     main_window.set_button_enabled(True)
@@ -445,7 +400,7 @@ def handle_input():
         if time.time() - curr_time > CONFIG["hold_time"]:
             clear_chatbox()
             main_window.set_status_label("CLEARED - WAITING FOR INPUT", "#00008b")
-            play_sound("clear")
+            play_sound("clear", __file__)
             held = True
             holding = False
     elif not pressed and holding and not held:
@@ -465,11 +420,11 @@ def entrybox_enter_event(text):
     enter_pressed = True
     if text:
         populate_chatbox(text)
-        play_sound("finished")
+        play_sound("finished", __file__)
         main_window.clear_textfield()
     else:
         clear_chatbox()
-        play_sound("clear")
+        play_sound("clear", __file__)
 
 
 def textfield_keyrelease(text):
