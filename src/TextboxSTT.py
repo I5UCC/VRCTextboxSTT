@@ -2,7 +2,7 @@ import os
 import sys
 import json
 import logging
-from tools import LogToFile, loadfont, get_absolute_path, play_sound
+from helper import LogToFile, loadfont, get_absolute_path, play_sound
 
 
 VERSION = "v0.7"
