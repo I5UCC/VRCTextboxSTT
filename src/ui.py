@@ -6,6 +6,7 @@ import pyaudio
 import keyboard
 import glob
 import shutil
+import os
 
 class MainWindow(object):
     def __init__(self, version):
@@ -479,9 +480,9 @@ class SettingsWindow:
 
     def reset_osc_config(self):
         print("RESET OSC CONFIG")
-        
-        dirs = glob.glob("C:/Users/ROOT/AppData/LocalLow/VRChat/VRChat/OSC/usr_*/")
-        print(dirs)
+        appdata_path = os.getenv('APPDATA')
+        osc_path = appdata_path + "\\..\\LocalLow\\VRChat\\VRChat\\OSC"
+        dirs = glob.glob(osc_path + "\\usr_*\\")
         for dir in dirs:
             shutil.rmtree(dir)
 
