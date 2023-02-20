@@ -66,7 +66,7 @@ With default settings, this program has following requirements:
 ![EnableOSC](https://user-images.githubusercontent.com/43730681/172059335-db3fd6f9-86ae-4f6a-9542-2a74f47ff826.gif)
 - Run the program.
 - The program will use your standard microphone set in windows.
-- if you have a lot of background noise you should play around with the "energy_threshold" option in the ***config.json*** file to get it working well.
+- if you have a lot of background noise you should play around with the "energy_threshold" option in the configuration (or press the ⟳ button next to it), to get it working well.
 - Press A on the left Controller on index or X on Oculus or F1 on your Keyboard.
 - Holding any of those for 1.5s clears the chatbox or cancels the action.
 
