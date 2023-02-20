@@ -41,8 +41,8 @@ osc: OscHandler = None
 use_kat: bool = True
 use_textbox: bool = True
 use_both: bool = True
-model: whisper = "base"
-language: str = "english"
+model: whisper = None
+language: str = ""
 use_cpu: bool = False
 rec: sr.Recognizer = None
 source: sr.Microphone = None
@@ -235,15 +235,20 @@ def listen_once():
         return torch.from_numpy(np.frombuffer(audio.get_raw_data(), np.int16).flatten().astype(np.float32) / 32768.0)
 
 
-def transcribe(torch_audio):
+def transcribe(torch_audio, last_tokens = []):
     global use_cpu
     global language
     global model
 
-    options = {"without_timestamps": True}
+    options = {"without_timestamps": True, "prompt": last_tokens}
     result = model.transcribe(torch_audio, fp16=not use_cpu, language=language, **options)
 
-    return result['text']
+    _text = result['text']
+    _tokens = []
+    for segment in result['segments']:
+        _tokens += segment['tokens']
+        
+    return (_text, _tokens)
 
 
 def process_forever():
@@ -271,6 +276,7 @@ def process_forever():
     _stop_listening = rec.listen_in_background(source, record_callback, phrase_time_limit=CONFIG["phrase_time_limit"])
 
     _time_last = time.time()
+    _last_tokens = []
     while True:
         if config_ui_open:
             break
@@ -293,9 +299,11 @@ def process_forever():
                 data = data_queue.get()
                 _last_sample += data
 
-            torch_audio = torch.from_numpy(np.frombuffer(_last_sample, np.int16).flatten().astype(np.float32) / 32768.0)
+            _torch_audio = torch.from_numpy(np.frombuffer(_last_sample, np.int16).flatten().astype(np.float32) / 32768.0)
 
-            _text = transcribe(torch_audio)
+            _transcription = transcribe(_torch_audio, _last_tokens)
+            _text = _transcription[0]
+            _last_tokens = _transcription[1]
                 
             _time_last = time.time()
             populate_chatbox(_text, True)
@@ -335,6 +343,7 @@ def process_loop():
     _stop_listening = rec.listen_in_background(source, record_callback, phrase_time_limit=CONFIG["phrase_time_limit"])
 
     _time_last = time.time()
+    _last_tokens = []
     while True:
         if pressed:
             _time_last = time.time()
@@ -358,9 +367,11 @@ def process_loop():
                 data = data_queue.get()
                 _last_sample += data
 
-            torch_audio = torch.from_numpy(np.frombuffer(_last_sample, np.int16).flatten().astype(np.float32) / 32768.0)
+            _torch_audio = torch.from_numpy(np.frombuffer(_last_sample, np.int16).flatten().astype(np.float32) / 32768.0)
 
-            _text = transcribe(torch_audio)
+            _transcription = transcribe(_torch_audio, _last_tokens)
+            _text = _transcription[0]
+            _last_tokens = _transcription[1]
                 
             _time_last = time.time()
             populate_chatbox(_text, True)
@@ -401,7 +412,7 @@ def process_once():
         main_window.set_status_label("TRANSCRIBING", "orange")
 
         if not pressed:
-            _trans = transcribe(_torch_audio)
+            _trans = transcribe(_torch_audio)[0]
             if pressed:
                 main_window.set_status_label("CANCELED - WAITING FOR INPUT", "orange")
                 play_sound("timeout", __file__)
