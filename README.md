@@ -10,6 +10,7 @@
 - [Features](https://github.com/I5UCC/VRCTextboxSTT#features)
 - [Limitations](https://github.com/I5UCC/VRCTextboxSTT#limitations)
 - [Requirements](https://github.com/I5UCC/VRCTextboxSTT#requirements)
+- [Demo](https://github.com/I5UCC/VRCTextboxSTT#demo)
 - [How to use](https://github.com/I5UCC/VRCTextboxSTT#how-to-use)
 - [OSC Troubleshoot](https://github.com/I5UCC/VRCTextboxSTT#osc-troubleshoot)
 - [Configuration](https://github.com/I5UCC/VRCTextboxSTT#configuration)
@@ -59,6 +60,11 @@ With default settings, this program has following requirements:
   - ~1GB of available RAM.
   - ~1GB of available VRAM.
 - SteamVR (IF ran in VR, no Oculus support as of now.)
+
+# Demo
+
+[Frosty704](https://github.com/Frosty704) using VRCTextboxSTT and [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText) with their [Billboard](https://github.com/Frosty704/Billboard) project. More to that on their repository.
+![](https://user-images.githubusercontent.com/36753686/216971733-6301f273-8c52-4b9c-a8ff-d9d440a2e3d0.gif)
 
 # How to use
 
