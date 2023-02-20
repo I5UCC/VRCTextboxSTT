@@ -78,12 +78,14 @@ With default settings, this program has following requirements:
 
 ## OSC Troubleshoot
 
-If you have problems with this program, try this to fix it:
-- Close VRChat.
-- Open 'Run' in Windows (Windows Key + R)
-- Type in `%APPDATA%\..\LocalLow\VRChat\VRChat\OSC`
-- Delete the folders that start with 'usr_*'.
-- Startup VRChat again and it should work.
+
+If you have problems with this program, try this to fix it:<br><br>
+1 - Close VRChat.<br>
+2a - Press the "Reset OSC Settings" in the Settings of TextboxSTT<br>
+2b - Open 'Run' in Windows (Windows Key + R). <br>
+        Type in `%APPDATA%\..\LocalLow\VRChat\VRChat\OSC`<br>
+       ㅤㅤ Delete the folders that start with 'usr_*'.<br>
+3 - Startup VRChat again and it should work.
 
 # Configuration
 
