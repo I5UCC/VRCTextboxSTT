@@ -4,6 +4,7 @@
     "osc_server_port": 9001,
     "model": "base",
     "language": "english",
+    "translate_to_english": false,
     "hotkey": "f1",
     "mode": 0,
     "dynamic_energy_threshold": false,

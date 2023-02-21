@@ -43,6 +43,7 @@ use_textbox: bool = True
 use_both: bool = True
 model: whisper = None
 language: str = ""
+task: str = "transcribe"
 use_cpu: bool = False
 rec: sr.Recognizer = None
 source: sr.Microphone = None
@@ -69,6 +70,7 @@ def init():
     global use_both
     global model
     global language
+    global task
     global use_cpu
     global rec
     global source
@@ -89,6 +91,8 @@ def init():
         language = None
     elif _whisper_model != "large" and language == "english" and ".en" not in _whisper_model:
         _whisper_model = _whisper_model + ".en"
+    task = "translate" if CONFIG["translate_to_english"] and language != "english" else "transcribe"
+    print(f"Using model: {_whisper_model} for language: {language} ({task}) ")
 
     # Temporarily output stderr to text label for download progress.
     if not os.path.isfile(get_absolute_path(f"whisper_cache/{_whisper_model}.pt", __file__)):
@@ -228,24 +232,25 @@ def listen_once():
 
     with source:
         try:
-            audio = rec.listen(source, timeout=float(CONFIG["timeout_time"]))
+            _audio = rec.listen(source, timeout=float(CONFIG["timeout_time"]))
         except sr.WaitTimeoutError:
             return None
 
-        return torch.from_numpy(np.frombuffer(audio.get_raw_data(), np.int16).flatten().astype(np.float32) / 32768.0)
+        return torch.from_numpy(np.frombuffer(_audio.get_raw_data(), np.int16).flatten().astype(np.float32) / 32768.0)
 
 
 def transcribe(torch_audio, last_tokens = []):
     global use_cpu
     global language
     global model
+    global task
 
-    options = {"without_timestamps": True, "prompt": last_tokens}
-    result = model.transcribe(torch_audio, fp16=not use_cpu, language=language, **options)
+    _options = {"without_timestamps": True, "prompt": last_tokens, "task": task}
+    _result = model.transcribe(torch_audio, fp16=not use_cpu, language=language, **_options)
 
-    _text = result['text']
+    _text = _result['text']
     _tokens = []
-    for segment in result['segments']:
+    for segment in _result['segments']:
         _tokens += segment['tokens']
         
     return (_text, _tokens)
