@@ -199,7 +199,7 @@ def clear_chatbox():
     main_window.set_text_label("- No Text -")
 
 
-def populate_chatbox(text, cutoff: bool = False):
+def populate_chatbox(text, cutoff: bool = False, is_textfield: bool = False):
     global main_window
     global use_textbox
     global use_kat
@@ -212,7 +212,7 @@ def populate_chatbox(text, cutoff: bool = False):
         return
 
     if use_textbox and use_both or use_textbox and use_kat and not osc.isactive or not use_kat:
-        osc.set_textbox_text(text, cutoff)
+        osc.set_textbox_text(text, cutoff, CONFIG["mode"] == 0 and not is_textfield)
 
     if use_kat and osc.isactive:
         if CONFIG["enable_emotes"]:
@@ -503,7 +503,7 @@ def entrybox_enter_event(text):
 
     enter_pressed = True
     if text:
-        populate_chatbox(text)
+        populate_chatbox(text, False, True)
         play_sound("finished", __file__)
         main_window.clear_textfield()
     else:
@@ -525,7 +525,7 @@ def textfield_keyrelease(text):
         if _is_text_empty:
             clear_chatbox()
         else:
-            populate_chatbox(text)
+            populate_chatbox(text, False, True)
     
     enter_pressed = False
 

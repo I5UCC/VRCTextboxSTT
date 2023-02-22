@@ -44,6 +44,7 @@ class OscHandler:
 		self.osc_chatbox_path: str = "/chatbox/input"
 		self.osc_chatbox_typing_path = "/chatbox/typing"
 		self.osc_parameter_listening = "/avatar/parameters/stt_listening"
+		self.last_chatbox_text: str = ""
 		self.osc_chatbox_text: str = ""
 		self.osc_text: str = ""
 		self.kat_target_text: str = ""
@@ -377,11 +378,14 @@ class OscHandler:
 
 
 	# Set the text to any value
-	def set_textbox_text(self, text: str, cutoff: bool = False):
+	def set_textbox_text(self, text: str, cutoff: bool = False, instant: bool = False):
 		if cutoff:
 			self.textbox_target_text = text[-self.textbox_charlimit:]
 		else:
 			self.textbox_target_text = text[:self.textbox_charlimit]
+
+		if instant:
+			self.osc_chatbox_loop()
 
 
 	# Set the text to any value
@@ -410,8 +414,11 @@ class OscHandler:
 	# Chatbox loop
 	def osc_chatbox_loop(self):
 		gui_text = self.textbox_target_text.replace("\n", " ")
-		if self.osc_chatbox_text == gui_text and self.osc_chatbox_text != "":
+
+		if gui_text == self.last_chatbox_text:
 			return
+
+		self.last_chatbox_text = gui_text
 
 		self.osc_client.send_message(self.osc_chatbox_path, [gui_text, True, True if self.textbox_target_text == "" else False])
 		self.osc_chatbox_text = gui_text
