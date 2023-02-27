@@ -134,7 +134,7 @@ def init():
         overlay_handle = openvr.VROverlay().createOverlay("TextboxSTT", "TextboxSTT Transcription Overlay")
         openvr.VROverlay().setOverlayWidthInMeters(overlay_handle, 1)
         openvr.VROverlay().setOverlayColor(overlay_handle, 1.0, 1.0, 1.0)
-        openvr.VROverlay().setOverlayAlpha(overlay_handle, 1)
+        openvr.VROverlay().setOverlayAlpha(overlay_handle, CONFIG["overlay"]["opacity"])
         overlay_font = ImageFont.truetype(get_absolute_path("resources/CascadiaCode.ttf"), 46)
         set_overlay_position_hmd()
         action_path = get_absolute_path("bindings/textboxstt_actions.json", __file__)
@@ -157,7 +157,7 @@ def set_overlay_text(text: str):
     global overlay_handle
     global overlay_font
 
-    if text == "":
+    if text == "" or not CONFIG["overlay_enabled"]:
         openvr.VROverlay().hideOverlay(overlay_handle)
         return
 
@@ -169,7 +169,7 @@ def set_overlay_text(text: str):
 
     _img = Image.new("RGBA", (_width, _height))
     _draw = ImageDraw.Draw(_img)
-    _draw.text((_width/2, _height/2), text, font=overlay_font, fill="white", anchor="mm", stroke_width=2, stroke_fill="black", align="center")
+    _draw.text((_width/2, _height/2), text, font=overlay_font, fill=CONFIG["overlay"]["font_color"], anchor="mm", stroke_width=2, stroke_fill=CONFIG["overlay"]["border_color"], align="center")
     _img_data = _img.tobytes()
 
     _buffer = (ctypes.c_char * len(_img_data)).from_buffer_copy(_img_data)
@@ -177,16 +177,16 @@ def set_overlay_text(text: str):
     openvr.VROverlay().setOverlayRaw(overlay_handle, _buffer, _width, _height, 4)
 
 
-def set_overlay_position_hmd(x = 0, y = -0.4, size = 1, distance = -1):
+def set_overlay_position_hmd():
     global overlay_handle
 
     overlay_matrix = openvr.HmdMatrix34_t()
-    overlay_matrix[0][0] = size
-    overlay_matrix[1][1] = size
-    overlay_matrix[2][2] = size
-    overlay_matrix[0][3] = x
-    overlay_matrix[1][3] = y
-    overlay_matrix[2][3] = distance
+    overlay_matrix[0][0] = CONFIG["overlay"]["size"]
+    overlay_matrix[1][1] = CONFIG["overlay"]["size"]
+    overlay_matrix[2][2] = CONFIG["overlay"]["size"]
+    overlay_matrix[0][3] = CONFIG["overlay"]["pos_x"]
+    overlay_matrix[1][3] = CONFIG["overlay"]["pos_y"]
+    overlay_matrix[2][3] = CONFIG["overlay"]["distance"]
 
     openvr.VROverlay().setOverlayTransformTrackedDeviceRelative(overlay_handle, openvr.k_unTrackedDeviceIndex_Hmd, overlay_matrix)
 
@@ -213,7 +213,7 @@ def replace_words(text):
         return None
 
     text = text.strip()
-    if CONFIG["word_replacements"] == {}:
+    if not CONFIG["enable_word_replacements"] or CONFIG["word_replacements"] == {}:
         return text
 
     for key, value in CONFIG["word_replacements"].items():
@@ -604,11 +604,17 @@ def settings_closing(save=False):
     global osc
     global config_ui
     global config_ui_open
+    global overlay_handle
 
     if save:
-        osc.stop()
-        config_ui.save()
-        config_ui.on_closing()
+        try:
+            config_ui.save()
+            osc.stop()
+            openvr.VROverlay().destroyOverlay(overlay_handle)
+            config_ui.on_closing()
+        except:
+            print("Error saving settings")
+
         try:
             init()
         except Exception as e:
