@@ -18,16 +18,17 @@
     "use_textbox": true,
     "use_kat": true,
     "use_both": false,
-    "overlay_enabled": true,
+    "enable_word_replacements": true,
     "word_replacements": {},
+    "overlay_enabled": true,
     "overlay": {
-        "pos_x": 0,
+        "pos_x": 0.0,
         "pos_y": -0.4,
-        "size:": 1,
-        "distance": -1,
+        "size": 1.0,
+        "distance": -1.0,
         "font_color": "white",
         "border_color": "black",
-        "opacity": 1
+        "opacity": 1.0
     },
     "enable_emotes": true,
     "emotes": {
