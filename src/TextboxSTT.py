@@ -193,7 +193,7 @@ def clear_chatbox():
 
     main_window.clear_textfield()
     if use_textbox and use_both or use_textbox and use_kat and not osc.isactive or not use_kat:
-        osc.textbox_target_text = ""
+        osc.clear_chatbox(CONFIG["mode"] == 0)
     if use_kat and osc.isactive:
         osc.clear_kat()
     main_window.set_text_label("- No Text -")

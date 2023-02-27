@@ -648,8 +648,11 @@ class OscHandler:
 		self.osc_client.send_message(self.osc_parameter_prefix + self.param_pointer, 255) # Clear KAT text
 		self.hide()
 
-	def clear_chatbox(self):
+	def clear_chatbox(self, instant: bool = False):
 		self.textbox_target_text = ""
+
+		if instant:
+			self.osc_chatbox_loop()
 
 
 class RepeatedTimer(object):
