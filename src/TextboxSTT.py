@@ -38,6 +38,7 @@ from queue import Queue
 from PIL import Image, ImageDraw, ImageFont
 import ctypes
 import textwrap
+import psutil
 
 
 osc: OscHandler = None
@@ -130,6 +131,9 @@ def init():
     main_window.set_status_label("INITIALIZING OVR", "orange")
     ovr_initialized = False
     try:
+        if "vrserver.exe" not in (p.name() for p in psutil.process_iter()):
+            raise Exception("SteamVR not running.")
+
         application = openvr.init(openvr.VRApplication_Scene)
         overlay_handle = openvr.VROverlay().createOverlay("TextboxSTT", "TextboxSTT Transcription Overlay")
         openvr.VROverlay().setOverlayWidthInMeters(overlay_handle, 1)
@@ -145,8 +149,8 @@ def init():
         button_action_handle = openvr.VRInput().getActionHandle(STTLISTENHANDLE)
         ovr_initialized = True
         main_window.set_status_label("INITIALZIED OVR", "green")
-    except Exception:
-        ovr_initialized = False
+    except Exception as e:
+        print(e)
         main_window.set_status_label("COULDNT INITIALIZE OVR, CONTINUING DESKTOP ONLY", "red")
 
     main_window.set_conf_label(CONFIG["osc_ip"], CONFIG["osc_port"], CONFIG["osc_server_port"], ovr_initialized, use_cpu, _whisper_model)
@@ -156,6 +160,10 @@ def init():
 def set_overlay_text(text: str):
     global overlay_handle
     global overlay_font
+    global ovr_initialized
+
+    if not ovr_initialized:
+        return
 
     if text == "" or not CONFIG["overlay_enabled"]:
         openvr.VROverlay().hideOverlay(overlay_handle)

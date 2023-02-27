@@ -78,7 +78,7 @@ class MainWindow(object):
             self.set_text_label("Done.")
 
     def set_conf_label(self, ip, port, server_port, ovr_initialized, use_cpu, model):
-        self.conf_lbl.configure(text=f"OSC: {ip}#{port}:{server_port}, OVR: {'Connected' if ovr_initialized else 'Failed'}, Device: {'CPU' if use_cpu else 'GPU'}, Model: {model}")
+        self.conf_lbl.configure(text=f"OSC: {ip}#{port}:{server_port}, OVR: {'Connected' if ovr_initialized else 'Disconnected'}, Device: {'CPU' if use_cpu else 'GPU'}, Model: {model}")
         self.update()
 
     def clear_textfield(self):
