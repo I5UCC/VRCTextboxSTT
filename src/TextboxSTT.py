@@ -5,7 +5,7 @@ import logging
 from helper import LogToFile, loadfont, get_absolute_path, play_sound
 
 
-VERSION = "v0.7"
+VERSION = "v0.8"
 ACTIONSETHANDLE = "/actions/textboxstt"
 STTLISTENHANDLE = "/actions/textboxstt/in/sttlisten"
 LOGFILE = get_absolute_path('out.log', __file__)
