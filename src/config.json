@@ -1,4 +1,5 @@
 {
+    "use_cpu": false,
     "osc_ip": "127.0.0.1",
     "osc_port": 9000,
     "osc_server_port": 9001,
@@ -14,11 +15,20 @@
     "hold_time": 1.5,
     "phrase_time_limit": 2.0,
     "microphone_index": null,
-    "word_replacements": {},
     "use_textbox": true,
     "use_kat": true,
     "use_both": false,
-    "use_cpu": false,
+    "overlay_enabled": true,
+    "word_replacements": {},
+    "overlay": {
+        "pos_x": 0,
+        "pos_y": -0.4,
+        "size:": 1,
+        "distance": -1,
+        "font_color": "white",
+        "border_color": "black",
+        "opacity": 1
+    },
     "enable_emotes": true,
     "emotes": {
         "0": "wicked emoji",

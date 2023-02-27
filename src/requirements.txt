@@ -13,3 +13,4 @@ keyboard
 openvr
 colorama
 python-osc
+Pillow

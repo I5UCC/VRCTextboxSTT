@@ -35,6 +35,9 @@ import re
 from osc import OscHandler
 from ui import MainWindow, SettingsWindow
 from queue import Queue
+from PIL import Image, ImageDraw, ImageFont
+import ctypes
+import textwrap
 
 
 osc: OscHandler = None
@@ -52,6 +55,8 @@ ovr_initialized: bool = False
 application: openvr.IVRSystem = None
 action_set_handle: int = None
 button_action_handle: int = None
+overlay_handle: int = None
+overlay_font: ImageFont.FreeTypeFont = None
 curr_time: float = 0.0
 pressed: bool = False
 holding: bool = False
@@ -79,6 +84,8 @@ def init():
     global application
     global action_set_handle
     global button_action_handle
+    global overlay_handle
+    global overlay_font
 
     osc = OscHandler(CONFIG["osc_ip"], CONFIG["osc_port"], CONFIG["osc_ip"], CONFIG["osc_server_port"])
     use_textbox = bool(CONFIG["use_textbox"])
@@ -123,7 +130,13 @@ def init():
     main_window.set_status_label("INITIALIZING OVR", "orange")
     ovr_initialized = False
     try:
-        application = openvr.init(openvr.VRApplication_Utility)
+        application = openvr.init(openvr.VRApplication_Scene)
+        overlay_handle = openvr.VROverlay().createOverlay("TextboxSTT", "TextboxSTT Transcription Overlay")
+        openvr.VROverlay().setOverlayWidthInMeters(overlay_handle, 1)
+        openvr.VROverlay().setOverlayColor(overlay_handle, 1.0, 1.0, 1.0)
+        openvr.VROverlay().setOverlayAlpha(overlay_handle, 1)
+        overlay_font = ImageFont.truetype(get_absolute_path("resources/CascadiaCode.ttf"), 46)
+        set_overlay_position_hmd()
         action_path = get_absolute_path("bindings/textboxstt_actions.json", __file__)
         appmanifest_path = get_absolute_path("app.vrmanifest", __file__)
         openvr.VRApplications().addApplicationManifest(appmanifest_path)
@@ -138,6 +151,44 @@ def init():
 
     main_window.set_conf_label(CONFIG["osc_ip"], CONFIG["osc_port"], CONFIG["osc_server_port"], ovr_initialized, use_cpu, _whisper_model)
     main_window.set_status_label("INITIALIZED - WAITING FOR INPUT", "green")
+
+
+def set_overlay_text(text: str):
+    global overlay_handle
+    global overlay_font
+
+    if text == "":
+        openvr.VROverlay().hideOverlay(overlay_handle)
+        return
+
+    openvr.VROverlay().showOverlay(overlay_handle)
+    text = textwrap.fill(text, 70)
+
+    _width = 1920
+    _height = 200
+
+    _img = Image.new("RGBA", (_width, _height))
+    _draw = ImageDraw.Draw(_img)
+    _draw.text((_width/2, _height/2), text, font=overlay_font, fill="white", anchor="mm", stroke_width=2, stroke_fill="black", align="center")
+    _img_data = _img.tobytes()
+
+    _buffer = (ctypes.c_char * len(_img_data)).from_buffer_copy(_img_data)
+
+    openvr.VROverlay().setOverlayRaw(overlay_handle, _buffer, _width, _height, 4)
+
+
+def set_overlay_position_hmd(x = 0, y = -0.4, size = 1, distance = -1):
+    global overlay_handle
+
+    overlay_matrix = openvr.HmdMatrix34_t()
+    overlay_matrix[0][0] = size
+    overlay_matrix[1][1] = size
+    overlay_matrix[2][2] = size
+    overlay_matrix[0][3] = x
+    overlay_matrix[1][3] = y
+    overlay_matrix[2][3] = distance
+
+    openvr.VROverlay().setOverlayTransformTrackedDeviceRelative(overlay_handle, openvr.k_unTrackedDeviceIndex_Hmd, overlay_matrix)
 
 
 def replace_emotes(text):
@@ -197,6 +248,7 @@ def clear_chatbox():
     if use_kat and osc.isactive:
         osc.clear_kat()
     main_window.set_text_label("- No Text -")
+    set_overlay_text("")
 
 
 def populate_chatbox(text, cutoff: bool = False, is_textfield: bool = False):
@@ -220,9 +272,12 @@ def populate_chatbox(text, cutoff: bool = False, is_textfield: bool = False):
         osc.set_kat_text(text, cutoff)
 
     if cutoff:
-        main_window.set_text_label(text[-osc.textbox_charlimit:])
+        text = text[-osc.textbox_charlimit:]
     else:
-        main_window.set_text_label(text[:osc.textbox_charlimit])
+        text = text[:osc.textbox_charlimit]
+    
+    main_window.set_text_label(text)
+    set_overlay_text(text)
 
     set_typing_indicator(False)
 
