@@ -131,7 +131,7 @@ def init():
     main_window.set_status_label("INITIALIZING OVR", "orange")
     ovr_initialized = False
     try:
-        if "vrserver.exe" not in (p.name() for p in psutil.process_iter()):
+        if os.name == 'nt' and "vrserver.exe" not in (p.name() for p in psutil.process_iter()):
             raise Exception("SteamVR not running.")
 
         application = openvr.init(openvr.VRApplication_Scene)
@@ -459,6 +459,7 @@ def process_loop():
     _stop_listening(wait_for_stop=False)
     data_queue.queue.clear()
     time.sleep(0.1)
+
 
 def process_once():
     global main_window
