@@ -126,7 +126,7 @@ You can edit the emote settings by clicking the "Edit Emotes" button:
 | "use_textbox" | true, false | true | If you want to send your text to VRChats Textbox. |
 | "use_kat" | true, false | true | If you want to send your text to [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText). |
 | "use_both" | true, false | false | If you want to send your text to both options above, if both available and set to true. If not, the program will prefer sending to [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText) if it is available. |
-| "emotes" | true, false | true | Whether or not to enable word replacements. |
+| "enable_emotes" | true, false | true | Whether or not to enable emotes. |
 | "emotes" | - | - | All up to 80 emote slots and their corresponding phrase. |
 
 There are five model sizes, four with English-only versions, offering speed and accuracy tradeoffs. Below are the names of the available models and their approximate memory requirements and relative speed. 
