@@ -91,7 +91,7 @@ If you have problems with this program, try this to fix it:<br><br>
 
 You can either Edit this configuration manually by editing the ***config.json*** file, or you can change those settings in the Program itself by clicking "Settings" in the bottom right: <br>
 You can hover over any of the options to get a brief explanation on what that option does.
-![image](https://user-images.githubusercontent.com/43730681/220126409-be4eabb9-2a93-4fc7-b747-aff5188c065d.png)
+![image](https://user-images.githubusercontent.com/43730681/221786297-441951e0-771a-45e2-aaea-ea8d29c9ba52.png)
 
 You can edit Word replacements by clicking the "Edit Word Replacements" button:
 
@@ -105,6 +105,7 @@ You can edit the emote settings by clicking the "Edit Emotes" button:
 
 | Option | Values | Default | Explanation |
 |:------:|:------:|:-------:|:-----------:|
+| "use_cpu" | true, false | false | Use CPU to transcribe, Always on if you downloaded the CPU version of this program. (Not editable on runtime) |
 | "IP" | Any IP-Adress | "127.0.0.1" | IP to send the OSC information to. |
 | "Port" | Any Port | 9000 | Port to send the OSC information to. |
 | "osc_server_port" | Any Port | 9001 | Port to get the OSC information from. Used to improve KAT sync with in-game avatar and autodetect sync parameter count used for the avatar." |
@@ -120,12 +121,13 @@ You can edit the emote settings by clicking the "Edit Emotes" button:
 | "phrase_time_limit" | 0.0- | 2.0 | The maximum number of seconds that this will allow a phrase to continue before stopping and returning the part of the phrase processed before the time limit was reached |
 | "max_transcribe_time" | 0.0- | 0.0 | maximum amount of time for transcribing a message before transcribing gets cancelled. 0.0 is infinite |
 | "microphone_index" | null, 0-10 | null | Index of the microphone to use. null is the System Default mircophone. |
+| "enable_word_replacements" | true, false | true | Whether or not to enable word replacements. |
 | "word_replacements" | {"word1": "replacement1", "word2": "replacement2"} | {} | Array of banned words that are gonna get removed from the transcribed text. |
 | "use_textbox" | true, false | true | If you want to send your text to VRChats Textbox. |
 | "use_kat" | true, false | true | If you want to send your text to [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText). |
 | "use_both" | true, false | false | If you want to send your text to both options above, if both available and set to true. If not, the program will prefer sending to [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText) if it is available. |
-| "use_cpu" | true, false | false | Use CPU to transcribe, Always on if you downloaded the CPU version of this program. (Not editable on runtime) |
-| "emotes" | - | - | All up to 80 emote slots and their corresponding phrase.
+| "emotes" | true, false | true | Whether or not to enable word replacements. |
+| "emotes" | - | - | All up to 80 emote slots and their corresponding phrase. |
 
 There are five model sizes, four with English-only versions, offering speed and accuracy tradeoffs. Below are the names of the available models and their approximate memory requirements and relative speed. 
 
