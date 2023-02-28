@@ -136,7 +136,7 @@ def init():
         if os.name == 'nt' and "vrserver.exe" not in (p.name() for p in psutil.process_iter()):
             raise Exception("SteamVR not running.")
 
-        application = openvr.init(openvr.VRApplication_Scene)
+        application = openvr.init(openvr.VRApplication_Overlay)
         overlay_handle = openvr.VROverlay().createOverlay("TextboxSTT", "TextboxSTT Transcription Overlay")
         openvr.VROverlay().setOverlayWidthInMeters(overlay_handle, 1)
         openvr.VROverlay().setOverlayColor(overlay_handle, 1.0, 1.0, 1.0)
