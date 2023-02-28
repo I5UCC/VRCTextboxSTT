@@ -69,6 +69,8 @@ enter_pressed: bool = False
 
 
 def init():
+    """Initialize the application."""
+
     global main_window
     global osc
     global use_textbox
@@ -158,6 +160,9 @@ def init():
 
 
 def set_overlay_text(text: str):
+    """Sets the text of the overlay by wrapping it to 70 characters and drawing it to an image.
+    Then converts the image to bytes and sets the overlay texture to it."""
+
     global overlay_handle
     global overlay_font
     global ovr_initialized
@@ -186,6 +191,8 @@ def set_overlay_text(text: str):
 
 
 def set_overlay_position_hmd():
+    """Sets the overlay position to the HMD position."""
+
     global overlay_handle
 
     overlay_matrix = openvr.HmdMatrix34_t()
@@ -200,6 +207,8 @@ def set_overlay_position_hmd():
 
 
 def replace_emotes(text):
+    """Replaces emotes in the text with the configured emotes."""
+
     if not text:
         return None
 
@@ -217,6 +226,8 @@ def replace_emotes(text):
 
 
 def replace_words(text):
+    """Replaces words in the text with the configured replacements."""
+
     if not text:
         return None
 
@@ -233,6 +244,8 @@ def replace_words(text):
 
 
 def set_typing_indicator(state: bool, textfield: bool = False):
+    """Sets the typing indicator for the Chatbox and KAT."""
+
     global use_textbox
     global use_kat
     global use_both
@@ -245,6 +258,8 @@ def set_typing_indicator(state: bool, textfield: bool = False):
 
 
 def clear_chatbox():
+    """Clears the Chatbox, KAT and Overlay."""
+
     global use_textbox
     global use_kat
     global use_both
@@ -260,6 +275,8 @@ def clear_chatbox():
 
 
 def populate_chatbox(text, cutoff: bool = False, is_textfield: bool = False):
+    """Populates the Chatbox, KAT and Overlay with the given text."""
+
     global main_window
     global use_textbox
     global use_kat
@@ -283,7 +300,7 @@ def populate_chatbox(text, cutoff: bool = False, is_textfield: bool = False):
         text = text[-osc.textbox_charlimit:]
     else:
         text = text[:osc.textbox_charlimit]
-    
+
     main_window.set_text_label(text)
     set_overlay_text(text)
 
@@ -291,6 +308,10 @@ def populate_chatbox(text, cutoff: bool = False, is_textfield: bool = False):
 
 
 def listen_once():
+    """
+    Listens once and returns the audio data as a torch tensor.
+    """
+
     global rec
 
     with source:
@@ -302,7 +323,13 @@ def listen_once():
         return torch.from_numpy(np.frombuffer(_audio.get_raw_data(), np.int16).flatten().astype(np.float32) / 32768.0)
 
 
-def transcribe(torch_audio, last_tokens = []):
+def transcribe(torch_audio, last_tokens=[]):
+    """
+    Transcribes the given audio data using the model and returns the text and the tokens.
+    :param torch_audio: The audio data as a torch tensor.
+    :param last_tokens: The last tokens of the previous transcription.
+    """
+
     global use_cpu
     global language
     global model
@@ -315,11 +342,13 @@ def transcribe(torch_audio, last_tokens = []):
     _tokens = []
     for segment in _result['segments']:
         _tokens += segment['tokens']
-        
+
     return (_text, _tokens)
 
 
 def process_forever():
+    """Processes audio data from the data queue until the user cancels the process by pressing the button again."""
+
     global data_queue
     global source
     global rec
@@ -348,7 +377,7 @@ def process_forever():
     while True:
         if config_ui_open:
             break
-        
+
         if pressed:
             _time_last = time.time()
             _held = False
@@ -372,13 +401,13 @@ def process_forever():
             _transcription = transcribe(_torch_audio, _last_tokens)
             _text = _transcription[0]
             _last_tokens = _transcription[1]
-                
+
             _time_last = time.time()
             populate_chatbox(_text, True)
         elif _last_sample != bytes() and time.time() - _time_last > CONFIG["pause_threshold"]:
             print(_text)
             _last_sample = bytes()
-            
+
         time.sleep(0.05)
 
     set_typing_indicator(False)
@@ -389,6 +418,8 @@ def process_forever():
 
 
 def process_loop():
+    """Processes audio data from the data queue and transcribes it until the user stops talking."""
+
     global data_queue
     global source
     global rec
@@ -440,7 +471,7 @@ def process_loop():
             _transcription = transcribe(_torch_audio, _last_tokens)
             _text = _transcription[0]
             _last_tokens = _transcription[1]
-                
+
             _time_last = time.time()
             populate_chatbox(_text, True)
         elif _last_sample != bytes() and time.time() - _time_last > CONFIG["pause_threshold"]:
@@ -462,6 +493,8 @@ def process_loop():
 
 
 def process_once():
+    """Process a single input and return the transcription."""
+
     global main_window
     global pressed
 
@@ -501,6 +534,8 @@ def process_once():
 
 
 def get_ovraction_bstate():
+    """Returns the state of the ovr action"""
+
     global action_set_handle
     global button_action_handle
     global application
@@ -517,6 +552,8 @@ def get_ovraction_bstate():
 
 
 def get_trigger_state():
+    """Returns the state of the trigger, either from the keyboard or the ovr action"""
+
     global ovr_initialized
 
     if ovr_initialized and get_ovraction_bstate():
@@ -526,6 +563,8 @@ def get_trigger_state():
 
 
 def handle_input():
+    """Handles all input from the user"""
+
     global thread_process
     global held
     global holding
@@ -562,6 +601,7 @@ def handle_input():
 
 
 def entrybox_enter_event(text):
+    """Handles the enter event for the textfield."""
     global main_window
     global enter_pressed
 
@@ -576,6 +616,7 @@ def entrybox_enter_event(text):
 
 
 def textfield_keyrelease(text):
+    """Handles the key release event for the textfield."""
     global osc
     global use_kat
     global enter_pressed
@@ -590,11 +631,12 @@ def textfield_keyrelease(text):
             clear_chatbox()
         else:
             populate_chatbox(text, False, True)
-    
+
     enter_pressed = False
 
 
 def main_window_closing():
+    """Handles the closing of the main window."""
     global main_window
     global config_ui
     global use_kat
@@ -610,6 +652,8 @@ def main_window_closing():
 
 
 def settings_closing(save=False):
+    """Handles the closing of the settings menu. If save is True, saves the settings and restarts the program."""
+
     global osc
     global config_ui
     global config_ui_open
@@ -621,8 +665,8 @@ def settings_closing(save=False):
             osc.stop()
             openvr.VROverlay().destroyOverlay(overlay_handle)
             config_ui.on_closing()
-        except:
-            print("Error saving settings")
+        except Exception as e:
+            print("Error saving settings: " + str(e))
 
         try:
             init()
@@ -632,12 +676,14 @@ def settings_closing(save=False):
     else:
         config_ui.on_closing()
         main_window.set_status_label("SETTINGS NOT SAVED - WAITING FOR INPUT", "#00008b")
-    
+
     main_window.set_button_enabled(True)
     config_ui_open = False
 
 
 def open_settings():
+    """Opens the settings menu"""
+
     global main_window
     global config_ui
     global config_ui_open
@@ -653,15 +699,18 @@ def open_settings():
 
 
 def determine_energy_threshold():
+    """Determines the energy threshold for the microphone to use for speech recognition"""
+
     global config_ui
+    global rec
 
     config_ui.set_energy_threshold("Be quiet for 5 seconds...")
     with source:
         _last = rec.energy_threshold
         rec.adjust_for_ambient_noise(source, 5)
-        value = round(rec.energy_threshold) + 20
+        _value = round(rec.energy_threshold) + 20
         rec.energy_threshold = _last
-        config_ui.set_energy_threshold(str(value))
+        config_ui.set_energy_threshold(str(_value))
 
 
 main_window = MainWindow(VERSION)
