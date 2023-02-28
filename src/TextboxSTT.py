@@ -713,6 +713,16 @@ def determine_energy_threshold():
         config_ui.set_energy_threshold(str(_value))
 
 
+def check_ovr():
+    global ovr_initialized
+
+    if ovr_initialized or (os.name == 'nt' and "vrserver.exe" not in (p.name() for p in psutil.process_iter())):
+        return
+
+    print("check ovr")
+    settings_closing(True)
+
+
 main_window = MainWindow(VERSION)
 try:
     init()
@@ -724,5 +734,6 @@ main_window.tkui.protocol("WM_DELETE_WINDOW", main_window_closing)
 main_window.textfield.bind("<Return>", (lambda event: entrybox_enter_event(main_window.textfield.get())))
 main_window.textfield.bind("<KeyRelease>", (lambda event: textfield_keyrelease(main_window.textfield.get())))
 main_window.btn_settings.configure(command=open_settings)
+main_window.create_loop(7000, check_ovr)
 main_window.create_loop(50, handle_input)
 main_window.open()
