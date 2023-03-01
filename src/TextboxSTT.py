@@ -138,18 +138,18 @@ def init():
     ovr_initialized = False
     try:
         application = openvr.init(openvr.VRApplication_Background)
-        overlay_handle = openvr.VROverlay().createOverlay("TextboxSTT", "TextboxSTT Transcription Overlay")
-        openvr.VROverlay().setOverlayWidthInMeters(overlay_handle, 1)
-        openvr.VROverlay().setOverlayColor(overlay_handle, 1.0, 1.0, 1.0)
-        openvr.VROverlay().setOverlayAlpha(overlay_handle, CONFIG["overlay"]["opacity"])
-        overlay_font = ImageFont.truetype(get_absolute_path("resources/CascadiaCode.ttf"), 46)
-        set_overlay_position_hmd()
         action_path = get_absolute_path("bindings/textboxstt_actions.json", __file__)
         appmanifest_path = get_absolute_path("app.vrmanifest", __file__)
         openvr.VRApplications().addApplicationManifest(appmanifest_path)
         openvr.VRInput().setActionManifestPath(action_path)
         action_set_handle = openvr.VRInput().getActionSetHandle(ACTIONSETHANDLE)
         button_action_handle = openvr.VRInput().getActionHandle(STTLISTENHANDLE)
+        overlay_handle = openvr.VROverlay().createOverlay("i5ucc.TextboxSTT", "TextboxSTT")
+        openvr.VROverlay().setOverlayWidthInMeters(overlay_handle, 1)
+        openvr.VROverlay().setOverlayColor(overlay_handle, 1.0, 1.0, 1.0)
+        openvr.VROverlay().setOverlayAlpha(overlay_handle, CONFIG["overlay"]["opacity"])
+        overlay_font = ImageFont.truetype(get_absolute_path("resources/CascadiaCode.ttf"), 46)
+        set_overlay_position_hmd()
         ovr_initialized = True
         main_window.set_status_label("INITIALZIED OVR", "green")
     except Exception as e:
