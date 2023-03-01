@@ -5,7 +5,7 @@ import logging
 from helper import LogToFile, loadfont, get_absolute_path, play_sound
 
 
-VERSION = "v0.8.1"
+VERSION = "v0.8.2"
 ACTIONSETHANDLE = "/actions/textboxstt"
 STTLISTENHANDLE = "/actions/textboxstt/in/sttlisten"
 LOGFILE = get_absolute_path('out.log', __file__)
@@ -137,10 +137,7 @@ def init():
     main_window.set_status_label("INITIALIZING OVR", "orange")
     ovr_initialized = False
     try:
-        if os.name == 'nt' and "vrmonitor.exe" not in (p.name() for p in psutil.process_iter()):
-            raise Exception("SteamVR not running.")
-
-        application = openvr.init(openvr.VRApplication_Overlay)
+        application = openvr.init(openvr.VRApplication_Background)
         overlay_handle = openvr.VROverlay().createOverlay("TextboxSTT", "TextboxSTT Transcription Overlay")
         openvr.VROverlay().setOverlayWidthInMeters(overlay_handle, 1)
         openvr.VROverlay().setOverlayColor(overlay_handle, 1.0, 1.0, 1.0)
