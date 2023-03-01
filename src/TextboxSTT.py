@@ -144,12 +144,13 @@ def init():
         openvr.VRInput().setActionManifestPath(action_path)
         action_set_handle = openvr.VRInput().getActionSetHandle(ACTIONSETHANDLE)
         button_action_handle = openvr.VRInput().getActionHandle(STTLISTENHANDLE)
-        overlay_handle = openvr.VROverlay().createOverlay("i5ucc.TextboxSTT", "TextboxSTT")
-        openvr.VROverlay().setOverlayWidthInMeters(overlay_handle, 1)
-        openvr.VROverlay().setOverlayColor(overlay_handle, 1.0, 1.0, 1.0)
-        openvr.VROverlay().setOverlayAlpha(overlay_handle, CONFIG["overlay"]["opacity"])
-        overlay_font = ImageFont.truetype(get_absolute_path("resources/CascadiaCode.ttf"), 46)
-        set_overlay_position_hmd()
+        if CONFIG["overlay_enabled"]:
+            overlay_handle = openvr.VROverlay().createOverlay("i5ucc.textboxstt", "TextboxSTT")
+            openvr.VROverlay().setOverlayWidthInMeters(overlay_handle, 1)
+            openvr.VROverlay().setOverlayColor(overlay_handle, 1.0, 1.0, 1.0)
+            openvr.VROverlay().setOverlayAlpha(overlay_handle, CONFIG["overlay"]["opacity"])
+            overlay_font = ImageFont.truetype(get_absolute_path("resources/CascadiaCode.ttf"), 46)
+            set_overlay_position_hmd()
         ovr_initialized = True
         main_window.set_status_label("INITIALZIED OVR", "green")
     except Exception as e:
@@ -169,10 +170,10 @@ def set_overlay_text(text: str):
     global overlay_font
     global ovr_initialized
 
-    if not ovr_initialized:
+    if not ovr_initialized or not CONFIG["overlay_enabled"]:
         return
 
-    if text == "" or not CONFIG["overlay_enabled"]:
+    if text == "":
         openvr.VROverlay().hideOverlay(overlay_handle)
         return
 
@@ -664,10 +665,11 @@ def settings_closing(save=False):
     if save:
         try:
             osc.stop()
-            openvr.VROverlay().destroyOverlay(overlay_handle)
             if config_ui_open:
                 config_ui.save()
                 config_ui.on_closing()
+            if overlay_handle:
+                openvr.VROverlay().destroyOverlay(overlay_handle)
         except Exception as e:
             print("Error saving settings: " + str(e))
 
