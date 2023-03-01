@@ -66,6 +66,7 @@ thread_process: threading.Thread = threading.Thread()
 config_ui: SettingsWindow = None
 config_ui_open: bool = False
 enter_pressed: bool = False
+initializing: bool = True
 
 
 def init():
@@ -89,6 +90,9 @@ def init():
     global button_action_handle
     global overlay_handle
     global overlay_font
+    global initializing
+
+    initializing = True
 
     osc = OscHandler(CONFIG["osc_ip"], CONFIG["osc_port"], CONFIG["osc_ip"], CONFIG["osc_server_port"])
     use_textbox = bool(CONFIG["use_textbox"])
@@ -133,7 +137,7 @@ def init():
     main_window.set_status_label("INITIALIZING OVR", "orange")
     ovr_initialized = False
     try:
-        if os.name == 'nt' and "vrserver.exe" not in (p.name() for p in psutil.process_iter()):
+        if os.name == 'nt' and "vrmonitor.exe" not in (p.name() for p in psutil.process_iter()):
             raise Exception("SteamVR not running.")
 
         application = openvr.init(openvr.VRApplication_Overlay)
@@ -157,6 +161,7 @@ def init():
 
     main_window.set_conf_label(CONFIG["osc_ip"], CONFIG["osc_port"], CONFIG["osc_server_port"], ovr_initialized, use_cpu, _whisper_model)
     main_window.set_status_label("INITIALIZED - WAITING FOR INPUT", "green")
+    initializing = False
 
 
 def set_overlay_text(text: str):
@@ -661,10 +666,11 @@ def settings_closing(save=False):
 
     if save:
         try:
-            config_ui.save()
             osc.stop()
             openvr.VROverlay().destroyOverlay(overlay_handle)
-            config_ui.on_closing()
+            if config_ui_open:
+                config_ui.save()
+                config_ui.on_closing()
         except Exception as e:
             print("Error saving settings: " + str(e))
 
@@ -714,9 +720,11 @@ def determine_energy_threshold():
 
 
 def check_ovr():
+    global initializing
     global ovr_initialized
+    global config_ui_open
 
-    if ovr_initialized or (os.name == 'nt' and "vrserver.exe" not in (p.name() for p in psutil.process_iter())):
+    if initializing or config_ui_open or ovr_initialized or (os.name == 'nt' and "vrmonitor.exe" not in (p.name() for p in psutil.process_iter())):
         return
 
     print("check ovr")
