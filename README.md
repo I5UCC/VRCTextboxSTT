@@ -31,6 +31,7 @@
   - You can bind it to any key on your keyboard.
 - Optional automatic launch with SteamVR.
 - Optional Text to Text for quick typing.
+- Optional SteamVR Overlay for seeing your transcription without having to look at your own textbox in-game.
 - Audio feedback for each step in the transcription.
 - Multi Language support. whisper supports around [100 different languages](https://github.com/openai/whisper/blob/main/whisper/tokenizer.py#L10). Here, with a few [limitations](https://github.com/I5UCC/VRCTextboxSTT#limitations).
 - Free to use as of the [GPL-3.0 license](https://github.com/I5UCC/VRCTextboxSTT/blob/main/LICENSE)
