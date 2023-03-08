@@ -4,10 +4,10 @@ import kthread
 
 class FlaskAppWrapper(object):
 
-    def __init__(self, app, **configs):
+    def __init__(self, app, port, **configs):
         self.app = app
         self.configs(**configs)
-        self.server = waitress.create_server(self.app, host="127.0.0.1", port=5000)
+        self.server = waitress.create_server(self.app, host="127.0.0.1", port=port)
         self.flask_thread = kthread.KThread(target=self.server.run)
         
 
@@ -31,7 +31,7 @@ class OBSBrowserSource(object):
         self.template_path = template_path
         self.text = ""
         self.config = config
-        self.app = FlaskAppWrapper(Flask(__name__))
+        self.app = FlaskAppWrapper(Flask(__name__), config["obs_source"]["port"])
         self.app.add_endpoint('/', 'flask_root', self.flask_root, methods=['GET'])
         self.app.add_endpoint('/transcript', 'flask_get_transcript', self.flask_get_transcript, methods=['GET'])
 

@@ -68,7 +68,7 @@ config_ui: SettingsWindow = None
 config_ui_open: bool = False
 enter_pressed: bool = False
 initializing: bool = True
-browsersource: OBSBrowserSource = OBSBrowserSource(CONFIG, get_absolute_path('resources/obs_source.html', __file__))
+browsersource: OBSBrowserSource = None
 
 
 def init():
@@ -163,12 +163,11 @@ def init():
     # Start Flask server
     if CONFIG["enable_obs_source"]:
         try:
+            browsersource = OBSBrowserSource(CONFIG, get_absolute_path('resources/obs_source.html', __file__))
             browsersource.start()
         except Exception as e:
             print(e)
             main_window.set_status_label("COULDNT INITIALIZE FLASK SERVER, CONTINUING WITHOUT OBS SOURCE", "orange")
-    else:
-        browsersource.stop()
 
     main_window.set_conf_label(CONFIG["osc_ip"], CONFIG["osc_port"], CONFIG["osc_server_port"], ovr_initialized, use_cpu, _whisper_model)
     main_window.set_status_label("INITIALIZED - WAITING FOR INPUT", "green")
@@ -282,7 +281,8 @@ def clear_chatbox():
     global osc
     global browsersource
 
-    browsersource.setText("")
+    if browsersource:
+        browsersource.setText("")
     main_window.clear_textfield()
     if use_textbox and use_both or use_textbox and use_kat and not osc.isactive or not use_kat:
         osc.clear_chatbox(CONFIG["mode"] == 0)
@@ -303,7 +303,8 @@ def populate_chatbox(text, cutoff: bool = False, is_textfield: bool = False):
     global browsersource
 
     text = replace_words(text)
-    browsersource.setText(text)
+    if browsersource:
+        browsersource.setText(text)
 
     if not text:
         return
@@ -712,6 +713,12 @@ def settings_closing(save=False):
         except Exception as e:
             print(e)
             main_window.set_status_label("ERROR INITIALIZING, PLEASE CHECK YOUR SETTINGS,\nLOOK INTO out.log for more info on the error", "red")
+        try:
+            if browsersource:
+                browsersource.stop()
+                browsersource = None
+        except Exception as e:
+            print("Error stopping browsersource: " + str(e))
     else:
         config_ui.on_closing()
         main_window.set_status_label("SETTINGS NOT SAVED - WAITING FOR INPUT", "#00008b")
