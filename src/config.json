@@ -30,7 +30,7 @@
         "border_color": "black",
         "opacity": 1.0
     },
-    "enable_obs_source": true,
+    "enable_obs_source": false,
     "obs_source": {
         "port": 5000,
         "update_interval": 200,

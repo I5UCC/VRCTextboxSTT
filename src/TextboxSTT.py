@@ -167,6 +167,8 @@ def init():
         except Exception as e:
             print(e)
             main_window.set_status_label("COULDNT INITIALIZE FLASK SERVER, CONTINUING WITHOUT OBS SOURCE", "orange")
+    else:
+        browsersource.stop()
 
     main_window.set_conf_label(CONFIG["osc_ip"], CONFIG["osc_port"], CONFIG["osc_server_port"], ovr_initialized, use_cpu, _whisper_model)
     main_window.set_status_label("INITIALIZED - WAITING FOR INPUT", "green")

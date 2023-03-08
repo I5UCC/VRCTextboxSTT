@@ -22,7 +22,8 @@ class FlaskAppWrapper(object):
         self.flask_thread.start()
 
     def kill(self):
-        self.flask_thread.kill()
+        if self.flask_thread.is_alive():
+            self.flask_thread.kill()
 
 class OBSBrowserSource(object):
 
