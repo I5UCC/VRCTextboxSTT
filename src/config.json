@@ -30,6 +30,15 @@
         "border_color": "black",
         "opacity": 1.0
     },
+    "enable_obs_source": true,
+    "obs_source": {
+        "port": 5000,
+        "update_interval": 200,
+        "font": "Cascadia Code",
+        "color": "white",
+        "shadowcolor": "black",
+        "align": "center"
+    },
     "enable_emotes": true,
     "emotes": {
         "0": "wicked emoji",
