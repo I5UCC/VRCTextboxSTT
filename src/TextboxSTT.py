@@ -39,9 +39,7 @@ from PIL import Image, ImageDraw, ImageFont
 import ctypes
 import textwrap
 import psutil
-import waitress
-import kthread
-from flask import Flask, jsonify, render_template_string
+from browsersource import OBSBrowserSource
 
 
 osc: OscHandler = None
@@ -70,9 +68,7 @@ config_ui: SettingsWindow = None
 config_ui_open: bool = False
 enter_pressed: bool = False
 initializing: bool = True
-curr_text: str = ""
-flask_app = Flask(__name__)
-flask_thread: kthread.KThread = None
+browsersource: OBSBrowserSource = OBSBrowserSource(CONFIG, get_absolute_path('resources/obs_source.html', __file__))
 
 
 def init():
@@ -97,8 +93,7 @@ def init():
     global overlay_handle
     global overlay_font
     global initializing
-    global flask_app
-    global flask_thread
+    global browsersource
 
     initializing = True
 
@@ -168,9 +163,7 @@ def init():
     # Start Flask server
     if CONFIG["enable_obs_source"]:
         try:
-            server = waitress.create_server(flask_app, host="127.0.0.1", port=5000)
-            flask_thread = kthread.KThread(target=server.run)
-            flask_thread.start()
+            browsersource.start()
         except Exception as e:
             print(e)
             main_window.set_status_label("COULDNT INITIALIZE FLASK SERVER, CONTINUING WITHOUT OBS SOURCE", "orange")
@@ -285,9 +278,9 @@ def clear_chatbox():
     global use_kat
     global use_both
     global osc
-    global curr_text
+    global browsersource
 
-    curr_text = ""
+    browsersource.setText("")
     main_window.clear_textfield()
     if use_textbox and use_both or use_textbox and use_kat and not osc.isactive or not use_kat:
         osc.clear_chatbox(CONFIG["mode"] == 0)
@@ -305,10 +298,10 @@ def populate_chatbox(text, cutoff: bool = False, is_textfield: bool = False):
     global use_kat
     global use_both
     global osc
-    global curr_text
+    global browsersource
 
     text = replace_words(text)
-    curr_text = text
+    browsersource.setText(text)
 
     if not text:
         return
@@ -667,7 +660,7 @@ def main_window_closing():
     global config_ui
     global use_kat
     global osc
-    global flask_thread
+    global browsersource
 
     print("Closing...")
     try:
@@ -683,7 +676,7 @@ def main_window_closing():
     except Exception as e:
         print(e)
     try:
-        flask_thread.kill()
+        browsersource.stop()
     except Exception as e:
         print(e)
 
@@ -695,7 +688,6 @@ def settings_closing(save=False):
     global config_ui
     global config_ui_open
     global overlay_handle
-    global flask_thread
 
     if save:
         try:
@@ -709,11 +701,6 @@ def settings_closing(save=False):
                 openvr.VROverlay().destroyOverlay(overlay_handle)
         except Exception as e:
             print("Error destroying overlay: " + str(e))
-        try:
-            if flask_thread:
-                flask_thread.kill()
-        except Exception as e:
-            print("Error killing flask thread: " + str(e))
         try:
             osc.stop()
         except Exception as e:
@@ -773,30 +760,6 @@ def check_ovr():
 
     print("check ovr")
     settings_closing(True)
-
-
-@flask_app.route('/')
-def flask_root():
-    _html = ""
-    with open(get_absolute_path('resources/obs_source.html', __file__)) as f:
-        _html = f.read()
-    
-    _html = _html.replace("[COLOR]", CONFIG["obs_source"]["color"])
-    _html = _html.replace("[SHADOW]", CONFIG["obs_source"]["shadowcolor"])
-    _html = _html.replace("[FONT]", CONFIG["obs_source"]["font"])
-    _html = _html.replace("[ALIGN]", CONFIG["obs_source"]["align"])
-    _html = _html.replace("[PORT]", str(CONFIG["obs_source"]["port"]))
-    _html = _html.replace("[INTERVAL]", str(CONFIG["obs_source"]["update_interval"]))
-
-    print(_html)
-    print("Website Accessed.")
-    return render_template_string(_html)
-
-
-@flask_app.route("/transcript", methods=["GET"])
-def flask_get_transcript():
-    global curr_text
-    return jsonify(curr_text)
 
 
 main_window = MainWindow(VERSION)
