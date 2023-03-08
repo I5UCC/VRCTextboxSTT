@@ -24,13 +24,14 @@
 <body>
     <div id="transcript"></div>
     <script>
+        let e_transcript = document.getElementById("transcript");
         function getTranscript() {
             fetch("http://127.0.0.1:[PORT]/transcript")
                 .then(function (response) {
                     return response.json();
                 })
                 .then(function (data) {
-                    document.getElementById("transcript").innerHTML = data;
+                    e_transcript.innerHTML = data;
                 })
                 .catch(function (err) {
                     console.log('Fetch Error: ', err);
