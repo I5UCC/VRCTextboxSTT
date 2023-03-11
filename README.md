@@ -161,10 +161,10 @@ If it doesnt show up, manually register the ´app.vrmanifest´ file by double cl
 - ~~Enable Integration with [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText).~~
 - ~~Transcribe continuously until the user stops talking.~~
 - ~~Add an emote feature~~
+- ~~Demo Gif/Video (Stole from Frosty, thanks lol)~~
 - Add a OBS browsersource
-- Demo Gif/Video
-- Implement Text To Speech (Maybe [coqui-ai?](https://github.com/coqui-ai/TTS)
-- Use [whisper.cpp](https://github.com/ggerganov/whisper.cpp) for better performance.
+- Implement Text To Speech (Maybe [coqui-ai?](https://github.com/coqui-ai/TTS))
+- Use [whisper.cpp](https://github.com/ggerganov/whisper.cpp) for transcription, for better performance.
 - Allow use of finetuned models.
 
 # Credit
