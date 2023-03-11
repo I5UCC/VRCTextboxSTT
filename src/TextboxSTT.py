@@ -50,7 +50,7 @@ thread_process: threading.Thread = threading.Thread()
 config_ui: SettingsWindow = None
 config_ui_open: bool = False
 enter_pressed: bool = False
-initializing: bool = True
+initialized: bool = False
 
 
 def init():
@@ -63,11 +63,11 @@ def init():
     global use_both
     global transcriber
     global ovr
-    global initializing
+    global initialized
     global browsersource
     global listen
 
-    initializing = True
+    initialized = False
 
     osc = OscHandler(CONFIG["osc_ip"], CONFIG["osc_port"], CONFIG["osc_ip"], CONFIG["osc_server_port"])
     use_textbox = bool(CONFIG["use_textbox"])
@@ -98,10 +98,13 @@ def init():
     # Start Flask server
     if CONFIG["enable_obs_source"] and not browsersource.start():
         main_window.set_status_label("COULDNT INITIALIZE FLASK SERVER, CONTINUING WITHOUT OBS SOURCE", "orange")
+    else:
+        main_window.set_status_label("INITIALIZED FLASK SERVER", "green")
+        print(f"Flask server started on 127.0.0.1:{CONFIG['obs_source']['port']}")
 
     main_window.set_conf_label(CONFIG["osc_ip"], CONFIG["osc_port"], CONFIG["osc_server_port"], ovr.initialized, transcriber.use_cpu, transcriber.whisper_model)
     main_window.set_status_label("INITIALIZED - WAITING FOR INPUT", "green")
-    initializing = False
+    initialized = True
 
 
 def replace_emotes(text):
@@ -565,11 +568,11 @@ def determine_energy_threshold():
 
 
 def check_ovr():
-    global initializing
+    global initialized
     global ovr
     global config_ui_open
 
-    if initializing or config_ui_open or ovr.initialized or (os.name == 'nt' and "vrmonitor.exe" not in (p.name() for p in psutil.process_iter())):
+    if not initialized or config_ui_open or ovr.initialized or (os.name == 'nt' and "vrmonitor.exe" not in (p.name() for p in psutil.process_iter())):
         return
 
     print("check ovr")
