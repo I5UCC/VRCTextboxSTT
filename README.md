@@ -3,6 +3,8 @@
 
 ### This program is supposed to be entirely free (as in money) and independent of Cloud Based Transcription services like Microsoft Azure etc., by using transcription Algorithms running on your own hardware, thus respecting privacy and improving latency and reliability, all at the cost of compromising a bit of performance by running on your own hardware.
 
+### [Discord Support Server](https://discord.gg/rqcWHje3hn)
+
 # [Download Here](https://github.com/I5UCC/VRCTextboxSTT/releases/latest)
 
 # Contents
