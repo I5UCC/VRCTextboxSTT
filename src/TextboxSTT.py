@@ -6,8 +6,6 @@ from helper import LogToFile, loadfont, get_absolute_path, play_sound
 
 
 VERSION = "v0.9"
-ACTIONSETHANDLE = "/actions/textboxstt"
-STTLISTENHANDLE = "/actions/textboxstt/in/sttlisten"
 LOGFILE = get_absolute_path('out.log', __file__)
 CONFIG_PATH = get_absolute_path('config.json', __file__)
 CONFIG = json.load(open(CONFIG_PATH))
@@ -28,21 +26,21 @@ import time
 import keyboard
 import numpy as np
 import speech_recognition as sr
-import openvr
 import whisper
 import torch
 import re
-from osc import OscHandler
-from ui import MainWindow, SettingsWindow
 from queue import Queue
-from PIL import Image, ImageDraw, ImageFont
-import ctypes
-import textwrap
 import psutil
+
+from ui import MainWindow, SettingsWindow
+from osc import OscHandler
 from browsersource import OBSBrowserSource
+from ovr import OVRHandler
 
 
 osc: OscHandler = None
+ovr: OVRHandler = None
+browsersource: OBSBrowserSource = OBSBrowserSource(CONFIG, get_absolute_path('resources/obs_source.html', __file__))
 use_kat: bool = True
 use_textbox: bool = True
 use_both: bool = True
@@ -53,12 +51,6 @@ use_cpu: bool = False
 rec: sr.Recognizer = None
 source: sr.Microphone = None
 data_queue: Queue = Queue()
-ovr_initialized: bool = False
-application: openvr.IVRSystem = None
-action_set_handle: int = None
-button_action_handle: int = None
-overlay_handle: int = None
-overlay_font: ImageFont.FreeTypeFont = None
 curr_time: float = 0.0
 pressed: bool = False
 holding: bool = False
@@ -68,7 +60,6 @@ config_ui: SettingsWindow = None
 config_ui_open: bool = False
 enter_pressed: bool = False
 initializing: bool = True
-browsersource: OBSBrowserSource = None
 
 
 def init():
@@ -86,12 +77,7 @@ def init():
     global rec
     global source
     global data_queue
-    global ovr_initialized
-    global application
-    global action_set_handle
-    global button_action_handle
-    global overlay_handle
-    global overlay_font
+    global ovr
     global initializing
     global browsersource
 
@@ -138,87 +124,25 @@ def init():
 
     # Initialize OpenVR
     main_window.set_status_label("INITIALIZING OVR", "orange")
-    ovr_initialized = False
-    try:
-        application = openvr.init(openvr.VRApplication_Background)
-        action_path = get_absolute_path("bindings/textboxstt_actions.json", __file__)
-        appmanifest_path = get_absolute_path("app.vrmanifest", __file__)
-        openvr.VRApplications().addApplicationManifest(appmanifest_path)
-        openvr.VRInput().setActionManifestPath(action_path)
-        action_set_handle = openvr.VRInput().getActionSetHandle(ACTIONSETHANDLE)
-        button_action_handle = openvr.VRInput().getActionHandle(STTLISTENHANDLE)
-        if CONFIG["overlay_enabled"]:
-            overlay_handle = openvr.VROverlay().createOverlay("i5ucc.textboxstt", "TextboxSTT")
-            openvr.VROverlay().setOverlayWidthInMeters(overlay_handle, 1)
-            openvr.VROverlay().setOverlayColor(overlay_handle, 1.0, 1.0, 1.0)
-            openvr.VROverlay().setOverlayAlpha(overlay_handle, CONFIG["overlay"]["opacity"])
-            overlay_font = ImageFont.truetype(get_absolute_path("resources/CascadiaCode.ttf"), 46)
-            set_overlay_position_hmd()
-        ovr_initialized = True
+    if ovr:
+        ovr.shutdown()
+    ovr = OVRHandler(CONFIG, __file__)
+    if ovr.initialized:
         main_window.set_status_label("INITIALZIED OVR", "green")
-    except Exception as e:
-        print(e)
+    else:
         main_window.set_status_label("COULDNT INITIALIZE OVR, CONTINUING DESKTOP ONLY", "orange")
 
     # Start Flask server
     if CONFIG["enable_obs_source"]:
         try:
-            browsersource = OBSBrowserSource(CONFIG, get_absolute_path('resources/obs_source.html', __file__))
             browsersource.start()
         except Exception as e:
             print(e)
             main_window.set_status_label("COULDNT INITIALIZE FLASK SERVER, CONTINUING WITHOUT OBS SOURCE", "orange")
 
-    main_window.set_conf_label(CONFIG["osc_ip"], CONFIG["osc_port"], CONFIG["osc_server_port"], ovr_initialized, use_cpu, _whisper_model)
+    main_window.set_conf_label(CONFIG["osc_ip"], CONFIG["osc_port"], CONFIG["osc_server_port"], ovr.initialized, use_cpu, _whisper_model)
     main_window.set_status_label("INITIALIZED - WAITING FOR INPUT", "green")
     initializing = False
-
-
-def set_overlay_text(text: str):
-    """Sets the text of the overlay by wrapping it to 70 characters and drawing it to an image.
-    Then converts the image to bytes and sets the overlay texture to it."""
-
-    global overlay_handle
-    global overlay_font
-    global ovr_initialized
-
-    if not ovr_initialized or not CONFIG["overlay_enabled"]:
-        return
-
-    if text == "":
-        openvr.VROverlay().hideOverlay(overlay_handle)
-        return
-
-    openvr.VROverlay().showOverlay(overlay_handle)
-    text = textwrap.fill(text, 70)
-
-    _width = 1920
-    _height = 200
-
-    _img = Image.new("RGBA", (_width, _height))
-    _draw = ImageDraw.Draw(_img)
-    _draw.text((_width/2, _height/2), text, font=overlay_font, fill=CONFIG["overlay"]["font_color"], anchor="mm", stroke_width=2, stroke_fill=CONFIG["overlay"]["border_color"], align="center")
-    _img_data = _img.tobytes()
-
-    _buffer = (ctypes.c_char * len(_img_data)).from_buffer_copy(_img_data)
-
-    openvr.VROverlay().setOverlayRaw(overlay_handle, _buffer, _width, _height, 4)
-
-
-def set_overlay_position_hmd():
-    """Sets the overlay position to the HMD position."""
-
-    global overlay_handle
-
-    overlay_matrix = openvr.HmdMatrix34_t()
-    overlay_matrix[0][0] = CONFIG["overlay"]["size"]
-    overlay_matrix[1][1] = CONFIG["overlay"]["size"]
-    overlay_matrix[2][2] = CONFIG["overlay"]["size"]
-    overlay_matrix[0][3] = CONFIG["overlay"]["pos_x"]
-    overlay_matrix[1][3] = CONFIG["overlay"]["pos_y"]
-    overlay_matrix[2][3] = CONFIG["overlay"]["distance"]
-
-    openvr.VROverlay().setOverlayTransformTrackedDeviceRelative(overlay_handle, openvr.k_unTrackedDeviceIndex_Hmd, overlay_matrix)
 
 
 def replace_emotes(text):
@@ -279,6 +203,7 @@ def clear_chatbox():
     global use_kat
     global use_both
     global osc
+    global ovr
     global browsersource
 
     if browsersource:
@@ -289,7 +214,7 @@ def clear_chatbox():
     if use_kat and osc.isactive:
         osc.clear_kat()
     main_window.set_text_label("- No Text -")
-    set_overlay_text("")
+    ovr.set_overlay_text("")
 
 
 def populate_chatbox(text, cutoff: bool = False, is_textfield: bool = False):
@@ -300,6 +225,7 @@ def populate_chatbox(text, cutoff: bool = False, is_textfield: bool = False):
     global use_kat
     global use_both
     global osc
+    global ovr
     global browsersource
 
     text = replace_words(text)
@@ -324,7 +250,7 @@ def populate_chatbox(text, cutoff: bool = False, is_textfield: bool = False):
         text = text[:osc.textbox_charlimit]
 
     main_window.set_text_label(text)
-    set_overlay_text(text)
+    ovr.set_overlay_text(text)
 
     set_typing_indicator(False)
 
@@ -555,30 +481,12 @@ def process_once():
     main_window.set_button_enabled(True)
 
 
-def get_ovraction_bstate():
-    """Returns the state of the ovr action"""
-
-    global action_set_handle
-    global button_action_handle
-    global application
-
-    _event = openvr.VREvent_t()
-    _has_events = True
-    while _has_events:
-        _has_events = application.pollNextEvent(_event)
-    _actionsets = (openvr.VRActiveActionSet_t * 1)()
-    _actionset = _actionsets[0]
-    _actionset.ulActionSet = action_set_handle
-    openvr.VRInput().updateActionState(_actionsets)
-    return bool(openvr.VRInput().getDigitalActionData(button_action_handle, openvr.k_ulInvalidInputValueHandle).bState)
-
-
 def get_trigger_state():
     """Returns the state of the trigger, either from the keyboard or the ovr action"""
 
-    global ovr_initialized
+    global ovr
 
-    if ovr_initialized and get_ovraction_bstate():
+    if ovr.initialized and ovr.get_ovraction_bstate():
         return True
     else:
         return keyboard.is_pressed(CONFIG["hotkey"])
@@ -690,7 +598,6 @@ def settings_closing(save=False):
     global osc
     global config_ui
     global config_ui_open
-    global overlay_handle
 
     if save:
         try:
@@ -700,8 +607,7 @@ def settings_closing(save=False):
         except Exception as e:
             print("Error saving settings: " + str(e))
         try:
-            if overlay_handle:
-                openvr.VROverlay().destroyOverlay(overlay_handle)
+            ovr.destroy_overlay()
         except Exception as e:
             print("Error destroying overlay: " + str(e))
         try:
@@ -761,10 +667,10 @@ def determine_energy_threshold():
 
 def check_ovr():
     global initializing
-    global ovr_initialized
+    global ovr
     global config_ui_open
 
-    if initializing or config_ui_open or ovr_initialized or (os.name == 'nt' and "vrmonitor.exe" not in (p.name() for p in psutil.process_iter())):
+    if initializing or config_ui_open or ovr.initialized or (os.name == 'nt' and "vrmonitor.exe" not in (p.name() for p in psutil.process_iter())):
         return
 
     print("check ovr")
