@@ -24,8 +24,6 @@ if os.name == 'nt':
 import threading
 import time
 import keyboard
-import whisper
-import torch
 import re
 import psutil
 from ui import MainWindow, SettingsWindow
@@ -33,19 +31,17 @@ from osc import OscHandler
 from browsersource import OBSBrowserSource
 from ovr import OVRHandler
 from listen import ListenHandler
+from transcribe import TranscribeHandler
 
 
 osc: OscHandler = None
 ovr: OVRHandler = None
 listen: ListenHandler = None
+transcriber: TranscribeHandler = None
 browsersource: OBSBrowserSource = OBSBrowserSource(CONFIG, get_absolute_path('resources/obs_source.html', __file__))
 use_kat: bool = True
 use_textbox: bool = True
 use_both: bool = True
-model: whisper = None
-language: str = ""
-task: str = "transcribe"
-use_cpu: bool = False
 curr_time: float = 0.0
 pressed: bool = False
 holding: bool = False
@@ -65,10 +61,7 @@ def init():
     global use_textbox
     global use_kat
     global use_both
-    global model
-    global language
-    global task
-    global use_cpu
+    global transcriber
     global ovr
     global initializing
     global browsersource
@@ -81,32 +74,15 @@ def init():
     use_kat = bool(CONFIG["use_kat"])
     use_both = bool(CONFIG["use_both"])
 
-    _whisper_model = CONFIG["model"].lower()
-    language = CONFIG["language"].lower()
-    if language == "":
-        language = None
-    elif _whisper_model != "large" and language == "english" and ".en" not in _whisper_model:
-        _whisper_model = _whisper_model + ".en"
-    task = "translate" if CONFIG["translate_to_english"] and language != "english" else "transcribe"
-    print(f"Using model: {_whisper_model} for language: {language} ({task}) ")
-
     # Temporarily output stderr to text label for download progress.
-    if not os.path.isfile(get_absolute_path(f"whisper_cache/{_whisper_model}.pt", __file__)):
-        sys.stderr.write = main_window.loading_status
-    else:
-        print("Whisper model already in cache.")
+    sys.stderr.write = main_window.loading_status
 
-    main_window.set_status_label(f"LOADING \"{_whisper_model}\" MODEL", "orange")
-    # Load Whisper model
-    device = "cpu" if bool(CONFIG["use_cpu"]) or not torch.cuda.is_available() else "cuda"
-    model = whisper.load_model(_whisper_model, download_root=get_absolute_path("whisper_cache/", __file__), in_memory=True, device=device)
-    sys.stderr = LogToFile(log, logging.ERROR, LOGFILE)
-    use_cpu = True if str(model.device) == "cpu" else False
+    main_window.set_status_label("LOADING WHISPER MODEL", "orange")
+    transcriber = TranscribeHandler(CONFIG, __file__)
+    main_window.set_status_label(f"LOADED \"{transcriber.whisper_model}\" | TESTING WHISPER", "orange")
+    transcriber.test()
 
-    main_window.set_status_label(f"TESTING CONFIGURATION", "orange")
-    model.transcribe(torch.zeros(256), fp16=not use_cpu, language=language, without_timestamps=True)
-
-    # load the speech recognizer and set the initial energy threshold and pause threshold
+    # load the speech recognizer
     listen = ListenHandler(CONFIG)
 
     # Initialize OpenVR
@@ -127,7 +103,7 @@ def init():
             print(e)
             main_window.set_status_label("COULDNT INITIALIZE FLASK SERVER, CONTINUING WITHOUT OBS SOURCE", "orange")
 
-    main_window.set_conf_label(CONFIG["osc_ip"], CONFIG["osc_port"], CONFIG["osc_server_port"], ovr.initialized, use_cpu, _whisper_model)
+    main_window.set_conf_label(CONFIG["osc_ip"], CONFIG["osc_port"], CONFIG["osc_server_port"], ovr.initialized, transcriber.use_cpu, transcriber.whisper_model)
     main_window.set_status_label("INITIALIZED - WAITING FOR INPUT", "green")
     initializing = False
 
@@ -242,29 +218,6 @@ def populate_chatbox(text, cutoff: bool = False, is_textfield: bool = False):
     set_typing_indicator(False)
 
 
-def transcribe(torch_audio, last_tokens=[]):
-    """
-    Transcribes the given audio data using the model and returns the text and the tokens.
-    :param torch_audio: The audio data as a torch tensor.
-    :param last_tokens: The last tokens of the previous transcription.
-    """
-
-    global use_cpu
-    global language
-    global model
-    global task
-
-    _options = {"without_timestamps": True, "prompt": last_tokens, "task": task}
-    _result = model.transcribe(torch_audio, fp16=not use_cpu, language=language, **_options)
-
-    _text = _result['text']
-    _tokens = []
-    for segment in _result['segments']:
-        _tokens += segment['tokens']
-
-    return (_text, _tokens)
-
-
 def process_forever():
     """Processes audio data from the data queue until the user cancels the process by pressing the button again."""
 
@@ -272,6 +225,7 @@ def process_forever():
     global pressed
     global config_ui_open
     global listen
+    global transcriber
 
     play_sound("listen", __file__)
 
@@ -311,7 +265,7 @@ def process_forever():
 
             _torch_audio = listen.raw_to_np(_last_sample)
 
-            _transcription = transcribe(_torch_audio, _last_tokens)
+            _transcription = transcriber.transcribe(_torch_audio, _last_tokens)
             _text = _transcription[0]
             _last_tokens = _transcription[1]
 
@@ -375,7 +329,7 @@ def process_loop():
 
             _torch_audio = listen.raw_to_np(_last_sample)
 
-            _transcription = transcribe(_torch_audio, _last_tokens)
+            _transcription = transcriber.transcribe(_torch_audio, _last_tokens)
             _text = _transcription[0]
             _last_tokens = _transcription[1]
 
@@ -421,7 +375,7 @@ def process_once():
         main_window.set_status_label("TRANSCRIBING", "orange")
 
         if not pressed:
-            _trans = transcribe(_torch_audio)[0]
+            _trans = transcriber.transcribe(_torch_audio)[0]
             if pressed:
                 main_window.set_status_label("CANCELED - WAITING FOR INPUT", "orange")
                 play_sound("timeout", __file__)
