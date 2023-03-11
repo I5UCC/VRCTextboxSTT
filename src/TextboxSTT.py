@@ -24,22 +24,20 @@ if os.name == 'nt':
 import threading
 import time
 import keyboard
-import numpy as np
-import speech_recognition as sr
 import whisper
 import torch
 import re
-from queue import Queue
 import psutil
-
 from ui import MainWindow, SettingsWindow
 from osc import OscHandler
 from browsersource import OBSBrowserSource
 from ovr import OVRHandler
+from listen import ListenHandler
 
 
 osc: OscHandler = None
 ovr: OVRHandler = None
+listen: ListenHandler = None
 browsersource: OBSBrowserSource = OBSBrowserSource(CONFIG, get_absolute_path('resources/obs_source.html', __file__))
 use_kat: bool = True
 use_textbox: bool = True
@@ -48,9 +46,6 @@ model: whisper = None
 language: str = ""
 task: str = "transcribe"
 use_cpu: bool = False
-rec: sr.Recognizer = None
-source: sr.Microphone = None
-data_queue: Queue = Queue()
 curr_time: float = 0.0
 pressed: bool = False
 holding: bool = False
@@ -74,12 +69,10 @@ def init():
     global language
     global task
     global use_cpu
-    global rec
-    global source
-    global data_queue
     global ovr
     global initializing
     global browsersource
+    global listen
 
     initializing = True
 
@@ -114,13 +107,7 @@ def init():
     model.transcribe(torch.zeros(256), fp16=not use_cpu, language=language, without_timestamps=True)
 
     # load the speech recognizer and set the initial energy threshold and pause threshold
-    rec = sr.Recognizer()
-    rec.dynamic_energy_threshold = bool(CONFIG["dynamic_energy_threshold"])
-    rec.energy_threshold = int(CONFIG["energy_threshold"])
-    rec.pause_threshold = float(CONFIG["pause_threshold"])
-
-    source = sr.Microphone(sample_rate=16000, device_index=int(CONFIG["microphone_index"]) if CONFIG["microphone_index"] else None)
-    data_queue = Queue()
+    listen = ListenHandler(CONFIG)
 
     # Initialize OpenVR
     main_window.set_status_label("INITIALIZING OVR", "orange")
@@ -255,22 +242,6 @@ def populate_chatbox(text, cutoff: bool = False, is_textfield: bool = False):
     set_typing_indicator(False)
 
 
-def listen_once():
-    """
-    Listens once and returns the audio data as a torch tensor.
-    """
-
-    global rec
-
-    with source:
-        try:
-            _audio = rec.listen(source, timeout=float(CONFIG["timeout_time"]))
-        except sr.WaitTimeoutError:
-            return None
-
-        return torch.from_numpy(np.frombuffer(_audio.get_raw_data(), np.int16).flatten().astype(np.float32) / 32768.0)
-
-
 def transcribe(torch_audio, last_tokens=[]):
     """
     Transcribes the given audio data using the model and returns the text and the tokens.
@@ -297,12 +268,10 @@ def transcribe(torch_audio, last_tokens=[]):
 def process_forever():
     """Processes audio data from the data queue until the user cancels the process by pressing the button again."""
 
-    global data_queue
-    global source
-    global rec
     global main_window
     global pressed
     global config_ui_open
+    global listen
 
     play_sound("listen", __file__)
 
@@ -314,11 +283,7 @@ def process_forever():
     set_typing_indicator(True)
     main_window.set_status_label("LISTENING", "#FF00FF")
 
-    def record_callback(_, audio:sr.AudioData) -> None:
-        _data = audio.get_raw_data()
-        data_queue.put(_data)
-
-    _stop_listening = rec.listen_in_background(source, record_callback, phrase_time_limit=CONFIG["phrase_time_limit"])
+    listen.start_listen_background()
 
     _time_last = time.time()
     _last_tokens = []
@@ -339,12 +304,12 @@ def process_forever():
                 play_sound("clear", __file__)
                 clear_chatbox()
                 break
-        elif not data_queue.empty():
-            while not data_queue.empty():
-                data = data_queue.get()
+        elif not listen.data_queue.empty():
+            while not listen.data_queue.empty():
+                data = listen.data_queue.get()
                 _last_sample += data
 
-            _torch_audio = torch.from_numpy(np.frombuffer(_last_sample, np.int16).flatten().astype(np.float32) / 32768.0)
+            _torch_audio = listen.raw_to_np(_last_sample)
 
             _transcription = transcribe(_torch_audio, _last_tokens)
             _text = _transcription[0]
@@ -360,19 +325,17 @@ def process_forever():
 
     set_typing_indicator(False)
     main_window.set_button_enabled(True)
-    _stop_listening(wait_for_stop=False)
-    data_queue.queue.clear()
+    listen.stop_listen_background()
     time.sleep(1)
 
 
 def process_loop():
     """Processes audio data from the data queue and transcribes it until the user stops talking."""
 
-    global data_queue
-    global source
-    global rec
+    global listen
     global main_window
     global pressed
+    global listen
 
     _text = ""
     _time_last = None
@@ -383,11 +346,7 @@ def process_loop():
     main_window.set_status_label("LISTENING", "#FF00FF")
     play_sound("listen", __file__)
 
-    def record_callback(_, audio:sr.AudioData) -> None:
-        _data = audio.get_raw_data()
-        data_queue.put(_data)
-
-    _stop_listening = rec.listen_in_background(source, record_callback, phrase_time_limit=CONFIG["phrase_time_limit"])
+    listen.start_listen_background()
 
     _time_last = time.time()
     _last_tokens = []
@@ -409,12 +368,12 @@ def process_loop():
                 main_window.set_status_label("CANCELED - WAITING FOR INPUT", "#00008b")
                 play_sound("timeout", __file__)
                 break
-        elif not data_queue.empty():
-            while not data_queue.empty():
-                data = data_queue.get()
+        elif not listen.data_queue.empty():
+            while not listen.data_queue.empty():
+                data = listen.data_queue.get()
                 _last_sample += data
 
-            _torch_audio = torch.from_numpy(np.frombuffer(_last_sample, np.int16).flatten().astype(np.float32) / 32768.0)
+            _torch_audio = listen.raw_to_np(_last_sample)
 
             _transcription = transcribe(_torch_audio, _last_tokens)
             _text = _transcription[0]
@@ -435,8 +394,7 @@ def process_loop():
 
     set_typing_indicator(False)
     main_window.set_button_enabled(True)
-    _stop_listening(wait_for_stop=False)
-    data_queue.queue.clear()
+    listen.stop_listen_background()
     time.sleep(0.1)
 
 
@@ -445,12 +403,13 @@ def process_once():
 
     global main_window
     global pressed
+    global listen
 
     main_window.set_button_enabled(False)
     set_typing_indicator(True)
     main_window.set_status_label("LISTENING", "#FF00FF")
     play_sound("listen", __file__)
-    _torch_audio = listen_once()
+    _torch_audio = listen.listen_once()
     if _torch_audio is None:
         main_window.set_status_label("TIMEOUT - WAITING FOR INPUT", "orange")
         play_sound("timeout", __file__)
@@ -654,15 +613,10 @@ def determine_energy_threshold():
     """Determines the energy threshold for the microphone to use for speech recognition"""
 
     global config_ui
-    global rec
+    global listen
 
     config_ui.set_energy_threshold("Be quiet for 5 seconds...")
-    with source:
-        _last = rec.energy_threshold
-        rec.adjust_for_ambient_noise(source, 5)
-        _value = round(rec.energy_threshold) + 20
-        rec.energy_threshold = _last
-        config_ui.set_energy_threshold(str(_value))
+    config_ui.set_energy_threshold(listen.get_energy_threshold())
 
 
 def check_ovr():
