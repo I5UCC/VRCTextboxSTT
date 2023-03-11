@@ -82,6 +82,8 @@ def init():
     main_window.set_status_label(f"LOADED \"{transcriber.whisper_model}\" | TESTING WHISPER", "orange")
     transcriber.test()
 
+    sys.stderr = LogToFile(log, logging.ERROR, LOGFILE)
+
     # load the speech recognizer
     listen = ListenHandler(CONFIG)
 
