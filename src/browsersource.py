@@ -6,10 +6,10 @@ class FlaskAppWrapper(object):
 
     def __init__(self, app, port, **configs):
         self.app = app
+        self.port = port
         self.configs(**configs)
-        self.server = waitress.create_server(self.app, host="127.0.0.1", port=port)
+        self.server = waitress.create_server(self.app, host="127.0.0.1", port=self.port)
         self.flask_thread = kthread.KThread(target=self.server.run)
-        
 
     def configs(self, **configs):
         for config, value in configs:
@@ -19,11 +19,20 @@ class FlaskAppWrapper(object):
         self.app.add_url_rule(endpoint, endpoint_name, handler, methods=methods, *args, **kwargs)
     
     def start(self):
-        self.flask_thread.start()
+        try:
+            self.flask_thread.start()
+            return True
+        except Exception as e:
+            print(f"Error starting Waitress server: {str(e)}")
+            return False
 
     def kill(self):
-        if self.flask_thread.is_alive():
+        try:
             self.flask_thread.kill()
+            return True
+        except Exception as e:
+            print(f"Error killing Waitress server: {str(e)}")
+            return False
 
 class OBSBrowserSource(object):
 

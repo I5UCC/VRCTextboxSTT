@@ -96,12 +96,8 @@ def init():
         main_window.set_status_label("COULDNT INITIALIZE OVR, CONTINUING DESKTOP ONLY", "orange")
 
     # Start Flask server
-    if CONFIG["enable_obs_source"]:
-        try:
-            browsersource.start()
-        except Exception as e:
-            print(e)
-            main_window.set_status_label("COULDNT INITIALIZE FLASK SERVER, CONTINUING WITHOUT OBS SOURCE", "orange")
+    if CONFIG["enable_obs_source"] and not browsersource.start():
+        main_window.set_status_label("COULDNT INITIALIZE FLASK SERVER, CONTINUING WITHOUT OBS SOURCE", "orange")
 
     main_window.set_conf_label(CONFIG["osc_ip"], CONFIG["osc_port"], CONFIG["osc_server_port"], ovr.initialized, transcriber.use_cpu, transcriber.whisper_model)
     main_window.set_status_label("INITIALIZED - WAITING FOR INPUT", "green")
@@ -511,6 +507,7 @@ def settings_closing(save=False):
     global osc
     global config_ui
     global config_ui_open
+    global browsersource
 
     if save:
         try:
@@ -532,12 +529,6 @@ def settings_closing(save=False):
         except Exception as e:
             print(e)
             main_window.set_status_label("ERROR INITIALIZING, PLEASE CHECK YOUR SETTINGS,\nLOOK INTO out.log for more info on the error", "red")
-        try:
-            if browsersource:
-                browsersource.stop()
-                browsersource = None
-        except Exception as e:
-            print("Error stopping browsersource: " + str(e))
     else:
         config_ui.on_closing()
         main_window.set_status_label("SETTINGS NOT SAVED - WAITING FOR INPUT", "#00008b")
