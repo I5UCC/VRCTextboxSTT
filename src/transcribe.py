@@ -1,7 +1,6 @@
 import whisper
 import torch
 from helper import get_absolute_path
-import sys
 
 class TranscribeHandler(object):
     def __init__(self, config, script_path) -> None:
@@ -19,8 +18,6 @@ class TranscribeHandler(object):
         self.use_cpu = True if str(self.device) == "cpu" else False
 
         self.model: whisper.Whisper = whisper.load_model(self.whisper_model, download_root=get_absolute_path("whisper_cache/", script_path), in_memory=True, device=self.device)
-        
-        print("Testing model... (This may take a while)", file=sys.stderr)
 
     def test(self):
         self.transcribe(torch.zeros(256))
