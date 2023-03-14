@@ -6,7 +6,7 @@ This program is supposed to be entirely free (as in money) and independent of Cl
 
 ### [<img src="https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6ca814282eca7172c6_icon_clyde_white_RGB.svg"  width="20" height="20"> Discord Support Server](https://discord.gg/rqcWHje3hn)
 
-# [🢃 Download Latest Release](https://github.com/I5UCC/VRCTextboxSTT/releases/latest)
+### [🢃 Download Latest Release](https://github.com/I5UCC/VRCTextboxSTT/releases/latest)
 
 # Contents
 
