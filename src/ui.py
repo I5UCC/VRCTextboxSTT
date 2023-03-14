@@ -7,6 +7,7 @@ import keyboard
 import glob
 import shutil
 import os
+import torch
 
 class MainWindow(object):
     def __init__(self, version):
@@ -77,8 +78,8 @@ class MainWindow(object):
         except Exception:
             self.set_text_label("Done.")
 
-    def set_conf_label(self, ip, port, server_port, ovr_initialized, use_cpu, model):
-        self.conf_lbl.configure(text=f"OSC: {ip}#{port}:{server_port}, OVR: {'Connected' if ovr_initialized else 'Disconnected'}, Device: {'CPU' if use_cpu else 'GPU'}, Model: {model}")
+    def set_conf_label(self, ip, port, server_port, ovr_initialized, device, model):
+        self.conf_lbl.configure(text=f"OSC: {ip}#{port}:{server_port}, OVR: {'Connected' if ovr_initialized else 'Disconnected'}, Device: {device}, Model: {model}")
         self.update()
 
     def clear_textfield(self):
@@ -111,60 +112,81 @@ class SettingsWindow:
         self.tooltip_window = None
 
         self.tkui = tk.Tk()
-        self.tkui.minsize(875, 450)
-        self.tkui.maxsize(875, 450)
+        self.tkui.minsize(875, 490)
+        self.tkui.maxsize(875, 490)
         self.tkui.resizable(False, False)
         self.tkui.configure(bg="#333333")
         self.tkui.title("TextboxSTT - Settings")
 
+        self.devices_list = []
+        self.value_device = tk.StringVar(self.tkui)
+
+        if torch.cuda.is_available() and self.config["device"] != "cpu":
+            for i in range(0, torch.cuda.device_count()):
+                self.devices_list.append((i, torch.cuda.get_device_name(i)))
+            _index = int(self.config["device"][5:])
+            self.value_device.set(self.devices_list[_index])
+        else:
+            self.value_device.set("cpu")
+        self.devices_list.append("cpu")
+
+        self.label_device = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Device', font=(self.FONT, 12))
+        self.label_device.grid(row=0, column=0, padx=PADX_L, pady=PADY, sticky='es')
+        self.opt_device = tk.OptionMenu(self.tkui, self.value_device, *self.devices_list)
+        self.opt_device.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.opt_device.grid(row=0, column=1, padx=PADX_R, pady=PADY, sticky='ws')
+        self.label_device.bind("<Enter>", (lambda event: self.show_tooltip("Set the Device to use for transcription. (Requires Restart)")))
+        self.label_device.bind("<Leave>", self.hide_tooltip)
+        self.opt_device.bind("<Enter>", (lambda event: self.show_tooltip("Set the Device to use for transcription. (Requires Restart)")))
+        self.opt_device.bind("<Leave>", self.hide_tooltip)
+
         self.label_osc_ip = tk.Label(master=self.tkui, bg="#333333", fg="white", text='OSC IP', font=(self.FONT, 12))
-        self.label_osc_ip.grid(row=0, column=0, padx=PADX_L, pady=PADY, sticky='es')
+        self.label_osc_ip.grid(row=1, column=0, padx=PADX_L, pady=PADY, sticky='es')
         self.label_osc_ip.bind("<Enter>", (lambda event: self.show_tooltip("IP to send the OSC information to.")))
         self.label_osc_ip.bind("<Leave>", self.hide_tooltip)
         self.entry_osc_ip = tk.Entry(self.tkui)
         self.entry_osc_ip.insert(0, self.config["osc_ip"])
         self.entry_osc_ip.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
-        self.entry_osc_ip.grid(row=0, column=1, padx=PADX_R, pady=PADY, sticky='ws')
+        self.entry_osc_ip.grid(row=1, column=1, padx=PADX_R, pady=PADY, sticky='ws')
         self.entry_osc_ip.bind("<Enter>", (lambda event: self.show_tooltip("IP to send the OSC information to.")))
         self.entry_osc_ip.bind("<Leave>", self.hide_tooltip)
-        
 
         self.label_osc_port = tk.Label(master=self.tkui, bg="#333333", fg="white", text='OSC Port', font=(self.FONT, 12))
-        self.label_osc_port.grid(row=1, column=0, padx=PADX_L, pady=PADY, sticky='es')
+        self.label_osc_port.grid(row=2, column=0, padx=PADX_L, pady=PADY, sticky='es')
         self.label_osc_port.bind("<Enter>", (lambda event: self.show_tooltip("Port to send the OSC information to.")))
         self.label_osc_port.bind("<Leave>", self.hide_tooltip)
         self.entry_osc_port = tk.Entry(self.tkui)
         self.entry_osc_port.insert(0, self.config["osc_port"])
         self.entry_osc_port.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
-        self.entry_osc_port.grid(row=1, column=1, padx=PADX_R, pady=PADY, sticky='ws')
+        self.entry_osc_port.grid(row=2, column=1, padx=PADX_R, pady=PADY, sticky='ws')
         self.entry_osc_port.bind("<Enter>", (lambda event: self.show_tooltip("Port to send the OSC information to.")))
         self.entry_osc_port.bind("<Leave>", self.hide_tooltip)
 
         self.label_osc_server_port = tk.Label(master=self.tkui, bg="#333333", fg="white", text='OSC Server Port', font=(self.FONT, 12))
-        self.label_osc_server_port.grid(row=2, column=0, padx=PADX_L, pady=PADY, sticky='es')
+        self.label_osc_server_port.grid(row=3, column=0, padx=PADX_L, pady=PADY, sticky='es')
         self.label_osc_server_port.bind("<Enter>", (lambda event: self.show_tooltip("Port to get the OSC information from.\nUsed to improve KAT sync with in-game avatar and autodetect sync parameter count used for the avatar.\nOnly used if KAT Sync Params is set to 'Auto Detect' and use KAT set to 'Yes'")))
         self.label_osc_server_port.bind("<Leave>", self.hide_tooltip)
         self.entry_osc_server_port = tk.Entry(self.tkui)
         self.entry_osc_server_port.insert(0, self.config["osc_server_port"])
         self.entry_osc_server_port.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23, disabledbackground="#444444")
-        self.entry_osc_server_port.grid(row=2, column=1, padx=PADX_R, pady=PADY, sticky='ws')
+        self.entry_osc_server_port.grid(row=3, column=1, padx=PADX_R, pady=PADY, sticky='ws')
         self.entry_osc_server_port.bind("<Enter>", (lambda event: self.show_tooltip("Port to get the OSC information from.\nUsed to improve KAT sync with in-game avatar and autodetect sync parameter count used for the avatar.\nOnly used if KAT Sync Params is set to 'Auto Detect' and use KAT set to 'Yes'")))
         self.entry_osc_server_port.bind("<Leave>", self.hide_tooltip)
 
         self.label_model = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Model', font=(self.FONT, 12))
-        self.label_model.grid(row=3, column=0, padx=PADX_L, pady=PADY, sticky='es')
+        self.label_model.grid(row=4, column=0, padx=PADX_L, pady=PADY, sticky='es')
         self.label_model.bind("<Enter>", (lambda event: self.show_tooltip("What model of whisper to use. \nI'd recommend not going over 'tiny,base,small'\n as it will significantly impact the transcription time.")))
         self.label_model.bind("<Leave>", self.hide_tooltip)
         self.value_model = tk.StringVar(self.tkui)
         self.value_model.set(self.config["model"])
         self.opt_model = tk.OptionMenu(self.tkui, self.value_model, *self.whisper_models)
         self.opt_model.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
-        self.opt_model.grid(row=3, column=1, padx=PADX_R, pady=PADY, sticky='ws')
+        self.opt_model.grid(row=4, column=1, padx=PADX_R, pady=PADY, sticky='ws')
         self.opt_model.bind("<Enter>", (lambda event: self.show_tooltip("What model of whisper to use. \nI'd recommend not going over 'tiny,base,small'\n as it will significantly impact the transcription time.")))
         self.opt_model.bind("<Leave>", self.hide_tooltip)
 
         self.label_language = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Language', font=(self.FONT, 12))
-        self.label_language.grid(row=4, column=0, padx=PADX_L, pady=PADY, sticky='es')
+        self.label_language.grid(row=5, column=0, padx=PADX_L, pady=PADY, sticky='es')
         self.label_language.bind("<Enter>", (lambda event: self.show_tooltip("Language to use, 'english' will be faster then other languages. \nLeaving it empty will let the program decide what language you are speaking.")))
         self.label_language.bind("<Leave>", self.hide_tooltip)
         self.value_language = tk.StringVar(self.tkui)
@@ -172,35 +194,35 @@ class SettingsWindow:
         self.value_language.trace("w", self.language_changed)
         self.opt_language = tk.OptionMenu(self.tkui, self.value_language, *self.languages)
         self.opt_language.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
-        self.opt_language.grid(row=4, column=1, padx=PADX_R, pady=PADY, sticky='ws')
+        self.opt_language.grid(row=5, column=1, padx=PADX_R, pady=PADY, sticky='ws')
         self.opt_language.bind("<Enter>", (lambda event: self.show_tooltip("Language to use, 'english' will be faster then other languages. \nLeaving it empty will let the program decide what language you are speaking.")))
         self.opt_language.bind("<Leave>", self.hide_tooltip)
 
         self.label_translate = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Translate to English', font=(self.FONT, 12))
         self.label_translate.bind("<Enter>", (lambda event: self.show_tooltip("With dynamic_energy_threshold set to 'Yes', \nthe program will realtimely try to re-adjust the energy threshold\n to match the environment based on the ambient noise level at that time.\nI'd recommend setting the 'energy_threshold' value \nhigh when enabling this setting.")))
         self.label_translate.bind("<Leave>", self.hide_tooltip)
-        self.label_translate.grid(row=5, column=0, padx=PADX_L, pady=PADY, sticky='es')
+        self.label_translate.grid(row=6, column=0, padx=PADX_L, pady=PADY, sticky='es')
         self.value_translate = tk.StringVar(self.tkui)
         self.value_translate.set("yes" if bool(self.config["translate_to_english"]) else "no")
         self.opt_translate = tk.OptionMenu(self.tkui, self.value_translate, *self.yn_options)
         self.opt_translate.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
-        self.opt_translate.grid(row=5, column=1, padx=PADX_R, pady=PADY, sticky='ws')
+        self.opt_translate.grid(row=6, column=1, padx=PADX_R, pady=PADY, sticky='ws')
         self.opt_translate.bind("<Enter>", (lambda event: self.show_tooltip("With dynamic_energy_threshold set to 'Yes', \nthe program will realtimely try to re-adjust the energy threshold\n to match the environment based on the ambient noise level at that time.\nI'd recommend setting the 'energy_threshold' value \nhigh when enabling this setting.")))
         self.opt_translate.bind("<Leave>", self.hide_tooltip)
 
         self.label_hotkey = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Hotkey', font=(self.FONT, 12))
-        self.label_hotkey.grid(row=6, column=0, padx=PADX_L, pady=PADY, sticky='es')
+        self.label_hotkey.grid(row=7, column=0, padx=PADX_L, pady=PADY, sticky='es')
         self.label_hotkey.bind("<Enter>", (lambda event: self.show_tooltip("The key that is used to trigger listening.\nKlick on the button and press the button you want to use.")))
         self.label_hotkey.bind("<Leave>", self.hide_tooltip)
         self.set_key = self.config["hotkey"]
         self.button_hotkey = tk.Button(self.tkui, text=self.config["hotkey"], command=self.button_hotkey_pressed)
         self.button_hotkey.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, width=23, anchor="center", activebackground="#555555", activeforeground="white")
-        self.button_hotkey.grid(row=6, column=1, padx=PADX_R, pady=PADY, sticky='ws')
+        self.button_hotkey.grid(row=7, column=1, padx=PADX_R, pady=PADY, sticky='ws')
         self.button_hotkey.bind("<Enter>", (lambda event: self.show_tooltip("The key that is used to trigger listening.\nKlick on the button and press the button you want to use.")))
         self.button_hotkey.bind("<Leave>", self.hide_tooltip)
 
         self.label_mode = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Transcription Mode', font=(self.FONT, 12))
-        self.label_mode.grid(row=7, column=0, padx=PADX_L, pady=PADY, sticky='es')
+        self.label_mode.grid(row=8, column=0, padx=PADX_L, pady=PADY, sticky='es')
         self.label_mode.bind("<Enter>", (lambda event: self.show_tooltip("If set to 'realtime' it will show interim results while you are talking until you are done talking.\nIf set to 'once' it will only listen once and then stop listening, like it used to be.")))
         self.label_mode.bind("<Leave>", self.hide_tooltip)
         self.value_mode = tk.StringVar(self.tkui)
@@ -209,7 +231,7 @@ class SettingsWindow:
         self.value_mode.trace("w", self.mode_changed)
         self.opt_mode = tk.OptionMenu(self.tkui, self.value_mode, *self.options_mode)
         self.opt_mode.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
-        self.opt_mode.grid(row=7, column=1, padx=PADX_R, pady=PADY, sticky='ws')
+        self.opt_mode.grid(row=8, column=1, padx=PADX_R, pady=PADY, sticky='ws')
         self.opt_mode.bind("<Enter>", (lambda event: self.show_tooltip("If set to 'realtime' it will show interim results while you are talking until you are done talking.\nIf set to 'once' it will only listen once and then stop listening, like it used to be.")))
         self.opt_mode.bind("<Leave>", self.hide_tooltip)
         self.value_mode.trace_add("write", (lambda *args: self.changed()))
@@ -217,39 +239,39 @@ class SettingsWindow:
         self.label_det = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Dynamic Energy Threshold', font=(self.FONT, 12))
         self.label_det.bind("<Enter>", (lambda event: self.show_tooltip("With dynamic_energy_threshold set to 'Yes', \nthe program will realtimely try to re-adjust the energy threshold\n to match the environment based on the ambient noise level at that time.\nI'd recommend setting the 'energy_threshold' value \nhigh when enabling this setting.")))
         self.label_det.bind("<Leave>", self.hide_tooltip)
-        self.label_det.grid(row=8, column=0, padx=PADX_L, pady=PADY, sticky='es')
+        self.label_det.grid(row=9, column=0, padx=PADX_L, pady=PADY, sticky='es')
         self.value_det = tk.StringVar(self.tkui)
         self.value_det.set("yes" if bool(self.config["dynamic_energy_threshold"]) else "no")
         self.opt_det = tk.OptionMenu(self.tkui, self.value_det, *self.yn_options)
         self.opt_det.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
-        self.opt_det.grid(row=8, column=1, padx=PADX_R, pady=PADY, sticky='ws')
+        self.opt_det.grid(row=9, column=1, padx=PADX_R, pady=PADY, sticky='ws')
         self.opt_det.bind("<Enter>", (lambda event: self.show_tooltip("With dynamic_energy_threshold set to 'Yes', \nthe program will realtimely try to re-adjust the energy threshold\n to match the environment based on the ambient noise level at that time.\nI'd recommend setting the 'energy_threshold' value \nhigh when enabling this setting.")))
         self.opt_det.bind("<Leave>", self.hide_tooltip)
 
         self.label_energy_threshold = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Energy Threshold', font=(self.FONT, 12))
-        self.label_energy_threshold.grid(row=9, column=0, padx=PADX_L, pady=PADY, sticky='es')
+        self.label_energy_threshold.grid(row=10, column=0, padx=PADX_L, pady=PADY, sticky='es')
         self.label_energy_threshold.bind("<Enter>", (lambda event: self.show_tooltip("Under 'ideal' conditions (such as in a quiet room), \nvalues between 0 and 100 are considered silent or ambient,\n and values 300 to about 3500 are considered speech.")))
         self.label_energy_threshold.bind("<Leave>", self.hide_tooltip)
         self.entry_energy_threshold = tk.Entry(self.tkui)
         self.entry_energy_threshold.insert(0, self.config["energy_threshold"])
         self.entry_energy_threshold.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
-        self.entry_energy_threshold.grid(row=9, column=1, padx=PADX_R, pady=PADY, sticky='ws')
+        self.entry_energy_threshold.grid(row=10, column=1, padx=PADX_R, pady=PADY, sticky='ws')
         self.entry_energy_threshold.bind("<Enter>", (lambda event: self.show_tooltip("Under 'ideal' conditions (such as in a quiet room), \nvalues between 0 and 100 are considered silent or ambient,\n and values 300 to about 3500 are considered speech.")))
         self.entry_energy_threshold.bind("<Leave>", self.hide_tooltip)
         self.button_refresh = tk.Button(self.tkui, text=" ⭯ ")
         self.button_refresh.configure(bg="#333333", fg="white", highlightthickness=0, anchor="center", activebackground="#555555", activeforeground="white")
-        self.button_refresh.grid(row=9, column=2, padx=2, pady=3, sticky='ws')
+        self.button_refresh.grid(row=10, column=2, padx=2, pady=3, sticky='ws')
         self.button_refresh.bind("<Enter>", (lambda event: self.show_tooltip("Manually refreshes the energy threshold value. \n Be silent for 5 Seconds after pressing this button. \n The Textfield is going to be populated with the new value.")))
         self.button_refresh.bind("<Leave>", self.hide_tooltip)
 
         self.label_pause_threshold = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Pause Threshold', font=(self.FONT, 12))
-        self.label_pause_threshold.grid(row=10, column=0, padx=PADX_L, pady=PADY, sticky='es')
+        self.label_pause_threshold.grid(row=11, column=0, padx=PADX_L, pady=PADY, sticky='es')
         self.label_pause_threshold.bind("<Enter>", (lambda event: self.show_tooltip("Amount of seconds to wait when current energy is under the 'energy_threshold'.")))
         self.label_pause_threshold.bind("<Leave>", self.hide_tooltip)
         self.entry_pause_threshold = tk.Entry(self.tkui)
         self.entry_pause_threshold.insert(0, self.config["pause_threshold"])
         self.entry_pause_threshold.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
-        self.entry_pause_threshold.grid(row=10, column=1, padx=PADX_R, pady=PADY, sticky='ws')
+        self.entry_pause_threshold.grid(row=11, column=1, padx=PADX_R, pady=PADY, sticky='ws')
         self.entry_pause_threshold.bind("<Enter>", (lambda event: self.show_tooltip("Amount of seconds to wait when current energy is under the 'energy_threshold'.")))
         self.entry_pause_threshold.bind("<Leave>", self.hide_tooltip)
 
@@ -472,8 +494,10 @@ class SettingsWindow:
             return int(option[1:option.index(',')])
         else:
             return None
+        
 
     def save(self):
+        self.config["device"] = "cuda:" + self.value_device.get()[1] if torch.cuda.is_available() else "cpu"
         self.config["osc_ip"] = self.entry_osc_ip.get()
         self.config["osc_port"] = int(self.entry_osc_port.get())
         self.config["osc_server_port"] = int(self.entry_osc_server_port.get())

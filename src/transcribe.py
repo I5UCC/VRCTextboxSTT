@@ -14,7 +14,7 @@ class TranscribeHandler(object):
         self.task = "translate" if self.config["translate_to_english"] and self.language != "english" else "transcribe"
         print(f"Using model: {self.whisper_model} for language: {self.language} ({self.task}) ")
 
-        self.device = "cpu" if bool(self.config["use_cpu"]) or not torch.cuda.is_available() else "cuda"
+        self.device = self.config["device"] if torch.cuda.is_available() else "cpu"
         self.use_cpu = True if str(self.device) == "cpu" else False
 
         self.model: whisper.Whisper = whisper.load_model(self.whisper_model, download_root=get_absolute_path("whisper_cache/", script_path), in_memory=True, device=self.device)

@@ -5,7 +5,7 @@ import logging
 from helper import LogToFile, loadfont, get_absolute_path, play_sound
 
 
-VERSION = "v0.9"
+VERSION = "v0.9.1"
 LOGFILE = get_absolute_path('out.log', __file__)
 CONFIG_PATH = get_absolute_path('config.json', __file__)
 CONFIG = json.load(open(CONFIG_PATH))
@@ -104,7 +104,7 @@ def init():
         main_window.set_status_label("INITIALIZED FLASK SERVER", "green")
         print(f"Flask server started on 127.0.0.1:{CONFIG['obs_source']['port']}")
 
-    main_window.set_conf_label(CONFIG["osc_ip"], CONFIG["osc_port"], CONFIG["osc_server_port"], ovr.initialized, transcriber.use_cpu, transcriber.whisper_model)
+    main_window.set_conf_label(CONFIG["osc_ip"], CONFIG["osc_port"], CONFIG["osc_server_port"], ovr.initialized, transcriber.device, transcriber.whisper_model)
     main_window.set_status_label("INITIALIZED - WAITING FOR INPUT", "green")
     initialized = True
 

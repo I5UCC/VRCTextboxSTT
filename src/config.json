@@ -1,5 +1,5 @@
 {
-    "use_cpu": false,
+    "device": "cuda:0",
     "osc_ip": "127.0.0.1",
     "osc_port": 9000,
     "osc_server_port": 9001,
