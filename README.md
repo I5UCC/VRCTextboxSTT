@@ -1,11 +1,12 @@
-# VRCTextboxSTT [![Github All Releases](https://img.shields.io/github/downloads/i5ucc/VRCTextboxSTT/total.svg)](https://github.com/I5UCC/VRCTextboxSTT/releases/latest) <a href='https://ko-fi.com/i5ucc' target='_blank'><img height='35' style='border:0px;height:25px;' src='https://az743702.vo.msecnd.net/cdn/kofi3.png?v=0' border='0' alt='Buy Me a Coffee at ko-fi.com' />
-### A SpeechToText application that uses [OpenAI's whisper](https://github.com/openai/whisper) to transcribe audio and send that information to VRChats textbox system and/or [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText) over OSC.
+# VRCTextboxSTT [![Github All Releases](https://img.shields.io/github/downloads/i5ucc/VRCTextboxSTT/total.svg)](https://github.com/I5UCC/VRCTextboxSTT/releases/latest) 
 
-### This program is supposed to be entirely free (as in money) and independent of Cloud Based Transcription services like Microsoft Azure etc., by using transcription Algorithms running on your own hardware, thus respecting privacy and improving latency and reliability, all at the cost of compromising a bit of performance by running on your own hardware.
+A SpeechToText application that uses [OpenAI's whisper](https://github.com/openai/whisper) to transcribe audio and send that information to VRChats textbox system and/or [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText) over OSC.
+
+This program is supposed to be entirely free (as in money) and independent of Cloud Based Transcription services like Microsoft Azure etc., by using transcription Algorithms running on your own hardware, thus respecting privacy and improving latency and reliability, all at the cost of compromising a bit of performance by running on your own hardware.
 
 ### [<img src="https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6ca814282eca7172c6_icon_clyde_white_RGB.svg"  width="20" height="20"> Discord Support Server](https://discord.gg/rqcWHje3hn)
 
-# [Download Here](https://github.com/I5UCC/VRCTextboxSTT/releases/latest)
+# [🢃 Download Latest Release](https://github.com/I5UCC/VRCTextboxSTT/releases/latest)
 
 # Contents
 
@@ -19,6 +20,7 @@
 - [Modifying SteamVR binding](https://github.com/I5UCC/VRCTextboxSTT#modifying-steamvr-binding)
 - [Automatic launch with SteamVR](https://github.com/I5UCC/VRCTextboxSTT#automatic-launch-with-steamvr)
 - [Backlog](https://github.com/I5UCC/VRCTextboxSTT#backlog)
+- [Donate](https://github.com/I5UCC/VRCTextboxSTT#donate)
 - [Credit](https://github.com/I5UCC/VRCTextboxSTT#credit)
 
 # Features
@@ -168,6 +170,13 @@ If it doesnt show up, manually register the ´app.vrmanifest´ file by double cl
 - Implement Text To Speech (Maybe [coqui-ai?](https://github.com/coqui-ai/TTS))
 - Use [whisper.cpp](https://github.com/ggerganov/whisper.cpp) for transcription, for better performance.
 - Allow use of finetuned models.
+
+
+## Donate
+
+You can always leave a Github Star 🟊 (It's free) or buy me a coffee:<br /> 
+
+<a href='https://ko-fi.com/i5ucc' target='_blank'><img height='35' style='border:0px;height:35px;' src='https://az743702.vo.msecnd.net/cdn/kofi3.png?v=0' border='0' alt='Buy Me a Coffee at ko-fi.com' /><br />
 
 # Credit
 - [OpenAI](https://github.com/openai) for their amazing work with anything really.
