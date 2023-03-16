@@ -167,9 +167,9 @@ If it doesnt show up, manually register the ´app.vrmanifest´ file by double cl
 - ~~Transcribe continuously until the user stops talking.~~
 - ~~Add an emote feature~~
 - ~~Demo Gif/Video (Stole from Frosty, thanks lol)~~
-- Add a OBS browsersource
+- ~~Add a OBS browsersource~~
+- ~~Use [whisper.cpp](https://github.com/ggerganov/whisper.cpp)/[faster-whisper](https://github.com/guillaumekln/faster-whisper)for transcription, for better performance.~~
 - Implement Text To Speech (Maybe [coqui-ai?](https://github.com/coqui-ai/TTS))
-- Use [whisper.cpp](https://github.com/ggerganov/whisper.cpp)/[faster-whisper](https://github.com/guillaumekln/faster-whisper)for transcription, for better performance.
 - Allow use of finetuned models.
 - Allow translation into and from different languages.
 
