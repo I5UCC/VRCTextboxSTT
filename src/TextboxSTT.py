@@ -95,11 +95,12 @@ def init():
         main_window.set_status_label("COULDNT INITIALIZE OVR, CONTINUING DESKTOP ONLY", "orange")
 
     # Start Flask server
-    if CONFIG["enable_obs_source"] and not browsersource.start():
-        main_window.set_status_label("COULDNT INITIALIZE FLASK SERVER, CONTINUING WITHOUT OBS SOURCE", "orange")
-    else:
-        main_window.set_status_label("INITIALIZED FLASK SERVER", "green")
-        print(f"Flask server started on 127.0.0.1:{CONFIG['obs_source']['port']}")
+    if CONFIG["enable_obs_source"]:
+        if browsersource.start():
+            main_window.set_status_label("INITIALIZED FLASK SERVER", "green")
+            print(f"Flask server started on 127.0.0.1:{CONFIG['obs_source']['port']}")
+        else:
+            main_window.set_status_label("COULDNT INITIALIZE FLASK SERVER, CONTINUING WITHOUT OBS SOURCE", "orange")
 
     main_window.set_conf_label(CONFIG["osc_ip"], CONFIG["osc_port"], CONFIG["osc_server_port"], ovr.initialized, transcriber.device, transcriber.whisper_model)
     main_window.set_status_label("INITIALIZED - WAITING FOR INPUT", "green")

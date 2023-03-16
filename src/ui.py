@@ -455,8 +455,8 @@ class SettingsWindow:
         self.button_reset_config.bind("<Leave>", self.hide_tooltip)
 
         self.btn_save = tk.Button(self.tkui, text="Save")
-        self.btn_save.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=80, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
-        self.btn_save.place(relx=0.37, rely=0.95, anchor="center")
+        self.btn_save.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=82, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.btn_save.place(relx=0.375, rely=0.95, anchor="center")
 
         self.language_changed()
         self.mode_changed()

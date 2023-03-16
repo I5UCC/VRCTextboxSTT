@@ -63,7 +63,7 @@ class OBSBrowserSource(object):
         return jsonify(self.text)
     
     def start(self):
-        self.app.start()
+        return self.app.start()
 
     def stop(self):
         self.app.kill()
