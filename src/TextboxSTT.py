@@ -4,7 +4,7 @@ import logging
 from helper import LogToFile, loadfont, get_absolute_path, play_sound, get_config
 
 
-VERSION = "v0.9.2"
+VERSION = "v1.0.0-Alpha"
 LOGFILE = get_absolute_path('out.log', __file__)
 CONFIG_PATH = get_absolute_path('config.json', __file__)
 DEFAULT_CONFIG_PATH = get_absolute_path("resources/default.json", __file__)
@@ -57,6 +57,7 @@ def init():
     """Initialize the application."""
 
     global main_window
+    global config_ui
     global osc
     global use_textbox
     global use_kat
@@ -69,20 +70,16 @@ def init():
 
     initialized = False
 
+    config_ui = SettingsWindow(CONFIG, CONFIG_PATH)
+
     osc = OscHandler(CONFIG["osc_ip"], CONFIG["osc_port"], CONFIG["osc_ip"], CONFIG["osc_server_port"])
     use_textbox = bool(CONFIG["use_textbox"])
     use_kat = bool(CONFIG["use_kat"])
     use_both = bool(CONFIG["use_both"])
 
-    # Temporarily output stderr to text label for download progress.
-    sys.stderr.write = main_window.loading_status
-
     main_window.set_status_label("LOADING WHISPER MODEL", "orange")
     transcriber = TranscribeHandler(CONFIG, __file__)
-    main_window.set_status_label(f"LOADED \"{transcriber.whisper_model}\" | TESTING WHISPER", "orange")
-    transcriber.test()
-
-    sys.stderr = LogToFile(log, logging.ERROR, LOGFILE)
+    main_window.set_status_label(f"LOADED \"{transcriber.whisper_model}\"", "orange")
 
     # load the speech recognizer
     listen = ListenHandler(CONFIG)
@@ -248,7 +245,6 @@ def process_forever():
     listen.start_listen_background()
 
     _time_last = time.time()
-    _last_tokens = []
     while True:
         if config_ui_open:
             break
@@ -273,9 +269,7 @@ def process_forever():
 
             _torch_audio = listen.raw_to_np(_last_sample)
 
-            _transcription = transcriber.transcribe(_torch_audio, _last_tokens)
-            _text = _transcription[0]
-            _last_tokens = _transcription[1]
+            _text = transcriber.transcribe(_torch_audio)
 
             _time_last = time.time()
             populate_chatbox(_text, True)
@@ -311,7 +305,6 @@ def process_loop():
     listen.start_listen_background()
 
     _time_last = time.time()
-    _last_tokens = []
     while True:
         if pressed:
             _time_last = time.time()
@@ -337,9 +330,7 @@ def process_loop():
 
             _np_audio = listen.raw_to_np(_last_sample)
 
-            _transcription = transcriber.transcribe(_np_audio, _last_tokens)
-            _text = _transcription[0]
-            _last_tokens = _transcription[1]
+            _text = transcriber.transcribe(_np_audio)
 
             _time_last = time.time()
             populate_chatbox(_text, True)
@@ -383,7 +374,7 @@ def process_once():
         main_window.set_status_label("TRANSCRIBING", "orange")
 
         if not pressed:
-            _trans = transcriber.transcribe(_np_audio)[0]
+            _trans = transcriber.transcribe(_np_audio)
             if pressed:
                 main_window.set_status_label("CANCELED - WAITING FOR INPUT", "orange")
                 sound("timeout")

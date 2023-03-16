@@ -1,13 +1,13 @@
 import tkinter as tk
 import json
-import whisper
-from whisper import tokenizer
 import pyaudio
 import keyboard
 import glob
 import shutil
 import os
 import torch
+from helper import KEY_TO_LANGUAGE, LANGUAGE_TO_KEY, get_best_compute_type
+from ctranslate2 import get_supported_compute_types
 
 class MainWindow(object):
     def __init__(self, version):
@@ -79,7 +79,7 @@ class MainWindow(object):
             self.set_text_label("Done.")
 
     def set_conf_label(self, ip, port, server_port, ovr_initialized, device, model):
-        self.conf_lbl.configure(text=f"OSC: {ip}#{port}:{server_port}, OVR: {'Connected' if ovr_initialized else 'Disconnected'}, Device: {device}, Model: {model}")
+        self.conf_lbl.configure(text=f"OSC: {ip}#{port}:{server_port}, OVR: {'Connected' if ovr_initialized else 'Disconnected'}\nDevice: {device}, Model: {model}", justify="left")
         self.update()
 
     def clear_textfield(self):
@@ -98,7 +98,7 @@ class MainWindow(object):
 
 class SettingsWindow:
     def __init__(self, config, config_path):
-        self.languages = ["Auto Detect"] + sorted(tokenizer.TO_LANGUAGE_CODE.keys())
+        self.languages = ["Auto Detect"] + list(LANGUAGE_TO_KEY.keys())
         
         self.config = config
         self.config_path = config_path
@@ -107,13 +107,13 @@ class SettingsWindow:
         PADX_L = '10'
         PADY = '4'
         self.yn_options = ["yes", "no"]
-        self.whisper_models = whisper.available_models()
+        self.whisper_models = ["base"]
         self.whisper_models = [x for x in self.whisper_models if ".en" not in x]
         self.tooltip_window = None
 
         self.tkui = tk.Tk()
-        self.tkui.minsize(910, 490)
-        self.tkui.maxsize(910, 490)
+        self.tkui.minsize(920, 490)
+        self.tkui.maxsize(920, 490)
         self.tkui.resizable(False, False)
         self.tkui.configure(bg="#333333")
         self.tkui.title("TextboxSTT - Settings")
@@ -139,6 +139,11 @@ class SettingsWindow:
         self.label_device.bind("<Leave>", self.hide_tooltip)
         self.opt_device.bind("<Enter>", (lambda event: self.show_tooltip("Set the Device to use for transcription. (Requires Restart)")))
         self.opt_device.bind("<Leave>", self.hide_tooltip)
+        self.button_device_overlay = tk.Button(self.tkui, text=" ⚙ ", command=self.open_device_window)
+        self.button_device_overlay.configure(bg="#333333", fg="white", height=1, highlightthickness=0, anchor="center", activebackground="#555555", activeforeground="white")
+        self.button_device_overlay.grid(row=0, column=2, padx=2, pady=7, sticky='ws')
+        self.button_device_overlay.bind("<Enter>", (lambda event: self.show_tooltip("Edit Overlay Settings")))
+        self.button_device_overlay.bind("<Leave>", self.hide_tooltip)
 
         self.label_osc_ip = tk.Label(master=self.tkui, bg="#333333", fg="white", text='OSC IP', font=(self.FONT, 12))
         self.label_osc_ip.grid(row=1, column=0, padx=PADX_L, pady=PADY, sticky='es')
@@ -177,20 +182,21 @@ class SettingsWindow:
         self.label_model.grid(row=4, column=0, padx=PADX_L, pady=PADY, sticky='es')
         self.label_model.bind("<Enter>", (lambda event: self.show_tooltip("What model of whisper to use. \nI'd recommend not going over 'tiny,base,small'\n as it will significantly impact the transcription time.")))
         self.label_model.bind("<Leave>", self.hide_tooltip)
-        self.value_model = tk.StringVar(self.tkui)
-        self.value_model.set(self.config["model"])
-        self.opt_model = tk.OptionMenu(self.tkui, self.value_model, *self.whisper_models)
-        self.opt_model.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
-        self.opt_model.grid(row=4, column=1, padx=PADX_R, pady=PADY, sticky='ws')
-        self.opt_model.bind("<Enter>", (lambda event: self.show_tooltip("What model of whisper to use. \nI'd recommend not going over 'tiny,base,small'\n as it will significantly impact the transcription time.")))
-        self.opt_model.bind("<Leave>", self.hide_tooltip)
+        self.entry_model = tk.Entry(self.tkui)
+        self.entry_model.insert(0, self.config["model"])
+        self.entry_model.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23, disabledbackground="#444444")
+        self.entry_model.grid(row=4, column=1, padx=PADX_R, pady=PADY, sticky='ws')
+        self.entry_model.bind("<Enter>", (lambda event: self.show_tooltip("Port to get the OSC information from.\nUsed to improve KAT sync with in-game avatar and autodetect sync parameter count used for the avatar.\nOnly used if KAT Sync Params is set to 'Auto Detect' and use KAT set to 'Yes'")))
+        self.entry_model.bind("<Leave>", self.hide_tooltip)
+        self.entry_model.bind("<Enter>", (lambda event: self.show_tooltip("What model of whisper to use. \nI'd recommend not going over 'tiny,base,small'\n as it will significantly impact the transcription time.")))
+        self.entry_model.bind("<Leave>", self.hide_tooltip)
 
         self.label_language = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Language', font=(self.FONT, 12))
         self.label_language.grid(row=5, column=0, padx=PADX_L, pady=PADY, sticky='es')
         self.label_language.bind("<Enter>", (lambda event: self.show_tooltip("Language to use, 'english' will be faster then other languages. \nLeaving it empty will let the program decide what language you are speaking.")))
         self.label_language.bind("<Leave>", self.hide_tooltip)
         self.value_language = tk.StringVar(self.tkui)
-        self.value_language.set("Auto Detect" if self.config["language"] == "" else self.config["language"])
+        self.value_language.set("Auto Detect" if self.config["language"] == "" else KEY_TO_LANGUAGE[self.config["language"]])
         self.value_language.trace("w", self.language_changed)
         self.opt_language = tk.OptionMenu(self.tkui, self.value_language, *self.languages)
         self.opt_language.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
@@ -443,17 +449,18 @@ class SettingsWindow:
         self.button_emotes.bind("<Leave>", self.hide_tooltip)
 
         self.button_reset_config = tk.Button(self.tkui, text="Reset OSC config", command=self.reset_osc_config)
-        self.button_reset_config.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, width=26, anchor="center", activebackground="#555555", activeforeground="white")
-        self.button_reset_config.place(relx=0.86, rely=0.95, anchor="center")
+        self.button_reset_config.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, width=27, anchor="center", activebackground="#555555", activeforeground="white")
+        self.button_reset_config.place(relx=0.868, rely=0.95, anchor="center")
         self.button_reset_config.bind("<Enter>", (lambda event: self.show_tooltip("Resets OSC config by deleting the all the usr_ folders in %APPDATA%\\..\\LocalLow\\VRChat\\VRChat\\OSC")))
         self.button_reset_config.bind("<Leave>", self.hide_tooltip)
 
         self.btn_save = tk.Button(self.tkui, text="Save")
-        self.btn_save.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=77, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.btn_save.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=80, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.btn_save.place(relx=0.37, rely=0.95, anchor="center")
 
         self.language_changed()
         self.mode_changed()
+        self.tkui.withdraw()
 
     def open_emote_window(self):
         _ = EmoteWindow(self.config, self.config_path)
@@ -466,6 +473,14 @@ class SettingsWindow:
 
     def open_obs_window(self):
         _ = OBSSettingsWindow(self.config, self.config_path)
+    
+    def open_device_window(self):
+        _device = self.value_device.get()
+        _index = 0
+        if _device != "cpu":
+            _index = int(_device[1])
+            _device = "cuda"
+        _ = DeviceSettingsWindow(self.config, self.config_path, _device, _index)
 
     def mode_changed(self, *args):
         if self.value_mode.get() == "realtime":
@@ -509,12 +524,12 @@ class SettingsWindow:
         
 
     def save(self):
-        self.config["device"] = "cuda:" + self.value_device.get()[1] if torch.cuda.is_available() else "cpu"
+        self.config["device"] = "cuda:" + self.value_device.get()[1] if torch.cuda.is_available() and self.value_device.get() != "cpu" else "cpu"
         self.config["osc_ip"] = self.entry_osc_ip.get()
         self.config["osc_port"] = int(self.entry_osc_port.get())
         self.config["osc_server_port"] = int(self.entry_osc_server_port.get())
-        self.config["model"] = self.value_model.get()
-        self.config["language"] = "" if self.value_language.get() == "Auto Detect" else self.value_language.get()
+        self.config["model"] = self.entry_model.get()
+        self.config["language"] = "" if self.value_language.get() == "Auto Detect" else LANGUAGE_TO_KEY[self.value_language.get()]
         self.config["translate_to_english"] = True if self.value_translate.get() == "yes" else False
         self.config["hotkey"] = self.set_key
         _realtime = 0
@@ -547,6 +562,7 @@ class SettingsWindow:
 
     def open(self):
         print("OPEN SETTINGS")
+        self.tkui.deiconify()
         self.tkui.mainloop()
 
     def on_closing(self):
@@ -918,6 +934,65 @@ class OBSSettingsWindow:
         self.config["obs_source"]["font"] = self.entry_font.get()
         self.config["obs_source"]["color"] = self.entry_color.get()
         self.config["obs_source"]["align"] = self.value_align.get()
+
+        json.dump(self.config, open(self.config_path, "w"), indent=4)
+        self.on_closing()
+
+    def on_closing(self):
+        self.tkui.destroy()
+
+class DeviceSettingsWindow:
+    def __init__(self, config, config_path, device, device_index):
+        self.config_path = config_path
+        self.config = config
+        self.FONT = "Cascadia Code"
+
+        self.tkui = tk.Tk()
+        self.tkui.minsize(350, 150)
+        self.tkui.maxsize(350, 150)
+        self.tkui.resizable(False, False)
+        self.tkui.configure(bg="#333333")
+        self.tkui.title("TextboxSTT - OBS Source Settings")
+
+        self.devices_list = []
+        self.value_device = tk.StringVar(self.tkui)
+
+        self.label_comptype = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Compute Type', font=(self.FONT, 12))
+        self.label_comptype.grid(row=0, column=0, padx=12, pady=5, sticky='es')
+        self.options_comptype = list(get_supported_compute_types(device, device_index))
+        self.value_comptype = tk.StringVar(self.tkui)
+        if self.config["compute_type"] is None:
+            self.value_comptype.set(get_best_compute_type(device, device_index))
+        else:
+            self.value_comptype.set(self.config["compute_type"])
+        self.opt_comptype = tk.OptionMenu(self.tkui, self.value_comptype, *self.options_comptype)
+        self.opt_comptype.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=18, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.opt_comptype.grid(row=0, column=1, padx=12, pady=5, sticky='ws')
+
+        self.label_cpu_threads = tk.Label(self.tkui, text="CPU Threads", bg="#333333", fg="white", font=(self.FONT, 12))
+        self.label_cpu_threads.grid(row=1, column=0, padx=12, pady=5, sticky='ws')
+        self.entry_cpu_threads = tk.Entry(self.tkui)
+        self.entry_cpu_threads.insert(0, self.config["cpu_threads"])
+        self.entry_cpu_threads.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666")
+        self.entry_cpu_threads.grid(row=1, column=1, padx=12, pady=5, sticky='ws')
+
+        self.label_num_workers = tk.Label(self.tkui, text="Num Workers", bg="#333333", fg="white", font=(self.FONT, 12))
+        self.label_num_workers.grid(row=2, column=0, padx=12, pady=5, sticky='ws')
+        self.entry_num_workers = tk.Entry(self.tkui)
+        self.entry_num_workers.insert(0, self.config["num_workers"])
+        self.entry_num_workers.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666")
+        self.entry_num_workers.grid(row=2, column=1, padx=12, pady=5, sticky='ws')
+
+        self.btn_save = tk.Button(self.tkui, text="Save", command=self.save)
+        self.btn_save.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=41, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.btn_save.place(relx=0.5, rely=0.88, anchor="center")
+
+        self.tkui.mainloop()
+
+    def save(self):
+        self.config["compute_type"] = self.value_comptype.get()
+        self.config["cpu_threads"] = int(self.entry_cpu_threads.get())
+        self.config["num_workers"] = int(self.entry_num_workers.get())
 
         json.dump(self.config, open(self.config_path, "w"), indent=4)
         self.on_closing()

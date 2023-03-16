@@ -1,12 +1,13 @@
 # -*- mode: python ; coding: utf-8 -*-
 from PyInstaller.utils.hooks import collect_all
+import sys ; sys.setrecursionlimit(sys.getrecursionlimit() * 5)
 
 datas = [('F:/GitRepos/VRCTextboxSTT/src/KAT_Emote_Texture_Sheet', 'KAT_Emote_Texture_Sheet/'), ('F:/GitRepos/VRCTextboxSTT/src/resources', 'resources/'), ('F:/GitRepos/VRCTextboxSTT/src/bindings', 'bindings/'), ('F:/GitRepos/VRCTextboxSTT/src/config.json', '.'), ('F:/GitRepos/VRCTextboxSTT/src/app.vrmanifest', '.')]
 binaries = []
 hiddenimports = []
 tmp_ret = collect_all('torch')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
-tmp_ret = collect_all('whisper')
+tmp_ret = collect_all('faster_whisper')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 tmp_ret = collect_all('numpy')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
@@ -42,7 +43,10 @@ tmp_ret = collect_all('flask')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 tmp_ret = collect_all('kthread')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
-
+tmp_ret = collect_all('ctranslate2')
+datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
+tmp_ret = collect_all('transformers')
+datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
 block_cipher = None
 
