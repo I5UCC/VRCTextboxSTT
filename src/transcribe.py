@@ -10,7 +10,7 @@ class TranscribeHandler(object):
         self.whisper_model = MODELS[self.config["model"]]
         self.language = None
         
-        if self.language:
+        if self.config["language"]:
             self.language = LANGUAGE_TO_KEY[self.config["language"]]
 
         if "large" not in self.whisper_model and self.language == "en" and ".en" not in self.whisper_model and "openai" in self.whisper_model:
