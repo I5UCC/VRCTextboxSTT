@@ -2,6 +2,7 @@ import os
 import sys
 import winsound
 import logging
+import json
 from ctypes import windll, byref, create_unicode_buffer, create_string_buffer
 
 
@@ -26,7 +27,7 @@ class LogToFile(object):
         pass
 
 
-def loadfont(fontpath, private=True, enumerable=False):
+def loadfont(fontpath, private=True, enumerable=False) -> bool:
     '''
     Makes fonts located in file `fontpath` available to the font system.
 
@@ -57,7 +58,7 @@ def loadfont(fontpath, private=True, enumerable=False):
     return bool(num_fonts_added)
 
 
-def get_absolute_path(relative_path, script_path=__file__):
+def get_absolute_path(relative_path, script_path=__file__) -> str:
     """Gets absolute path from relative path"""
     base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(script_path)))
     return os.path.join(base_path, relative_path)
@@ -67,3 +68,30 @@ def play_sound(filename, script_path=__file__):
     """Plays a wave file."""
     filename = f"resources/{filename}.wav"
     winsound.PlaySound(get_absolute_path(filename, script_path), winsound.SND_FILENAME | winsound.SND_ASYNC)
+
+
+def get_config(config_path: str, default_config_path: str) -> dict:
+    _config = json.load(open(config_path))
+    _default_config = json.load(open(default_config_path))
+
+    _tmp = check_config(_config, _default_config)
+
+    _res = dict()
+    for key in _default_config:
+        _res[key] = _tmp[key]
+
+    json.dump(_res, open(config_path, "w"), indent=4)
+
+    return _res
+
+
+def check_config(config: dict, default_config: dict) -> dict:
+    for key in default_config: 
+        try:
+            if isinstance(config[key], dict):
+                config[key] = check_config(config[key], default_config[key])
+        except KeyError:
+            print(f"Config key \"{key}\" not found. Using default value.")
+            config[key] = default_config[key]
+
+    return config
