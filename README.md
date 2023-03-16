@@ -169,7 +169,7 @@ If it doesnt show up, manually register the ´app.vrmanifest´ file by double cl
 - ~~Demo Gif/Video (Stole from Frosty, thanks lol)~~
 - Add a OBS browsersource
 - Implement Text To Speech (Maybe [coqui-ai?](https://github.com/coqui-ai/TTS))
-- Use [whisper.cpp](https://github.com/ggerganov/whisper.cpp) for transcription, for better performance.
+- Use [whisper.cpp](https://github.com/ggerganov/whisper.cpp)/[faster-whisper](https://github.com/guillaumekln/faster-whisper)for transcription, for better performance.
 - Allow use of finetuned models.
 - Allow translation into and from different languages.
 
