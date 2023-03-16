@@ -1,5 +1,5 @@
 import torch
-from helper import get_absolute_path, get_best_compute_type, MODELS
+from helper import get_absolute_path, get_best_compute_type, MODELS, LANGUAGE_TO_KEY
 from faster_whisper import WhisperModel
 from ctranslate2.converters import TransformersConverter
 
@@ -8,10 +8,12 @@ class TranscribeHandler(object):
         self.config = config
         self.script_path = script_path
         self.whisper_model = MODELS[self.config["model"]]
-        self.language = self.config["language"].lower()
-        if self.language == "":
-            self.language = None
-        elif "large" not in self.whisper_model and self.language == "en" and ".en" not in self.whisper_model and "openai" in self.whisper_model:
+        self.language = None
+        
+        if self.language:
+            self.language = LANGUAGE_TO_KEY[self.config["language"]]
+
+        if "large" not in self.whisper_model and self.language == "en" and ".en" not in self.whisper_model and "openai" in self.whisper_model:
             self.whisper_model = self.whisper_model + ".en"
 
         self.task = "translate" if self.config["translate_to_english"] and self.language != "english" else "transcribe"

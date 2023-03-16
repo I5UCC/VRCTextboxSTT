@@ -70,8 +70,6 @@ def init():
 
     initialized = False
 
-    config_ui = SettingsWindow(CONFIG, CONFIG_PATH)
-
     osc = OscHandler(CONFIG["osc_ip"], CONFIG["osc_port"], CONFIG["osc_ip"], CONFIG["osc_server_port"])
     use_textbox = bool(CONFIG["use_textbox"])
     use_kat = bool(CONFIG["use_kat"])

@@ -6,7 +6,7 @@ import glob
 import shutil
 import os
 import torch
-from helper import KEY_TO_LANGUAGE, LANGUAGE_TO_KEY, MODELS, get_best_compute_type
+from helper import LANGUAGE_TO_KEY, MODELS, get_best_compute_type
 from ctranslate2 import get_supported_compute_types
 
 class MainWindow(object):
@@ -199,7 +199,7 @@ class SettingsWindow:
         self.label_language.bind("<Enter>", (lambda event: self.show_tooltip("Language to use, 'english' will be faster then other languages. \nLeaving it empty will let the program decide what language you are speaking.")))
         self.label_language.bind("<Leave>", self.hide_tooltip)
         self.value_language = tk.StringVar(self.tkui)
-        self.value_language.set("Auto Detect" if self.config["language"] == "" else KEY_TO_LANGUAGE[self.config["language"]])
+        self.value_language.set("Auto Detect" if not self.config["language"] else self.config["language"])
         self.value_language.trace("w", self.language_changed)
         self.opt_language = tk.OptionMenu(self.tkui, self.value_language, *self.languages)
         self.opt_language.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
@@ -531,8 +531,8 @@ class SettingsWindow:
         self.config["osc_ip"] = self.entry_osc_ip.get()
         self.config["osc_port"] = int(self.entry_osc_port.get())
         self.config["osc_server_port"] = int(self.entry_osc_server_port.get())
-        self.config["model"] = self.entry_model.get()
-        self.config["language"] = "" if self.value_language.get() == "Auto Detect" else LANGUAGE_TO_KEY[self.value_language.get()]
+        self.config["model"] = self.value_model.get()
+        self.config["language"] = None if self.value_language.get() == "Auto Detect" else self.value_language.get()
         self.config["translate_to_english"] = True if self.value_translate.get() == "yes" else False
         self.config["hotkey"] = self.set_key
         _realtime = 0
