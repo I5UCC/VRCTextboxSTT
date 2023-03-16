@@ -110,6 +110,19 @@ LANGUAGE_TO_KEY = {
 
 KEY_TO_LANGUAGE = dict((v, k) for k, v in LANGUAGE_TO_KEY.items())
 
+MODELS = {
+    'tiny': 'openai/whisper-tiny',
+    'tiny.en': 'openai/whisper-tiny.en',
+    'base': 'openai/whisper-base',
+    'base.en': 'openai/whisper-base.en',
+    'small': 'openai/whisper-small',
+    'small.en': 'openai/whisper-small.en',
+    'medium': 'openai/whisper-medium',
+    'medium.en': 'openai/whisper-medium.en',
+    'large': 'openai/whisper-large',
+    'large-v2': 'openai/whisper-large-v2',
+}
+
 class LogToFile(object):
     def __init__(self, logger, level, logfile):
         self.logger = logger

@@ -6,7 +6,7 @@ import glob
 import shutil
 import os
 import torch
-from helper import KEY_TO_LANGUAGE, LANGUAGE_TO_KEY, get_best_compute_type
+from helper import KEY_TO_LANGUAGE, LANGUAGE_TO_KEY, MODELS, get_best_compute_type
 from ctranslate2 import get_supported_compute_types
 
 class MainWindow(object):
@@ -182,14 +182,17 @@ class SettingsWindow:
         self.label_model.grid(row=4, column=0, padx=PADX_L, pady=PADY, sticky='es')
         self.label_model.bind("<Enter>", (lambda event: self.show_tooltip("What model of whisper to use. \nI'd recommend not going over 'tiny,base,small'\n as it will significantly impact the transcription time.")))
         self.label_model.bind("<Leave>", self.hide_tooltip)
-        self.entry_model = tk.Entry(self.tkui)
-        self.entry_model.insert(0, self.config["model"])
-        self.entry_model.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23, disabledbackground="#444444")
-        self.entry_model.grid(row=4, column=1, padx=PADX_R, pady=PADY, sticky='ws')
-        self.entry_model.bind("<Enter>", (lambda event: self.show_tooltip("Port to get the OSC information from.\nUsed to improve KAT sync with in-game avatar and autodetect sync parameter count used for the avatar.\nOnly used if KAT Sync Params is set to 'Auto Detect' and use KAT set to 'Yes'")))
-        self.entry_model.bind("<Leave>", self.hide_tooltip)
-        self.entry_model.bind("<Enter>", (lambda event: self.show_tooltip("What model of whisper to use. \nI'd recommend not going over 'tiny,base,small'\n as it will significantly impact the transcription time.")))
-        self.entry_model.bind("<Leave>", self.hide_tooltip)
+        self.value_model = tk.StringVar(self.tkui)
+        self.value_model.set(self.config["model"])
+        self.models = []
+        for key in MODELS:
+            if ".en" not in key:
+                self.models.append(key)
+        self.opt_model = tk.OptionMenu(self.tkui, self.value_model, *self.models)
+        self.opt_model.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.opt_model.grid(row=4, column=1, padx=PADX_R, pady=PADY, sticky='ws')
+        self.opt_model.bind("<Enter>", (lambda event: self.show_tooltip("What model of whisper to use. \nI'd recommend not going over 'tiny,base,small'\n as it will significantly impact the transcription time.")))
+        self.opt_model.bind("<Leave>", self.hide_tooltip)
 
         self.label_language = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Language', font=(self.FONT, 12))
         self.label_language.grid(row=5, column=0, padx=PADX_L, pady=PADY, sticky='es')

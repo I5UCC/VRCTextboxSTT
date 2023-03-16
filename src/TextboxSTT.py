@@ -95,7 +95,7 @@ def init():
         main_window.set_status_label("COULDNT INITIALIZE OVR, CONTINUING DESKTOP ONLY", "orange")
 
     # Start Flask server
-    if CONFIG["enable_obs_source"]:
+    if CONFIG["enable_obs_source"] and not browsersource.running:
         if browsersource.start():
             main_window.set_status_label("INITIALIZED FLASK SERVER", "green")
             print(f"Flask server started on 127.0.0.1:{CONFIG['obs_source']['port']}")

@@ -6,7 +6,7 @@
     "osc_ip": "127.0.0.1",
     "osc_port": 9000,
     "osc_server_port": 9001,
-    "model": "openai/whisper-base",
+    "model": "base",
     "language": "en",
     "translate_to_english": false,
     "hotkey": "f1",
