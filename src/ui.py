@@ -43,7 +43,7 @@ class MainWindow(object):
         self.color_lbl.place(relx=0.01, rely=0.07, anchor="w")
 
         self.btn_settings = tk.Button(self.tkui, text="Settings")
-        self.btn_settings.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=20, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.btn_settings.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=20, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white", state="disabled")
         self.btn_settings.place(relx=0.99, rely=0.94, anchor="e")
 
         self.textfield = tk.Entry(self.tkui)
@@ -78,8 +78,8 @@ class MainWindow(object):
         except Exception:
             self.set_text_label("Done.")
 
-    def set_conf_label(self, ip, port, server_port, ovr_initialized, device, model):
-        self.conf_lbl.configure(text=f"OSC: {ip}#{port}:{server_port}, OVR: {'Connected' if ovr_initialized else 'Disconnected'}\nDevice: {device}, Model: {model}", justify="left")
+    def set_conf_label(self, ip, port, server_port, ovr_initialized, device, model, compute_type):
+        self.conf_lbl.configure(justify="left", text=f"OSC: {ip}#{port}:{server_port}, OVR: {'Connected' if ovr_initialized else 'Disconnected'}, Device: {device}\nModel: {model}, Compute Type: {compute_type}")
         self.update()
 
     def clear_textfield(self):
@@ -121,14 +121,17 @@ class SettingsWindow:
         self.devices_list = []
         self.value_device = tk.StringVar(self.tkui)
 
-        if torch.cuda.is_available() and self.config["device"] != "cpu":
+        if torch.cuda.is_available():
             for i in range(0, torch.cuda.device_count()):
                 self.devices_list.append((i, torch.cuda.get_device_name(i)))
-            _index = int(self.config["device"][5:])
-            self.value_device.set(self.devices_list[_index])
-        else:
-            self.value_device.set("cpu")
-        self.devices_list.append("cpu")
+            if self.config["device"] != "cpu":
+                _index = int(self.config["device"][5:])
+                self.value_device.set(self.devices_list[_index])
+
+        if self.config["device"] == "cpu":
+            self.value_device.set("CPU")
+
+        self.devices_list.append("CPU")
 
         self.label_device = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Device', font=(self.FONT, 12))
         self.label_device.grid(row=0, column=0, padx=PADX_L, pady=PADY, sticky='es')
@@ -527,7 +530,7 @@ class SettingsWindow:
         
 
     def save(self):
-        self.config["device"] = "cuda:" + self.value_device.get()[1] if torch.cuda.is_available() and self.value_device.get() != "cpu" else "cpu"
+        self.config["device"] = "cuda:" + self.value_device.get()[1] if torch.cuda.is_available() and self.value_device.get().lower() != "cpu" else "cpu"
         self.config["osc_ip"] = self.entry_osc_ip.get()
         self.config["osc_port"] = int(self.entry_osc_port.get())
         self.config["osc_server_port"] = int(self.entry_osc_server_port.get())

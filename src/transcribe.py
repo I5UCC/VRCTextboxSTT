@@ -1,5 +1,6 @@
 import os
 import torch
+import time
 from helper import get_absolute_path, get_best_compute_type, MODELS, LANGUAGE_TO_KEY
 from faster_whisper import WhisperModel
 from ctranslate2.converters import TransformersConverter
@@ -34,6 +35,8 @@ class TranscribeHandler(object):
         self.compute_type = self.config["compute_type"] if self.config["compute_type"] else get_best_compute_type(self.device, self.device_index)
         self.use_cpu = True if str(self.device) == "cpu" else False
         self.model_path = self.load_model(self.whisper_model, self.compute_type)
+
+        self.device_name = torch.cuda.get_device_name(self.device_index) if self.device == "cuda" else "CPU"
         
         self.model: WhisperModel = WhisperModel(self.model_path, self.device,self.device_index, self.compute_type, self.config["cpu_threads"], self.config["num_workers"])
 
@@ -45,12 +48,18 @@ class TranscribeHandler(object):
         :param last_tokens: The last tokens of the previous transcription.
         """
 
+        pre = time.time()
         with torch.no_grad():
             segments, _ = self.model.transcribe(audio, beam_size=5, language=self.language, without_timestamps=True, task=self.task)
-        
+        post = time.time()
+
+        print("Transcription took {:.5f} seconds.".format(post - pre))
+
         _text = ""
         for segment in segments:
             _text += segment.text
+
+        print("Transcription: ", _text)
 
         return _text
     

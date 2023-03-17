@@ -4,7 +4,7 @@ import logging
 from helper import LogToFile, loadfont, get_absolute_path, play_sound, get_config
 
 
-VERSION = "v1.0.0-Alpha"
+VERSION = "v1.0.1-Alpha"
 LOGFILE = get_absolute_path('out.log', __file__)
 CONFIG_PATH = get_absolute_path('config.json', __file__)
 DEFAULT_CONFIG_PATH = get_absolute_path("resources/default.json", __file__)
@@ -81,6 +81,7 @@ def init():
     transcriber = TranscribeHandler(CONFIG, __file__)
     main_window.set_status_label(f"LOADED \"{transcriber.whisper_model}\"", "orange")
     sys.stderr = ERROR_FILE_LOGGER
+    main_window.set_text_label("- No Text -")
 
     # load the speech recognizer
     listen = ListenHandler(CONFIG)
@@ -103,9 +104,10 @@ def init():
         else:
             main_window.set_status_label("COULDNT INITIALIZE FLASK SERVER, CONTINUING WITHOUT OBS SOURCE", "orange")
 
-    main_window.set_conf_label(CONFIG["osc_ip"], CONFIG["osc_port"], CONFIG["osc_server_port"], ovr.initialized, transcriber.device, transcriber.whisper_model)
+    main_window.set_conf_label(CONFIG["osc_ip"], CONFIG["osc_port"], CONFIG["osc_server_port"], ovr.initialized, transcriber.device_name, transcriber.whisper_model, transcriber.compute_type)
     main_window.set_status_label("INITIALIZED - WAITING FOR INPUT", "green")
     initialized = True
+    main_window.set_button_enabled(True)
 
 
 def sound(filename):
