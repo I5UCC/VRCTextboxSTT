@@ -1,7 +1,9 @@
+import os
 import torch
 from helper import get_absolute_path, get_best_compute_type, MODELS, LANGUAGE_TO_KEY
 from faster_whisper import WhisperModel
 from ctranslate2.converters import TransformersConverter
+from shutil import rmtree
 
 class TranscribeHandler(object):
     def __init__(self, config, script_path) -> None:
@@ -43,7 +45,9 @@ class TranscribeHandler(object):
         :param last_tokens: The last tokens of the previous transcription.
         """
 
-        segments, _ = self.model.transcribe(audio, beam_size=5, language=self.language, without_timestamps=True, task=self.task)
+        with torch.no_grad():
+            segments, _ = self.model.transcribe(audio, beam_size=5, language=self.language, without_timestamps=True, task=self.task)
+        
         _text = ""
         for segment in segments:
             _text += segment.text
@@ -62,7 +66,13 @@ class TranscribeHandler(object):
         _converter = TransformersConverter(model_name, copy_files=["tokenizer.json"])
         try:
             _converter.convert(_model_path, force=False, quantization=quantization)
+
+            rmtree(os.path.join(os.path.expanduser("~"), ".cache\huggingface"))
         except RuntimeError:
             print("Model already exists, skipping conversion.")
+        except FileNotFoundError:
+            print("Model Cache doesnt exist.")
+        except Exception as e:
+            print("Unknown error loading model: ", str(e))
 
         return _model_path

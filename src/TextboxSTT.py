@@ -9,12 +9,12 @@ LOGFILE = get_absolute_path('out.log', __file__)
 CONFIG_PATH = get_absolute_path('config.json', __file__)
 DEFAULT_CONFIG_PATH = get_absolute_path("resources/default.json", __file__)
 CONFIG = get_config(CONFIG_PATH, DEFAULT_CONFIG_PATH)
-
-
 open(LOGFILE, 'w').close()
-log = logging.getLogger('TextboxSTT')
-sys.stdout = LogToFile(log, logging.INFO, LOGFILE)
-sys.stderr = LogToFile(log, logging.ERROR, LOGFILE)
+LOG = logging.getLogger('TextboxSTT')
+OUT_FILE_LOGGER = LogToFile(LOG, logging.INFO, LOGFILE)
+ERROR_FILE_LOGGER = LogToFile(LOG, logging.ERROR, LOGFILE)
+sys.stdout = OUT_FILE_LOGGER
+sys.stderr = ERROR_FILE_LOGGER
 
 
 if os.name == 'nt':
@@ -75,9 +75,12 @@ def init():
     use_kat = bool(CONFIG["use_kat"])
     use_both = bool(CONFIG["use_both"])
 
+    # Temporarily output stderr to text label for download progress.
+    sys.stderr.write = main_window.loading_status
     main_window.set_status_label("LOADING WHISPER MODEL", "orange")
     transcriber = TranscribeHandler(CONFIG, __file__)
     main_window.set_status_label(f"LOADED \"{transcriber.whisper_model}\"", "orange")
+    sys.stderr = ERROR_FILE_LOGGER
 
     # load the speech recognizer
     listen = ListenHandler(CONFIG)
