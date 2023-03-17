@@ -188,8 +188,12 @@ def play_sound(filename, script_path=__file__):
 
 
 def get_config(config_path: str, default_config_path: str) -> dict:
-    _config = json.load(open(config_path))
     _default_config = json.load(open(default_config_path))
+    try:
+        _config = json.load(open(config_path))
+    except FileNotFoundError:
+        json.dump(_default_config, open(config_path, "w"), indent=4)
+        return _default_config
 
     _tmp = check_config(_config, _default_config)
 
