@@ -481,7 +481,7 @@ class SettingsWindow:
         _ = OBSSettingsWindow(self.config, self.config_path)
     
     def open_device_window(self):
-        _device = self.value_device.get()
+        _device = self.value_device.get().lower()
         _index = 0
         if _device != "cpu":
             _index = int(_device[1])
