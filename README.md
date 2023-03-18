@@ -187,5 +187,10 @@ You can always leave a Github Star 🟊 (It's free) or buy me a coffee:<br />
 # Credit
 - [OpenAI](https://github.com/openai) for their amazing work with anything really.
 - [guillaumekln/faster-whisper](https://github.com/guillaumekln/faster-whisper) for their really fast implementation of whisper.
+- [ValveSoftware/openvr](https://github.com/ValveSoftware/openvr)
+- [cmbruns/pyopenvr](https://github.com/cmbruns/pyopenvr)
+- [Uberi/speech_recognition](https://github.com/Uberi/speech_recognition)
+- [jleb/pyaudio](https://github.com/jleb/pyaudio)
+- [pytorch](https://github.com/pytorch/pytorch)
 - [killfrenzy96](https://github.com/killfrenzy96) for [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText) and [KatOSC](https://github.com/killfrenzy96/KatOscApp)
 - [Frosty704's Billboard](https://github.com/Frosty704/Billboard) for making this project more useful.
