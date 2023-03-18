@@ -29,7 +29,8 @@ This program is supposed to be entirely free (as in money) and independent of Cl
   - VRChats Ingame Textbox allowing for use with any avatar 
   - [KillFrenzyAvatarText (KAT)](https://github.com/killfrenzy96/KillFrenzyAvatarText) that needs to be integrated to an avatar. 
     - You can use [Frosty704's Billboard](https://github.com/Frosty704/Billboard) to add a speech bubble to your avatar.
-- Automatic Detection of KAT on an avatar. It will use KAT if available, otherwise fall back to VRChat Textbox.
+    - Support for up to 88 emotes!
+    - Automatic Detection of KAT on an avatar. It will use KAT if available, otherwise fall back to VRChat Textbox.
 - Customizable button
   - You can bind the button to start transcription to any action that SteamVR allows you to set.
   - You can bind it to any key on your keyboard.
@@ -40,6 +41,7 @@ This program is supposed to be entirely free (as in money) and independent of Cl
 - Audio feedback for each step in the transcription.
 - Multi Language support. whisper supports around [100 different languages](https://github.com/openai/whisper/blob/main/whisper/tokenizer.py#L10). Here, with a few [limitations](https://github.com/I5UCC/VRCTextboxSTT#limitations).
 - Free to use as of the [GPL-3.0 license](https://github.com/I5UCC/VRCTextboxSTT/blob/main/LICENSE)
+- Uses SteamVR binding system, press to transcribe, hold to clear/cancel
 
 # Limitations
 
