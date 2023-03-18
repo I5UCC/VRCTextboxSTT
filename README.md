@@ -33,9 +33,10 @@ This program is supposed to be entirely free (as in money) and independent of Cl
     - Automatic Detection of KAT on an avatar. It will use KAT if available, otherwise fall back to VRChat Textbox.
 - ***Uses SteamVR binding system***, press to transcribe, hold to clear/cancel (A/X by default)
 - Optional ***Live Transcription***
-- ***Customizable button***
+- ***Customizable***
   - You can bind the button to start transcription to any action that SteamVR allows you to set.
   - You can bind it to any key on your keyboard.
+  - Many Timing settings for transcription delays and button presses.
 - Optional ***Automatic launch*** with SteamVR.
 - ***Text to Text*** for quick typing.
 - Optional ***SteamVR Overlay*** for seeing your transcription without having to look at your own textbox in-game.
