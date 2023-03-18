@@ -31,17 +31,19 @@ This program is supposed to be entirely free (as in money) and independent of Cl
     - You can use [Frosty704's Billboard](https://github.com/Frosty704/Billboard) to add a speech bubble to your avatar.
     - Support for up to 88 emotes!
     - Automatic Detection of KAT on an avatar. It will use KAT if available, otherwise fall back to VRChat Textbox.
-- Customizable button
+- ***Uses SteamVR binding system***, press to transcribe, hold to clear/cancel (A/X by default)
+- ***Customizable button***
   - You can bind the button to start transcription to any action that SteamVR allows you to set.
   - You can bind it to any key on your keyboard.
-- Optional automatic launch with SteamVR.
-- Optional Text to Text for quick typing.
-- Optional SteamVR Overlay for seeing your transcription without having to look at your own textbox in-game.
-- Optional OBS Browser Source.
-- Audio feedback for each step in the transcription.
-- Multi Language support. whisper supports around [100 different languages](https://github.com/openai/whisper/blob/main/whisper/tokenizer.py#L10). Here, with a few [limitations](https://github.com/I5UCC/VRCTextboxSTT#limitations).
+- ***Automatic launch*** with SteamVR.
+- ***Text to Text*** for quick typing.
+- ***SteamVR Overlay*** for seeing your transcription without having to look at your own textbox in-game.
+- ***OBS Browser Source***.
+- ***Audio feedback*** for each step in the transcription.
+- ***Multi Language support***. whisper supports around [100 different languages](https://github.com/openai/whisper/blob/main/whisper/tokenizer.py#L10). Here, with a few [limitations](https://github.com/I5UCC/VRCTextboxSTT#limitations).
+- Translate any language to English
 - Free to use as of the [GPL-3.0 license](https://github.com/I5UCC/VRCTextboxSTT/blob/main/LICENSE)
-- Uses SteamVR binding system, press to transcribe, hold to clear/cancel
+
 
 # Limitations
 
