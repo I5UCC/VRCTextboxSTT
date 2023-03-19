@@ -4,7 +4,7 @@ import logging
 from helper import LogToFile, loadfont, get_absolute_path, play_sound, get_config
 
 
-VERSION = "v1.0.1-Alpha"
+VERSION = "v1.0.0-Beta"
 LOGFILE = get_absolute_path('out.log', __file__)
 CONFIG_PATH = get_absolute_path('config.json', __file__)
 DEFAULT_CONFIG_PATH = get_absolute_path("resources/default.json", __file__)
@@ -38,7 +38,7 @@ osc: OscHandler = None
 ovr: OVRHandler = None
 listen: ListenHandler = None
 transcriber: TranscribeHandler = None
-browsersource: OBSBrowserSource = OBSBrowserSource(CONFIG, get_absolute_path('resources/obs_source.html', __file__))
+browsersource: OBSBrowserSource = None
 use_kat: bool = True
 use_textbox: bool = True
 use_both: bool = True
@@ -97,7 +97,8 @@ def init():
         main_window.set_status_label("COULDNT INITIALIZE OVR, CONTINUING DESKTOP ONLY", "orange")
 
     # Start Flask server
-    if CONFIG["enable_obs_source"] and not browsersource.running:
+    if CONFIG["enable_obs_source"] and not browsersource:
+        browsersource = OBSBrowserSource(CONFIG, get_absolute_path('resources/obs_source.html', __file__))
         if browsersource.start():
             main_window.set_status_label("INITIALIZED FLASK SERVER", "green")
             print(f"Flask server started on 127.0.0.1:{CONFIG['obs_source']['port']}")
