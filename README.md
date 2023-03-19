@@ -65,13 +65,13 @@ With default settings, this program has following requirements:
 
 - CPU version:
   - ~2GB of storage space.
-  - ~1GB of available RAM.
+  - ~400MB of available RAM.
 - GPU version: 
   - CUDA enabled GPU (NVIDIA ONLY), otherwise it will fall back to using CPU.
-  - ~5GB of storage space.
+  - ~6GB of storage space.
   - ~1GB of available RAM.
-  - ~1GB of available VRAM.
-- SteamVR (IF ran in VR, no Oculus support as of now.)
+  - ~500MB of available VRAM.
+- SteamVR (IF ran in VR, no Oculus/Meta support as of now.)
 
 # Demo
 
