@@ -5,15 +5,17 @@ from helper import LogToFile, loadfont, get_absolute_path, play_sound, get_confi
 
 
 LOGFILE = get_absolute_path('out.log', __file__)
-CONFIG_PATH = get_absolute_path('config.json', __file__)
-DEFAULT_CONFIG_PATH = get_absolute_path("resources/default.json", __file__)
-CONFIG = get_config(CONFIG_PATH, DEFAULT_CONFIG_PATH)
 open(LOGFILE, 'w').close()
 LOG = logging.getLogger('TextboxSTT')
 OUT_FILE_LOGGER = LogToFile(LOG, logging.INFO, LOGFILE)
 ERROR_FILE_LOGGER = LogToFile(LOG, logging.ERROR, LOGFILE)
 sys.stdout = OUT_FILE_LOGGER
 sys.stderr = ERROR_FILE_LOGGER
+
+CONFIG_PATH = get_absolute_path('config.json', __file__)
+DEFAULT_CONFIG_PATH = get_absolute_path("resources/default.json", __file__)
+CONFIG = get_config(CONFIG_PATH, DEFAULT_CONFIG_PATH)
+
 VERSION = "Release"
 try:
     VERSION = open(get_absolute_path("VERSION", __file__)).readline().rstrip()
