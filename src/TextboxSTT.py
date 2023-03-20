@@ -1,10 +1,9 @@
 import os
 import sys
 import logging
-from helper import LogToFile, loadfont, get_absolute_path, play_sound, get_config
+from helper import LogToFile, loadfont, get_absolute_path, play_sound, get_config, force_single_instance
 
 
-VERSION = "v1.0.0-Beta"
 LOGFILE = get_absolute_path('out.log', __file__)
 CONFIG_PATH = get_absolute_path('config.json', __file__)
 DEFAULT_CONFIG_PATH = get_absolute_path("resources/default.json", __file__)
@@ -15,7 +14,13 @@ OUT_FILE_LOGGER = LogToFile(LOG, logging.INFO, LOGFILE)
 ERROR_FILE_LOGGER = LogToFile(LOG, logging.ERROR, LOGFILE)
 sys.stdout = OUT_FILE_LOGGER
 sys.stderr = ERROR_FILE_LOGGER
+VERSION = "Release"
+try:
+    VERSION = open(get_absolute_path("VERSION", __file__)).readline().rstrip()
+except Exception:
+    print("Failed to get version from VERSION file.")
 
+force_single_instance()
 
 if os.name == 'nt':
     loadfont(get_absolute_path("resources/CascadiaCode.ttf", __file__))

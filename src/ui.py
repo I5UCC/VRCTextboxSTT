@@ -128,7 +128,7 @@ class SettingsWindow:
                 _index = int(self.config["device"][5:])
                 self.value_device.set(self.devices_list[_index])
 
-        if self.config["device"] == "cpu":
+        if self.config["device"] == "cpu" or not torch.cuda.is_available():
             self.value_device.set("CPU")
 
         self.devices_list.append("CPU")
@@ -145,7 +145,7 @@ class SettingsWindow:
         self.button_device_overlay = tk.Button(self.tkui, text=" ⚙ ", command=self.open_device_window)
         self.button_device_overlay.configure(bg="#333333", fg="white", height=1, highlightthickness=0, anchor="center", activebackground="#555555", activeforeground="white")
         self.button_device_overlay.grid(row=0, column=2, padx=2, pady=7, sticky='ws')
-        self.button_device_overlay.bind("<Enter>", (lambda event: self.show_tooltip("Edit Overlay Settings")))
+        self.button_device_overlay.bind("<Enter>", (lambda event: self.show_tooltip("Edit Device Settings")))
         self.button_device_overlay.bind("<Leave>", self.hide_tooltip)
 
         self.label_osc_ip = tk.Label(master=self.tkui, bg="#333333", fg="white", text='OSC IP', font=(self.FONT, 12))

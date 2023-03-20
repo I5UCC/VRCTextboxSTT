@@ -3,6 +3,7 @@ import sys
 import winsound
 import logging
 import json
+import psutil
 from ctypes import windll, byref, create_unicode_buffer, create_string_buffer
 from ctranslate2 import get_supported_compute_types
 
@@ -230,3 +231,15 @@ def get_best_compute_type(device, device_index=0) -> str:
         return "float16"
 
     return "float32"
+
+def force_single_instance():
+    """Force single instance by killing other instances of the same Name."""
+
+    _pid = os.getpid()
+    _ppid = os.getppid()
+    PROCNAME = psutil.Process(_pid).name()
+    print(f"Current process: {_pid}, {PROCNAME}")
+    for proc in psutil.process_iter():
+        if proc.name() == PROCNAME and (proc.pid != _pid or proc.ppid() != _ppid):
+            proc.kill()
+            print("killed", proc.pid)
