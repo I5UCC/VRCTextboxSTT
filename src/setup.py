@@ -42,8 +42,7 @@ packages = [
     "urllib3",
     "waitress",
     "werkzeug",
-    "yaml",
-    "dataclasses_json"
+    "yaml"
 ]
 gpu_packages = ["nvfuser"]
 if is_available():
@@ -73,7 +72,7 @@ build_exe_options = {
     "packages": packages,
     "include_files": file_include,
     'include_msvcr': True,
-    'optimize': 1
+    'optimize': 2
 }
 
 from cx_Freeze import setup, Executable

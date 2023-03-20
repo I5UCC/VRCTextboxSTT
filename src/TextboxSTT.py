@@ -1,19 +1,20 @@
 import os
 import sys
 import logging
-from helper import LogToFile, loadfont, get_absolute_path, play_sound, force_single_instance, get_config
+from helper import LogToFile, loadfont, get_absolute_path, play_sound, get_config, force_single_instance
 
 
 LOGFILE = get_absolute_path('out.log', __file__)
-DEFAULT_CONFIG_PATH = get_absolute_path('resources/default_config.json', __file__)
 CONFIG_PATH = get_absolute_path('config.json', __file__)
+DEFAULT_CONFIG_PATH = get_absolute_path("resources/default.json", __file__)
+CONFIG = get_config(CONFIG_PATH, DEFAULT_CONFIG_PATH)
 open(LOGFILE, 'w').close()
 LOG = logging.getLogger('TextboxSTT')
 OUT_FILE_LOGGER = LogToFile(LOG, logging.INFO, LOGFILE)
 ERROR_FILE_LOGGER = LogToFile(LOG, logging.ERROR, LOGFILE)
 sys.stdout = OUT_FILE_LOGGER
 sys.stderr = ERROR_FILE_LOGGER
-VERSION = ""
+VERSION = "Release"
 try:
     VERSION = open(get_absolute_path("VERSION", __file__)).readline().rstrip()
 except Exception:
@@ -36,15 +37,16 @@ from browsersource import OBSBrowserSource
 from ovr import OVRHandler
 from listen import ListenHandler
 from transcribe import TranscribeHandler
-from config import config
 
 
-conf: config = None
 osc: OscHandler = None
 ovr: OVRHandler = None
 listen: ListenHandler = None
 transcriber: TranscribeHandler = None
 browsersource: OBSBrowserSource = None
+use_kat: bool = True
+use_textbox: bool = True
+use_both: bool = True
 curr_time: float = 0.0
 pressed: bool = False
 holding: bool = False
@@ -59,50 +61,56 @@ initialized: bool = False
 def init():
     """Initialize the application."""
 
-    global conf
     global main_window
+    global config_ui
     global osc
+    global use_textbox
+    global use_kat
+    global use_both
     global transcriber
     global ovr
     global initialized
     global browsersource
     global listen
-    
-    conf = config.from_dict(get_config(CONFIG_PATH, DEFAULT_CONFIG_PATH))
 
-    osc = OscHandler(conf.osc)
+    initialized = False
+
+    osc = OscHandler(CONFIG["osc_ip"], CONFIG["osc_port"], CONFIG["osc_ip"], CONFIG["osc_server_port"])
+    use_textbox = bool(CONFIG["use_textbox"])
+    use_kat = bool(CONFIG["use_kat"])
+    use_both = bool(CONFIG["use_both"])
 
     # Temporarily output stderr to text label for download progress.
     sys.stderr.write = main_window.loading_status
     main_window.set_status_label("LOADING WHISPER MODEL", "orange")
-    transcriber = TranscribeHandler(conf.whisper, conf.device, __file__)
+    transcriber = TranscribeHandler(CONFIG, __file__)
     main_window.set_status_label(f"LOADED \"{transcriber.whisper_model}\"", "orange")
     sys.stderr = ERROR_FILE_LOGGER
     main_window.set_text_label("- No Text -")
 
     # load the speech recognizer
-    listen = ListenHandler(conf.listener)
+    listen = ListenHandler(CONFIG)
 
     # Initialize OpenVR
     main_window.set_status_label("INITIALIZING OVR", "orange")
     if ovr:
         ovr.shutdown()
-    ovr = OVRHandler(conf, __file__)
+    ovr = OVRHandler(CONFIG, __file__)
     if ovr.initialized:
         main_window.set_status_label("INITIALZIED OVR", "green")
     else:
         main_window.set_status_label("COULDNT INITIALIZE OVR, CONTINUING DESKTOP ONLY", "orange")
 
     # Start Flask server
-    if conf.obs.enabled and not browsersource:
-        browsersource = OBSBrowserSource(conf, get_absolute_path('resources/obs_source.html', __file__))
+    if CONFIG["enable_obs_source"] and not browsersource:
+        browsersource = OBSBrowserSource(CONFIG, get_absolute_path('resources/obs_source.html', __file__))
         if browsersource.start():
             main_window.set_status_label("INITIALIZED FLASK SERVER", "green")
-            print(f"Flask server started on 127.0.0.1:{conf.obs.port}")
+            print(f"Flask server started on 127.0.0.1:{CONFIG['obs_source']['port']}")
         else:
             main_window.set_status_label("COULDNT INITIALIZE FLASK SERVER, CONTINUING WITHOUT OBS SOURCE", "orange")
 
-    main_window.set_conf_label(conf.osc.ip, conf.osc.client_port, conf.osc.server_port, ovr.initialized, transcriber.device_name, transcriber.whisper_model, transcriber.compute_type)
+    main_window.set_conf_label(CONFIG["osc_ip"], CONFIG["osc_port"], CONFIG["osc_server_port"], ovr.initialized, transcriber.device_name, transcriber.whisper_model, transcriber.compute_type)
     main_window.set_status_label("INITIALIZED - WAITING FOR INPUT", "green")
     initialized = True
     main_window.set_button_enabled(True)
@@ -111,25 +119,21 @@ def init():
 def sound(filename):
     """Plays a sound file."""
 
-    global conf
-
-    if conf.audio_feedback:
+    if CONFIG["audio_feedback"]:
         play_sound(filename, __file__)
 
 
 def replace_emotes(text):
     """Replaces emotes in the text with the configured emotes."""
 
-    global conf
-
     if not text:
         return None
 
-    if conf.emotes.list is None:
+    if CONFIG["emotes"] is None:
         return text
 
-    for i in range(len(conf.emotes.list)):
-        word = conf.emotes.list[str(i)]
+    for i in range(len(CONFIG["emotes"])):
+        word = CONFIG["emotes"][str(i)]
         if word == "":
             continue
         tmp = re.compile(word, re.IGNORECASE)
@@ -141,16 +145,14 @@ def replace_emotes(text):
 def replace_words(text):
     """Replaces words in the text with the configured replacements."""
 
-    global conf
-
     if not text:
         return None
 
     text = text.strip()
-    if not conf.wordreplacement.enabled or conf.wordreplacement.list == dict():
+    if not CONFIG["enable_word_replacements"] or CONFIG["word_replacements"] == {}:
         return text
 
-    for key, value in conf.wordreplacement.list.items():
+    for key, value in CONFIG["word_replacements"].items():
         tmp = re.compile(key, re.IGNORECASE)
         text = tmp.sub(value, text)
 
@@ -161,18 +163,23 @@ def replace_words(text):
 def set_typing_indicator(state: bool, textfield: bool = False):
     """Sets the typing indicator for the Chatbox and KAT."""
 
+    global use_textbox
+    global use_kat
+    global use_both
     global osc
 
-    if conf.osc.use_textbox and conf.osc.use_both or conf.osc.use_textbox and conf.osc.use_kat and not osc.isactive or not conf.osc.use_kat:
+    if use_textbox and use_both or use_textbox and use_kat and not osc.isactive or not use_kat:
         osc.set_textbox_typing_indicator(state)
-    if conf.osc.use_kat and osc.isactive and not textfield:
+    if use_kat and osc.isactive and not textfield:
         osc.set_kat_typing_indicator(state)
 
 
 def clear_chatbox():
     """Clears the Chatbox, KAT and Overlay."""
 
-    global conf
+    global use_textbox
+    global use_kat
+    global use_both
     global osc
     global ovr
     global browsersource
@@ -180,9 +187,9 @@ def clear_chatbox():
     if browsersource:
         browsersource.setText("")
     main_window.clear_textfield()
-    if conf.osc.use_textbox and conf.osc.use_both or conf.osc.use_textbox and conf.osc.use_kat and not osc.isactive or not conf.osc.use_kat:
-        osc.clear_chatbox(conf.mode == 0)
-    if conf.osc.use_kat and osc.isactive:
+    if use_textbox and use_both or use_textbox and use_kat and not osc.isactive or not use_kat:
+        osc.clear_chatbox(CONFIG["mode"] == 0)
+    if use_kat and osc.isactive:
         osc.clear_kat()
     main_window.set_text_label("- No Text -")
     ovr.set_overlay_text("")
@@ -191,26 +198,27 @@ def clear_chatbox():
 def populate_chatbox(text, cutoff: bool = False, is_textfield: bool = False):
     """Populates the Chatbox, KAT and Overlay with the given text."""
 
-    global conf
     global main_window
+    global use_textbox
+    global use_kat
+    global use_both
     global osc
     global ovr
     global browsersource
 
     text = replace_words(text)
+    if browsersource:
+        browsersource.setText(text)
 
     if not text:
         return
 
-    if browsersource:
-        browsersource.setText(text)
+    if use_textbox and use_both or use_textbox and use_kat and not osc.isactive or not use_kat:
+        osc.set_textbox_text(text, cutoff, CONFIG["mode"] == 0 and not is_textfield)
 
-    if conf.osc.use_textbox and conf.osc.use_both or conf.osc.use_textbox and conf.osc.use_kat and not osc.isactive or not conf.osc.use_kat:
-        osc.set_textbox_text(text, cutoff, conf.mode == 0 and not is_textfield)
-
-    if conf.osc.use_kat and osc.isactive:
+    if use_kat and osc.isactive:
         _kat_text = text
-        if conf.emotes.enabled:
+        if CONFIG["enable_emotes"]:
             _kat_text = replace_emotes(_kat_text)
         osc.set_kat_text(_kat_text, cutoff)
 
@@ -228,7 +236,6 @@ def populate_chatbox(text, cutoff: bool = False, is_textfield: bool = False):
 def process_forever():
     """Processes audio data from the data queue until the user cancels the process by pressing the button again."""
 
-    global conf
     global main_window
     global pressed
     global config_ui_open
@@ -256,7 +263,7 @@ def process_forever():
             _time_last = time.time()
             _held = False
             while pressed:
-                if time.time() - _time_last > conf.listener.hold_time:
+                if time.time() - _time_last > CONFIG["hold_time"]:
                     _held = True
                     break
                 time.sleep(0.05)
@@ -276,7 +283,7 @@ def process_forever():
 
             _time_last = time.time()
             populate_chatbox(_text, True)
-        elif _last_sample != bytes() and time.time() - _time_last > conf.listener.pause_threshold:
+        elif _last_sample != bytes() and time.time() - _time_last > CONFIG["pause_threshold"]:
             print(_text)
             _last_sample = bytes()
 
@@ -291,7 +298,6 @@ def process_forever():
 def process_loop():
     """Processes audio data from the data queue and transcribes it until the user stops talking."""
 
-    global conf
     global listen
     global main_window
     global pressed
@@ -314,7 +320,7 @@ def process_loop():
             _time_last = time.time()
             _held = False
             while pressed:
-                if time.time() - _time_last > conf.listener.hold_time:
+                if time.time() - _time_last > CONFIG["hold_time"]:
                     _held = True
                     break
                 time.sleep(0.05)
@@ -338,12 +344,12 @@ def process_loop():
 
             _time_last = time.time()
             populate_chatbox(_text, True)
-        elif _last_sample != bytes() and time.time() - _time_last > conf.listener.pause_threshold:
+        elif _last_sample != bytes() and time.time() - _time_last > CONFIG["pause_threshold"]:
             main_window.set_status_label("FINISHED - WAITING FOR INPUT", "blue")
             print(_text)
             sound("finished")
             break
-        elif _last_sample == bytes() and time.time() - _time_last > conf.listener.timeout_time:
+        elif _last_sample == bytes() and time.time() - _time_last > CONFIG["timeout_time"]:
             main_window.set_status_label("TIMEOUT - WAITING FOR INPUT", "#00008b")
             sound("timeout")
             break
@@ -358,7 +364,6 @@ def process_loop():
 def process_once():
     """Process a single input and return the transcription."""
 
-    global conf
     global main_window
     global pressed
     global listen
@@ -401,19 +406,17 @@ def process_once():
 def get_trigger_state():
     """Returns the state of the trigger, either from the keyboard or the ovr action"""
 
-    global conf
     global ovr
 
     if ovr.initialized and ovr.get_ovraction_bstate():
         return True
     else:
-        return keyboard.is_pressed(conf.hotkey)
+        return keyboard.is_pressed(CONFIG["hotkey"])
 
 
 def handle_input():
     """Handles all input from the user"""
 
-    global conf
     global thread_process
     global held
     global holding
@@ -423,7 +426,7 @@ def handle_input():
 
     pressed = get_trigger_state()
 
-    if not thread_process.is_alive() and conf.mode == 2 and not config_ui_open:
+    if not thread_process.is_alive() and CONFIG["mode"] == 2 and not config_ui_open:
         thread_process = threading.Thread(target=process_forever)
         thread_process.start()
     elif thread_process.is_alive() or config_ui_open:
@@ -433,7 +436,7 @@ def handle_input():
         curr_time = time.time()
     elif pressed and holding and not held:
         holding = True
-        if time.time() - curr_time > conf.listener.hold_time:
+        if time.time() - curr_time > CONFIG["hold_time"]:
             clear_chatbox()
             main_window.set_status_label("CLEARED - WAITING FOR INPUT", "#00008b")
             sound("clear")
@@ -442,7 +445,7 @@ def handle_input():
     elif not pressed and holding and not held:
         held = True
         holding = False
-        thread_process = threading.Thread(target=process_loop if conf.mode else process_once)
+        thread_process = threading.Thread(target=process_loop if CONFIG["mode"] else process_once)
         thread_process.start()
     elif not pressed and held:
         held = False
@@ -451,8 +454,6 @@ def handle_input():
 
 def entrybox_enter_event(text):
     """Handles the enter event for the textfield."""
-
-    global conf
     global main_window
     global enter_pressed
 
@@ -468,9 +469,8 @@ def entrybox_enter_event(text):
 
 def textfield_keyrelease(text):
     """Handles the key release event for the textfield."""
-
-    global conf
     global osc
+    global use_kat
     global enter_pressed
 
     if not enter_pressed:
@@ -489,10 +489,9 @@ def textfield_keyrelease(text):
 
 def main_window_closing():
     """Handles the closing of the main window."""
-
-    global conf
     global main_window
     global config_ui
+    global use_kat
     global osc
     global browsersource
 
@@ -518,7 +517,6 @@ def main_window_closing():
 def settings_closing(save=False):
     """Handles the closing of the settings menu. If save is True, saves the settings and restarts the program."""
 
-    global conf
     global osc
     global config_ui
     global config_ui_open
@@ -555,14 +553,13 @@ def settings_closing(save=False):
 def open_settings():
     """Opens the settings menu"""
 
-    global conf
     global main_window
     global config_ui
     global config_ui_open
 
     main_window.set_status_label("WAITING FOR SETTINGS MENU TO CLOSE", "orange")
     config_ui_open = True
-    config_ui = SettingsWindow(conf, CONFIG_PATH)
+    config_ui = SettingsWindow(CONFIG, CONFIG_PATH)
     config_ui.button_refresh.configure(command=determine_energy_threshold)
     config_ui.btn_save.configure(command=(lambda: settings_closing(True)))
     config_ui.tkui.protocol("WM_DELETE_WINDOW", settings_closing)
@@ -573,7 +570,6 @@ def open_settings():
 def determine_energy_threshold():
     """Determines the energy threshold for the microphone to use for speech recognition"""
 
-    global conf
     global config_ui
     global listen
 
@@ -582,8 +578,6 @@ def determine_energy_threshold():
 
 
 def check_ovr():
-
-    global conf
     global initialized
     global ovr
     global config_ui_open

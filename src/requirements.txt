@@ -11,7 +11,6 @@ flask
 kthread
 ctranslate2
 transformers
-dataclasses-json
 torch
 --extra-index-url https://download.pytorch.org/whl/cu118
 faster-whisper @ https://github.com/guillaumekln/faster-whisper/archive/refs/heads/master.tar.gz
