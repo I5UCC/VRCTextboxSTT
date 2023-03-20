@@ -3,14 +3,15 @@ from helper import get_absolute_path
 from PIL import Image, ImageDraw, ImageFont
 import ctypes
 import textwrap
+from config import overlay
 
 ACTIONSETHANDLE = "/actions/textboxstt"
 STTLISTENHANDLE = "/actions/textboxstt/in/sttlisten"
 
 
 class OVRHandler(object):
-    def __init__(self, config, script_path) -> None:
-        self.config = config
+    def __init__(self, config: overlay, script_path) -> None:
+        self.config: overlay = config
         
         self.initialized = True
         try:
@@ -21,11 +22,11 @@ class OVRHandler(object):
             openvr.VRInput().setActionManifestPath(self.action_path)
             self.action_set_handle = openvr.VRInput().getActionSetHandle(ACTIONSETHANDLE)
             self.button_action_handle = openvr.VRInput().getActionHandle(STTLISTENHANDLE)
-            if self.config["overlay_enabled"]:
+            if self.config.enabled:
                 self.overlay_handle = openvr.VROverlay().createOverlay("i5ucc.textboxstt", "TextboxSTT")
                 openvr.VROverlay().setOverlayWidthInMeters(self.overlay_handle, 1)
                 openvr.VROverlay().setOverlayColor(self.overlay_handle, 1.0, 1.0, 1.0)
-                openvr.VROverlay().setOverlayAlpha(self.overlay_handle, self.config["overlay"]["opacity"])
+                openvr.VROverlay().setOverlayAlpha(self.overlay_handle, self.config.opacity)
                 self.overlay_font = ImageFont.truetype(get_absolute_path("resources/CascadiaCode.ttf", script_path), 46)
                 self.set_overlay_position_hmd()
         except Exception as e:
@@ -44,12 +45,12 @@ class OVRHandler(object):
             self.check_init()
 
             overlay_matrix = openvr.HmdMatrix34_t()
-            overlay_matrix[0][0] = self.config["overlay"]["size"]
-            overlay_matrix[1][1] = self.config["overlay"]["size"]
-            overlay_matrix[2][2] = self.config["overlay"]["size"]
-            overlay_matrix[0][3] = self.config["overlay"]["pos_x"]
-            overlay_matrix[1][3] = self.config["overlay"]["pos_y"]
-            overlay_matrix[2][3] = self.config["overlay"]["distance"]
+            overlay_matrix[0][0] = self.config.size
+            overlay_matrix[1][1] = self.config.size
+            overlay_matrix[2][2] = self.config.size
+            overlay_matrix[0][3] = self.config.pos_x
+            overlay_matrix[1][3] = self.config.pos_y
+            overlay_matrix[2][3] = self.config.distance
 
             openvr.VROverlay().setOverlayTransformTrackedDeviceRelative(self.overlay_handle, openvr.k_unTrackedDeviceIndex_Hmd, overlay_matrix)
             return True
@@ -61,7 +62,7 @@ class OVRHandler(object):
         """Sets the text of the overlay by wrapping it to 70 characters and drawing it to an image.
         Then converts the image to bytes and sets the overlay texture to it."""
         
-        if not self.config["overlay_enabled"]:
+        if not self.config.enabled:
             return False
 
         if text == "":
@@ -79,7 +80,7 @@ class OVRHandler(object):
 
             _img = Image.new("RGBA", (_width, _height))
             _draw = ImageDraw.Draw(_img)
-            _draw.text((_width/2, _height/2), text, font=self.overlay_font, fill=self.config["overlay"]["font_color"], anchor="mm", stroke_width=2, stroke_fill=self.config["overlay"]["border_color"], align="center")
+            _draw.text((_width/2, _height/2), text, font=self.overlay_font, fill=self.config.font_color, anchor="mm", stroke_width=2, stroke_fill=self.config.border_color, align="center")
             _img_data = _img.tobytes()
 
             _buffer = (ctypes.c_char * len(_img_data)).from_buffer_copy(_img_data)

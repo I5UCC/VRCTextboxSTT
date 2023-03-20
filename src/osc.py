@@ -5,17 +5,19 @@
 from threading import Timer
 from pythonosc import udp_client, osc_server, dispatcher
 import math, asyncio, threading
+from config import osc
 
 
 class OscHandler:
-	def __init__(self, osc_ip: str, osc_port: int, osc_server_ip: str, osc_server_port: int):
+	def __init__(self, conf: osc):
+		self.config: osc = conf
 		self.isactive = False
 
 		self.osc_enable_server = True # Used to improve sync with in-game avatar and autodetect sync parameter count used for the avatar.
-		self.osc_server_ip = osc_server_ip # OSC server IP to listen too
-		self.osc_server_port = osc_server_port # OSC network port for recieving messages
-		self.osc_ip = osc_ip # OSC server IP to send too
-		self.osc_port = osc_port # OSC network port for sending messages
+		self.osc_server_ip = self.config.ip # OSC server IP to listen too
+		self.osc_server_port = self.config.server_port # OSC network port for recieving messages
+		self.osc_ip = self.config.ip # OSC server IP to send too
+		self.osc_port = self.config.client_port # OSC network port for sending messages
 
 		self.osc_delay: float = 0.25 # Delay between network updates in seconds. Setting this too low will cause issues.
 		self.osc_chatbox_delay: float = 1.25 # Delay between chatbox updates in seconds. Setting this too low will cause issues.
