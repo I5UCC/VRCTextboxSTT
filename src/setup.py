@@ -72,7 +72,7 @@ build_exe_options = {
     "packages": packages,
     "include_files": file_include,
     'include_msvcr': True,
-    'optimize': 2
+    'optimize': 1
 }
 
 from cx_Freeze import setup, Executable
