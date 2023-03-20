@@ -112,8 +112,8 @@ class SettingsWindow:
         self.tooltip_window = None
 
         self.tkui = tk.Tk()
-        self.tkui.minsize(920, 490)
-        self.tkui.maxsize(920, 490)
+        self.tkui.minsize(920, 510)
+        self.tkui.maxsize(920, 510)
         self.tkui.resizable(False, False)
         self.tkui.configure(bg="#333333")
         self.tkui.title("TextboxSTT - Settings")
@@ -133,7 +133,7 @@ class SettingsWindow:
 
         self.devices_list.append("CPU")
 
-        self.label_device = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Device', font=(self.FONT, 12))
+        self.label_device = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Device *', font=(self.FONT, 12))
         self.label_device.grid(row=0, column=0, padx=PADX_L, pady=PADY, sticky='es')
         self.opt_device = tk.OptionMenu(self.tkui, self.value_device, *self.devices_list)
         self.opt_device.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
@@ -317,7 +317,7 @@ class SettingsWindow:
         self.button_settings_overlay.bind("<Enter>", (lambda event: self.show_tooltip("Edit Overlay Settings")))
         self.button_settings_overlay.bind("<Leave>", self.hide_tooltip)
 
-        self.label_obs_source = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Enable OBS Source', font=(self.FONT, 12))
+        self.label_obs_source = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Enable OBS Source *', font=(self.FONT, 12))
         self.label_obs_source.grid(row=2, column=4, padx=PADX_L, pady=PADY, sticky='es')
         self.label_obs_source.bind("<Enter>", (lambda event: self.show_tooltip("If you want to use the OBS Browser Source (Requires Restart)")))
         self.label_obs_source.bind("<Leave>", self.hide_tooltip)
@@ -463,6 +463,9 @@ class SettingsWindow:
         self.btn_save = tk.Button(self.tkui, text="Save")
         self.btn_save.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=82, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.btn_save.place(relx=0.375, rely=0.95, anchor="center")
+
+        self.label_restart_required = tk.Label(master=self.tkui, bg="#333333", fg="#888888", text='* Restart required', font=(self.FONT, 10))
+        self.label_restart_required.place(relx=0.1, rely=0.895, anchor="center")
 
         self.language_changed()
         self.mode_changed()
