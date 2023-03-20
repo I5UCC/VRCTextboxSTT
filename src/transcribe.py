@@ -22,14 +22,15 @@ class TranscribeHandler(object):
         self.task = "translate" if self.config["translate_to_english"] and self.language != "english" else "transcribe"
         print(f"Using model: {self.whisper_model} for language: {self.language} ({self.task}) ")
         
-        if self.config["device"] == "cpu":
-            self.device_index = 0
-            self.device = "cpu"
-        else:
+        if torch.cuda.is_available() and self.config["device"] != "cpu":
             _device_str = self.config["device"].split(":")
             self.device_index = int(_device_str[1])
             self.device = _device_str[0] if torch.cuda.is_available() else "cpu"
             self.device_index = int(_device_str[1])
+        else:
+            self.device_index = 0
+            self.device = "cpu"
+            
         
         print(get_best_compute_type(self.device, self.device_index))
         self.compute_type = self.config["compute_type"] if self.config["compute_type"] else get_best_compute_type(self.device, self.device_index)

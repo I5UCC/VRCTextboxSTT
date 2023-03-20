@@ -215,6 +215,15 @@ def check_config(config: dict, default_config: dict) -> dict:
         except KeyError:
             print(f"Config key \"{key}\" not found. Using default value.")
             config[key] = default_config[key]
+    
+    keys_to_delete = list()
+    for key in config:
+        if key not in default_config:
+            print(f"Config key \"{key}\" not found. Ignoring.")
+            keys_to_delete.append(key)
+
+    for key in keys_to_delete:
+        del config[key]
 
     return config
 
@@ -236,10 +245,13 @@ def force_single_instance():
     """Force single instance by killing other instances of the same Name."""
 
     _pid = os.getpid()
-    _ppid = os.getppid()
     PROCNAME = psutil.Process(_pid).name()
     print(f"Current process: {_pid}, {PROCNAME}")
+
+    if PROCNAME == "python.exe":
+        return
+    
     for proc in psutil.process_iter():
-        if proc.name() == PROCNAME and (proc.pid != _pid or proc.ppid() != _ppid):
+        if proc.name() == PROCNAME and proc.pid != _pid:
             proc.kill()
             print("killed", proc.pid)
