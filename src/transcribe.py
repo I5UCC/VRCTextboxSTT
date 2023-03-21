@@ -52,15 +52,14 @@ class TranscribeHandler(object):
         pre = time.time()
         with torch.no_grad():
             segments, _ = self.model.transcribe(audio, beam_size=5, language=self.language, without_timestamps=True, task=self.task)
-        post = time.time()
-
-        print("Transcription took {:.5f} seconds.".format(post - pre))
 
         _text = ""
         for segment in segments:
             _text += segment.text
 
         print("Transcription: ", _text)
+
+        print("Transcription took {:.5f} seconds.".format(time.time() - pre))
 
         return _text
     
