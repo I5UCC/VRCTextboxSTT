@@ -4,13 +4,13 @@ set /p CPU=Build CPU Version [Y/n]:
 
 if /I "%CPU%" NEQ "N" set /p CPU7z=Create CPU 7z file? [Y/n]: 
 
-if /I "%CPU%" NEQ "N" set /p CPUDel=Delete Folder after build? [Y/n]: 
+if /I "%CPU7z%" NEQ "N" set /p CPUDel=Delete Folder after build? [Y/n]: 
 
 set /p GPU=Build GPU Version [Y/n]: 
 
 if /I "%GPU%" NEQ "N" set /p GPU7z=Create GPU 7z file? [Y/n]: 
 
-if /I "%GPU%" NEQ "N" set /p GPUDel=Delete Folder after build? [Y/n]: 
+if /I "%GPU7z%" NEQ "N" set /p GPUDel=Delete Folder after build? [Y/n]: 
 
 set /p version=< VERSION
 echo %version%

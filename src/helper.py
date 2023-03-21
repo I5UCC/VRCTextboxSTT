@@ -248,7 +248,7 @@ def force_single_instance():
     PROCNAME = psutil.Process(_pid).name()
     print(f"Current process: {_pid}, {PROCNAME}")
 
-    if PROCNAME == "python.exe":
+    if __debug__:
         return
     
     for proc in psutil.process_iter():
