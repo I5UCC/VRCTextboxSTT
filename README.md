@@ -29,7 +29,7 @@ This program is supposed to be entirely free (as in money) and independent of Cl
   - VRChats Ingame Textbox allowing for use with any avatar 
   - [KillFrenzyAvatarText (KAT)](https://github.com/killfrenzy96/KillFrenzyAvatarText) that needs to be integrated to an avatar. 
     - You can use [Frosty704's Billboard](https://github.com/Frosty704/Billboard) to add a speech bubble to your avatar.
-    - Support for up to 88 emotes!
+    - Support for up to 80 emotes!
     - Automatic Detection of KAT on an avatar. It will use KAT if available, otherwise fall back to VRChat Textbox.
 - ***Uses SteamVR binding system***, press to transcribe, hold to clear/cancel (A/X by default)
 - Optional ***Live Transcription***

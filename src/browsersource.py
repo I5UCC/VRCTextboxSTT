@@ -1,6 +1,7 @@
 from flask import Flask, render_template_string, jsonify
 import waitress
 import kthread
+from config import obs_config
 
 class FlaskAppWrapper(object):
 
@@ -36,11 +37,11 @@ class FlaskAppWrapper(object):
 
 class OBSBrowserSource(object):
 
-    def __init__(self, config, template_path):
+    def __init__(self, config: obs_config, template_path):
         self.template_path = template_path
         self.text = ""
-        self.config = config
-        self.app = FlaskAppWrapper(Flask(__name__), config["obs_source"]["port"])
+        self.config: obs_config = config
+        self.app = FlaskAppWrapper(Flask(__name__), self.config.port)
         self.app.add_endpoint('/', 'flask_root', self.flask_root, methods=['GET'])
         self.app.add_endpoint('/transcript', 'flask_get_transcript', self.flask_get_transcript, methods=['GET'])
         self.running = False
@@ -50,12 +51,12 @@ class OBSBrowserSource(object):
         with open(self.template_path) as f:
             _html = f.read()
     
-        _html = _html.replace("[COLOR]", self.config["obs_source"]["color"])
-        _html = _html.replace("[SHADOW]", self.config["obs_source"]["shadowcolor"])
-        _html = _html.replace("[FONT]", self.config["obs_source"]["font"])
-        _html = _html.replace("[ALIGN]", self.config["obs_source"]["align"])
-        _html = _html.replace("[PORT]", str(self.config["obs_source"]["port"]))
-        _html = _html.replace("[INTERVAL]", str(self.config["obs_source"]["update_interval"]))
+        _html = _html.replace("[COLOR]", self.config.color)
+        _html = _html.replace("[SHADOW]", self.config.shadow_color)
+        _html = _html.replace("[FONT]", self.config.font)
+        _html = _html.replace("[ALIGN]", self.config.align)
+        _html = _html.replace("[PORT]", str(self.config.port))
+        _html = _html.replace("[INTERVAL]", str(self.config.update_interval))
 
         print("Website Accessed.")
         return render_template_string(_html)

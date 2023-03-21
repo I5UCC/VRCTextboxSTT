@@ -6,8 +6,9 @@ import glob
 import shutil
 import os
 import torch
-from helper import LANGUAGE_TO_KEY, MODELS, get_best_compute_type
+from helper import get_best_compute_type
 from ctranslate2 import get_supported_compute_types
+from config import config, LANGUAGE_TO_KEY, MODELS
 
 class MainWindow(object):
     def __init__(self, version):
@@ -97,10 +98,10 @@ class MainWindow(object):
 
 
 class SettingsWindow:
-    def __init__(self, config, config_path):
+    def __init__(self, conf: config, config_path):
         self.languages = ["Auto Detect"] + list(LANGUAGE_TO_KEY.keys())
         
-        self.config = config
+        self.config = conf
         self.config_path = config_path
         self.FONT = "Cascadia Code"
         PADX_R = '0'
@@ -112,8 +113,8 @@ class SettingsWindow:
         self.tooltip_window = None
 
         self.tkui = tk.Tk()
-        self.tkui.minsize(920, 510)
-        self.tkui.maxsize(920, 510)
+        self.tkui.minsize(920, 490)
+        self.tkui.maxsize(920, 490)
         self.tkui.resizable(False, False)
         self.tkui.configure(bg="#333333")
         self.tkui.title("TextboxSTT - Settings")
@@ -124,16 +125,16 @@ class SettingsWindow:
         if torch.cuda.is_available():
             for i in range(0, torch.cuda.device_count()):
                 self.devices_list.append((i, torch.cuda.get_device_name(i)))
-            if self.config["device"] != "cpu":
-                _index = int(self.config["device"][5:])
+            if self.config.device.type != "cpu":
+                _index = int(self.config.device.index)
                 self.value_device.set(self.devices_list[_index])
 
-        if self.config["device"] == "cpu" or not torch.cuda.is_available():
+        if self.config.device.type == "cpu" or not torch.cuda.is_available():
             self.value_device.set("CPU")
 
         self.devices_list.append("CPU")
 
-        self.label_device = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Device *', font=(self.FONT, 12))
+        self.label_device = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Device', font=(self.FONT, 12))
         self.label_device.grid(row=0, column=0, padx=PADX_L, pady=PADY, sticky='es')
         self.opt_device = tk.OptionMenu(self.tkui, self.value_device, *self.devices_list)
         self.opt_device.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
@@ -153,7 +154,7 @@ class SettingsWindow:
         self.label_osc_ip.bind("<Enter>", (lambda event: self.show_tooltip("IP to send the OSC information to.")))
         self.label_osc_ip.bind("<Leave>", self.hide_tooltip)
         self.entry_osc_ip = tk.Entry(self.tkui)
-        self.entry_osc_ip.insert(0, self.config["osc_ip"])
+        self.entry_osc_ip.insert(0, self.config.osc.ip)
         self.entry_osc_ip.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
         self.entry_osc_ip.grid(row=1, column=1, padx=PADX_R, pady=PADY, sticky='ws')
         self.entry_osc_ip.bind("<Enter>", (lambda event: self.show_tooltip("IP to send the OSC information to.")))
@@ -164,7 +165,7 @@ class SettingsWindow:
         self.label_osc_port.bind("<Enter>", (lambda event: self.show_tooltip("Port to send the OSC information to.")))
         self.label_osc_port.bind("<Leave>", self.hide_tooltip)
         self.entry_osc_port = tk.Entry(self.tkui)
-        self.entry_osc_port.insert(0, self.config["osc_port"])
+        self.entry_osc_port.insert(0, self.config.osc.client_port)
         self.entry_osc_port.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
         self.entry_osc_port.grid(row=2, column=1, padx=PADX_R, pady=PADY, sticky='ws')
         self.entry_osc_port.bind("<Enter>", (lambda event: self.show_tooltip("Port to send the OSC information to.")))
@@ -175,7 +176,7 @@ class SettingsWindow:
         self.label_osc_server_port.bind("<Enter>", (lambda event: self.show_tooltip("Port to get the OSC information from.\nUsed to improve KAT sync with in-game avatar and autodetect sync parameter count used for the avatar.\nOnly used if KAT Sync Params is set to 'Auto Detect' and use KAT set to 'Yes'")))
         self.label_osc_server_port.bind("<Leave>", self.hide_tooltip)
         self.entry_osc_server_port = tk.Entry(self.tkui)
-        self.entry_osc_server_port.insert(0, self.config["osc_server_port"])
+        self.entry_osc_server_port.insert(0, self.config.osc.server_port)
         self.entry_osc_server_port.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23, disabledbackground="#444444")
         self.entry_osc_server_port.grid(row=3, column=1, padx=PADX_R, pady=PADY, sticky='ws')
         self.entry_osc_server_port.bind("<Enter>", (lambda event: self.show_tooltip("Port to get the OSC information from.\nUsed to improve KAT sync with in-game avatar and autodetect sync parameter count used for the avatar.\nOnly used if KAT Sync Params is set to 'Auto Detect' and use KAT set to 'Yes'")))
@@ -186,7 +187,7 @@ class SettingsWindow:
         self.label_model.bind("<Enter>", (lambda event: self.show_tooltip("What model of whisper to use. \nI'd recommend not going over 'tiny,base,small'\n as it will significantly impact the transcription time.")))
         self.label_model.bind("<Leave>", self.hide_tooltip)
         self.value_model = tk.StringVar(self.tkui)
-        self.value_model.set(self.config["model"])
+        self.value_model.set(self.config.whisper.model)
         self.models = []
         for key in MODELS:
             if ".en" not in key:
@@ -202,7 +203,7 @@ class SettingsWindow:
         self.label_language.bind("<Enter>", (lambda event: self.show_tooltip("Language to use, 'english' will be faster then other languages. \nLeaving it empty will let the program decide what language you are speaking.")))
         self.label_language.bind("<Leave>", self.hide_tooltip)
         self.value_language = tk.StringVar(self.tkui)
-        self.value_language.set("Auto Detect" if not self.config["language"] else self.config["language"])
+        self.value_language.set("Auto Detect" if not self.config.whisper.language else self.config.whisper.language)
         self.value_language.trace("w", self.language_changed)
         self.opt_language = tk.OptionMenu(self.tkui, self.value_language, *self.languages)
         self.opt_language.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
@@ -215,7 +216,7 @@ class SettingsWindow:
         self.label_translate.bind("<Leave>", self.hide_tooltip)
         self.label_translate.grid(row=6, column=0, padx=PADX_L, pady=PADY, sticky='es')
         self.value_translate = tk.StringVar(self.tkui)
-        self.value_translate.set("yes" if bool(self.config["translate_to_english"]) else "no")
+        self.value_translate.set("yes" if bool(self.config.whisper.translate_to_english) else "no")
         self.opt_translate = tk.OptionMenu(self.tkui, self.value_translate, *self.yn_options)
         self.opt_translate.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_translate.grid(row=6, column=1, padx=PADX_R, pady=PADY, sticky='ws')
@@ -226,8 +227,8 @@ class SettingsWindow:
         self.label_hotkey.grid(row=7, column=0, padx=PADX_L, pady=PADY, sticky='es')
         self.label_hotkey.bind("<Enter>", (lambda event: self.show_tooltip("The key that is used to trigger listening.\nKlick on the button and press the button you want to use.")))
         self.label_hotkey.bind("<Leave>", self.hide_tooltip)
-        self.set_key = self.config["hotkey"]
-        self.button_hotkey = tk.Button(self.tkui, text=self.config["hotkey"], command=self.button_hotkey_pressed)
+        self.set_key = self.config.hotkey
+        self.button_hotkey = tk.Button(self.tkui, text=self.config.hotkey, command=self.button_hotkey_pressed)
         self.button_hotkey.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, width=23, anchor="center", activebackground="#555555", activeforeground="white")
         self.button_hotkey.grid(row=7, column=1, padx=PADX_R, pady=PADY, sticky='ws')
         self.button_hotkey.bind("<Enter>", (lambda event: self.show_tooltip("The key that is used to trigger listening.\nKlick on the button and press the button you want to use.")))
@@ -239,7 +240,7 @@ class SettingsWindow:
         self.label_mode.bind("<Leave>", self.hide_tooltip)
         self.value_mode = tk.StringVar(self.tkui)
         self.options_mode = ["once", "once_continuous", "realtime"]
-        self.value_mode.set(self.options_mode[self.config["mode"]])
+        self.value_mode.set(self.options_mode[self.config.mode])
         self.value_mode.trace("w", self.mode_changed)
         self.opt_mode = tk.OptionMenu(self.tkui, self.value_mode, *self.options_mode)
         self.opt_mode.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
@@ -253,7 +254,7 @@ class SettingsWindow:
         self.label_det.bind("<Leave>", self.hide_tooltip)
         self.label_det.grid(row=9, column=0, padx=PADX_L, pady=PADY, sticky='es')
         self.value_det = tk.StringVar(self.tkui)
-        self.value_det.set("yes" if bool(self.config["dynamic_energy_threshold"]) else "no")
+        self.value_det.set("yes" if bool(self.config.listener.dynamic_energy_threshold) else "no")
         self.opt_det = tk.OptionMenu(self.tkui, self.value_det, *self.yn_options)
         self.opt_det.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_det.grid(row=9, column=1, padx=PADX_R, pady=PADY, sticky='ws')
@@ -265,7 +266,7 @@ class SettingsWindow:
         self.label_energy_threshold.bind("<Enter>", (lambda event: self.show_tooltip("Under 'ideal' conditions (such as in a quiet room), \nvalues between 0 and 100 are considered silent or ambient,\n and values 300 to about 3500 are considered speech.")))
         self.label_energy_threshold.bind("<Leave>", self.hide_tooltip)
         self.entry_energy_threshold = tk.Entry(self.tkui)
-        self.entry_energy_threshold.insert(0, self.config["energy_threshold"])
+        self.entry_energy_threshold.insert(0, self.config.listener.energy_threshold)
         self.entry_energy_threshold.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
         self.entry_energy_threshold.grid(row=10, column=1, padx=PADX_R, pady=PADY, sticky='ws')
         self.entry_energy_threshold.bind("<Enter>", (lambda event: self.show_tooltip("Under 'ideal' conditions (such as in a quiet room), \nvalues between 0 and 100 are considered silent or ambient,\n and values 300 to about 3500 are considered speech.")))
@@ -281,7 +282,7 @@ class SettingsWindow:
         self.label_pause_threshold.bind("<Enter>", (lambda event: self.show_tooltip("Amount of seconds to wait when current energy is under the 'energy_threshold'.")))
         self.label_pause_threshold.bind("<Leave>", self.hide_tooltip)
         self.entry_pause_threshold = tk.Entry(self.tkui)
-        self.entry_pause_threshold.insert(0, self.config["pause_threshold"])
+        self.entry_pause_threshold.insert(0, self.config.listener.pause_threshold)
         self.entry_pause_threshold.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
         self.entry_pause_threshold.grid(row=11, column=1, padx=PADX_R, pady=PADY, sticky='ws')
         self.entry_pause_threshold.bind("<Enter>", (lambda event: self.show_tooltip("Amount of seconds to wait when current energy is under the 'energy_threshold'.")))
@@ -292,7 +293,7 @@ class SettingsWindow:
         self.label_audio_feedback.bind("<Enter>", (lambda event: self.show_tooltip("If you want enable Audio Feedback")))
         self.label_audio_feedback.bind("<Leave>", self.hide_tooltip)
         self.value_audio_feedback = tk.StringVar(self.tkui)
-        self.value_audio_feedback.set("yes" if bool(self.config["audio_feedback"]) else "no")
+        self.value_audio_feedback.set("yes" if bool(self.config.audio_feedback) else "no")
         self.opt_audio_feedback = tk.OptionMenu(self.tkui, self.value_audio_feedback, *self.yn_options)
         self.opt_audio_feedback.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_audio_feedback.grid(row=0, column=5, padx=PADX_R, pady=PADY, sticky='ws')
@@ -304,7 +305,7 @@ class SettingsWindow:
         self.label_enable_overlay.bind("<Enter>", (lambda event: self.show_tooltip("If you want to use the SteamVR Overlay")))
         self.label_enable_overlay.bind("<Leave>", self.hide_tooltip)
         self.value_enable_overlay = tk.StringVar(self.tkui)
-        self.value_enable_overlay.set("yes" if bool(self.config["overlay_enabled"]) else "no")
+        self.value_enable_overlay.set("yes" if bool(self.config.overlay.enabled) else "no")
         self.opt_enable_overlay = tk.OptionMenu(self.tkui, self.value_enable_overlay, *self.yn_options)
         self.opt_enable_overlay.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_enable_overlay.grid(row=1, column=5, padx=PADX_R, pady=PADY, sticky='ws')
@@ -317,12 +318,12 @@ class SettingsWindow:
         self.button_settings_overlay.bind("<Enter>", (lambda event: self.show_tooltip("Edit Overlay Settings")))
         self.button_settings_overlay.bind("<Leave>", self.hide_tooltip)
 
-        self.label_obs_source = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Enable OBS Source *', font=(self.FONT, 12))
+        self.label_obs_source = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Enable OBS Source', font=(self.FONT, 12))
         self.label_obs_source.grid(row=2, column=4, padx=PADX_L, pady=PADY, sticky='es')
         self.label_obs_source.bind("<Enter>", (lambda event: self.show_tooltip("If you want to use the OBS Browser Source (Requires Restart)")))
         self.label_obs_source.bind("<Leave>", self.hide_tooltip)
         self.value_obs_source = tk.StringVar(self.tkui)
-        self.value_obs_source.set("yes" if bool(self.config["enable_obs_source"]) else "no")
+        self.value_obs_source.set("yes" if bool(self.config.obs.enabled) else "no")
         self.opt_obs_source = tk.OptionMenu(self.tkui, self.value_obs_source, *self.yn_options)
         self.opt_obs_source.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_obs_source.grid(row=2, column=5, padx=PADX_R, pady=PADY, sticky='ws')
@@ -340,7 +341,7 @@ class SettingsWindow:
         self.label_timeout_time.bind("<Enter>", (lambda event: self.show_tooltip("Amount of time to wait for the user to speak before timeout.")))
         self.label_timeout_time.bind("<Leave>", self.hide_tooltip)
         self.entry_timeout_time = tk.Entry(self.tkui)
-        self.entry_timeout_time.insert(0, self.config["timeout_time"])
+        self.entry_timeout_time.insert(0, self.config.listener.timeout_time)
         self.entry_timeout_time.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
         self.entry_timeout_time.grid(row=3, column=5, padx=PADX_R, pady=PADY, sticky='ws')
         self.entry_timeout_time.bind("<Enter>", (lambda event: self.show_tooltip("Amount of time to wait for the user to speak before timeout.")))
@@ -351,7 +352,7 @@ class SettingsWindow:
         self.label_hold_time.bind("<Enter>", (lambda event: self.show_tooltip("Amount of time to hold the button to clear the Textbox.")))
         self.label_hold_time.bind("<Leave>", self.hide_tooltip)
         self.entry_hold_time = tk.Entry(self.tkui)
-        self.entry_hold_time.insert(0, self.config["hold_time"])
+        self.entry_hold_time.insert(0, self.config.listener.hold_time)
         self.entry_hold_time.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
         self.entry_hold_time.grid(row=4, column=5, padx=PADX_R, pady=PADY, sticky='ws')
         self.entry_hold_time.bind("<Enter>", (lambda event: self.show_tooltip("Amount of time to hold the button to clear the Textbox.")))
@@ -362,7 +363,7 @@ class SettingsWindow:
         self.label_phrase_time_limit.bind("<Enter>", (lambda event: self.show_tooltip("The maximum number of seconds that this will allow a phrase to continue before stopping and returning the part of the phrase processed before the time limit was reached")))
         self.label_phrase_time_limit.bind("<Leave>", self.hide_tooltip)
         self.entry_phrase_time_limit = tk.Entry(self.tkui)
-        self.entry_phrase_time_limit.insert(0, self.config["phrase_time_limit"])
+        self.entry_phrase_time_limit.insert(0, self.config.listener.phrase_time_limit)
         self.entry_phrase_time_limit.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
         self.entry_phrase_time_limit.grid(row=5, column=5, padx=PADX_R, pady=PADY, sticky='ws')
         self.entry_phrase_time_limit.bind("<Enter>", (lambda event: self.show_tooltip("The maximum number of seconds that this will allow a phrase to continue before stopping and returning the part of the phrase processed before the time limit was reached")))
@@ -372,7 +373,7 @@ class SettingsWindow:
         self.label_mic.grid(row=6, column=4, padx=PADX_L, pady=PADY, sticky='es')
         self.label_mic.bind("<Enter>", (lambda event: self.show_tooltip("What microphone to use. 'Default' will use your systems default microphone.")))
         self.label_mic.bind("<Leave>", self.hide_tooltip)
-        self.option_index = 0 if self.config["microphone_index"] is None else int(self.config["microphone_index"]) + 1
+        self.option_index = 0 if self.config.listener.microphone_index is None else int(self.config.listener.microphone_index) + 1
         self.options_mic = self.get_sound_devices()
         self.value_mic = tk.StringVar(self.tkui)
         self.value_mic.set(self.options_mic[self.option_index])
@@ -387,7 +388,7 @@ class SettingsWindow:
         self.label_word_replacements.bind("<Enter>", (lambda event: self.show_tooltip("If you want to enable Word replacements.")))
         self.label_word_replacements.bind("<Leave>", self.hide_tooltip)
         self.value_word_replacements = tk.StringVar(self.tkui)
-        self.value_word_replacements.set("yes" if bool(self.config["enable_word_replacements"]) else "no")
+        self.value_word_replacements.set("yes" if bool(self.config.wordreplacement.enabled) else "no")
         self.opt_enable_replacement = tk.OptionMenu(self.tkui, self.value_word_replacements, *self.yn_options)
         self.opt_enable_replacement.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_enable_replacement.grid(row=7, column=5, padx=PADX_R, pady=PADY, sticky='ws')
@@ -404,7 +405,7 @@ class SettingsWindow:
         self.label_use_textbox.bind("<Enter>", (lambda event: self.show_tooltip("If you want to send your text to VRChats Textbox")))
         self.label_use_textbox.bind("<Leave>", self.hide_tooltip)
         self.value_use_textbox = tk.StringVar(self.tkui)
-        self.value_use_textbox.set("yes" if bool(self.config["use_textbox"]) else "no")
+        self.value_use_textbox.set("yes" if bool(self.config.osc.use_textbox) else "no")
         self.opt_use_textbox = tk.OptionMenu(self.tkui, self.value_use_textbox, *self.yn_options)
         self.opt_use_textbox.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_use_textbox.grid(row=8, column=5, padx=PADX_R, pady=PADY, sticky='ws')
@@ -417,7 +418,7 @@ class SettingsWindow:
         self.label_use_kat.bind("<Enter>", (lambda event: self.show_tooltip("If you want to send your text to KillFrenzyAvatarText")))
         self.label_use_kat.bind("<Leave>", self.hide_tooltip)
         self.value_use_kat = tk.StringVar(self.tkui)
-        self.value_use_kat.set("yes" if bool(self.config["use_kat"]) else "no")
+        self.value_use_kat.set("yes" if bool(self.config.osc.use_kat) else "no")
         self.opt_use_kat = tk.OptionMenu(self.tkui, self.value_use_kat, *self.yn_options)
         self.opt_use_kat.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_use_kat.grid(row=9, column=5, padx=PADX_R, pady=PADY, sticky='ws')
@@ -430,7 +431,7 @@ class SettingsWindow:
         self.label_use_both.bind("<Enter>", (lambda event: self.show_tooltip("If you want to send your text to both options above, if both available and set to 'Yes'.\nIf not, the program will prefer sending to KillFrenzyAvatarText if it is available.")))
         self.label_use_both.bind("<Leave>", self.hide_tooltip)
         self.value_use_both = tk.StringVar(self.tkui)
-        self.value_use_both.set("yes" if bool(self.config["use_both"]) else "no")
+        self.value_use_both.set("yes" if bool(self.config.osc.use_both) else "no")
         self.opt_use_both = tk.OptionMenu(self.tkui, self.value_use_both, *self.yn_options)
         self.opt_use_both.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_use_both.grid(row=10, column=5, padx=PADX_R, pady=PADY, sticky='ws')
@@ -442,7 +443,7 @@ class SettingsWindow:
         self.label_emotes.bind("<Enter>", (lambda event: self.show_tooltip("If you want to use emotes on KAT")))
         self.label_emotes.bind("<Leave>", self.hide_tooltip)
         self.value_emotes = tk.StringVar(self.tkui)
-        self.value_emotes.set("yes" if bool(self.config["enable_emotes"]) else "no")
+        self.value_emotes.set("yes" if bool(self.config.emotes.enabled) else "no")
         self.opt_emotes = tk.OptionMenu(self.tkui, self.value_emotes, *self.yn_options)
         self.opt_emotes.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_emotes.grid(row=11, column=5, padx=PADX_R, pady=PADY, sticky='ws')
@@ -463,9 +464,6 @@ class SettingsWindow:
         self.btn_save = tk.Button(self.tkui, text="Save")
         self.btn_save.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=82, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.btn_save.place(relx=0.375, rely=0.95, anchor="center")
-
-        self.label_restart_required = tk.Label(master=self.tkui, bg="#333333", fg="#888888", text='* Restart required', font=(self.FONT, 10))
-        self.label_restart_required.place(relx=0.1, rely=0.895, anchor="center")
 
         self.language_changed()
         self.mode_changed()
@@ -533,37 +531,38 @@ class SettingsWindow:
         
 
     def save(self):
-        self.config["device"] = "cuda:" + self.value_device.get()[1] if torch.cuda.is_available() and self.value_device.get().lower() != "cpu" else "cpu"
-        self.config["osc_ip"] = self.entry_osc_ip.get()
-        self.config["osc_port"] = int(self.entry_osc_port.get())
-        self.config["osc_server_port"] = int(self.entry_osc_server_port.get())
-        self.config["model"] = self.value_model.get()
-        self.config["language"] = None if self.value_language.get() == "Auto Detect" else self.value_language.get()
-        self.config["translate_to_english"] = True if self.value_translate.get() == "yes" else False
-        self.config["hotkey"] = self.set_key
+        self.config.device.type = "cuda" if torch.cuda.is_available() and self.value_device.get().lower() != "cpu" else "cpu"
+        self.config.device.index = int(self.value_device.get()[1]) if torch.cuda.is_available() and self.value_device.get().lower() != "cpu" else 0
+        self.config.osc.ip = self.entry_osc_ip.get()
+        self.config.osc.client_port = int(self.entry_osc_port.get())
+        self.config.osc.server_port = int(self.entry_osc_server_port.get())
+        self.config.whisper.model = self.value_model.get()
+        self.config.whisper.language = None if self.value_language.get() == "Auto Detect" else self.value_language.get()
+        self.config.whisper.translate_to_english = True if self.value_translate.get() == "yes" else False
+        self.config.hotkey = self.set_key
         _realtime = 0
         if self.value_mode.get() == "once_continuous":
             _realtime = 1
         elif self.value_mode.get() == "realtime":
             _realtime = 2
-        self.config["mode"] = _realtime
-        self.config["dynamic_energy_threshold"] = True if self.value_det.get() == "yes" else False
-        self.config["energy_threshold"] = int(self.entry_energy_threshold.get())
-        self.config["pause_threshold"] = float(self.entry_pause_threshold.get())
-        self.config["timeout_time"] = float(self.entry_timeout_time.get())
-        self.config["hold_time"] = float(self.entry_hold_time.get())
-        self.config["phrase_time_limit"] = float(self.entry_phrase_time_limit.get())
-        self.config["microphone_index"] = self.get_audiodevice_index()
-        self.config["use_textbox"] = True if self.value_use_textbox.get() == "yes" else False
-        self.config["use_kat"] = True if self.value_use_kat.get() == "yes" else False
-        self.config["use_both"] = True if self.value_use_both.get() == "yes" else False
-        self.config["audio_feedback"] = True if self.value_audio_feedback.get() == "yes" else False
-        self.config["enable_emotes"] = True if self.value_emotes.get() == "yes" else False
-        self.config["overlay_enabled"] = True if self.value_enable_overlay.get() == "yes" else False
-        self.config["enable_word_replacements"] = True if self.value_word_replacements.get() == "yes" else False
-        self.config["enable_obs_source"] = True if self.value_obs_source.get() == "yes" else False
+        self.config.mode = _realtime
+        self.config.listener.dynamic_energy_threshold = True if self.value_det.get() == "yes" else False
+        self.config.listener.energy_threshold = int(self.entry_energy_threshold.get())
+        self.config.listener.pause_threshold = float(self.entry_pause_threshold.get())
+        self.config.listener.timeout_time = float(self.entry_timeout_time.get())
+        self.config.listener.hold_time = float(self.entry_hold_time.get())
+        self.config.listener.phrase_time_limit = float(self.entry_phrase_time_limit.get())
+        self.config.listener.microphone_index = self.get_audiodevice_index()
+        self.config.osc.use_textbox = True if self.value_use_textbox.get() == "yes" else False
+        self.config.osc.use_kat = True if self.value_use_kat.get() == "yes" else False
+        self.config.osc.use_both = True if self.value_use_both.get() == "yes" else False
+        self.config.audio_feedback = True if self.value_audio_feedback.get() == "yes" else False
+        self.config.emotes.enabled = True if self.value_emotes.get() == "yes" else False
+        self.config.overlay.enabled = True if self.value_enable_overlay.get() == "yes" else False
+        self.config.wordreplacement.enabled = True if self.value_word_replacements.get() == "yes" else False
+        self.config.obs.enabled = True if self.value_obs_source.get() == "yes" else False
 
-        json.dump(self.config, open(self.config_path, "w"), indent=4)
+        json.dump(self.config.to_dict(), open(self.config_path, "w"), indent=4)
 
     def update(self):
         self.tkui.update()
@@ -629,9 +628,9 @@ class SettingsWindow:
             shutil.rmtree(dir)
 
 class EmoteWindow:
-    def __init__(self, config, config_path):
+    def __init__(self, conf: config, config_path):
         self.config_path = config_path
-        self.config = config
+        self.config: config = conf
         self.FONT = "Cascadia Code"
 
         self.tkui = tk.Tk()
@@ -651,7 +650,7 @@ class EmoteWindow:
         self.button.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=12, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white", state="disabled", command=self.edit_entry)
         self.button.place(relx=0.91, rely=0.05, anchor="center")
 
-        self.values = list(self.config["emotes"].items())
+        self.values = list(self.config.emotes.list.items())
         self.lbox = tk.Listbox(self.tkui, font=(self.FONT, 12), width=70, height=15, bg="#333333", fg="#FFFFFF", selectbackground="#777777", selectforeground="#FFFFFF", bd=0, activestyle="none")
         self.lbox.place(relx=0.5, rely=0.53, anchor="center")
         self.lbox.bind('<<ListboxSelect>>', self.item_selected)
@@ -663,7 +662,7 @@ class EmoteWindow:
     def item_selected(self, event):
         if self.lbox.curselection():
             self.current_selection = self.lbox.curselection()[0]
-            self.set_entry(self.config["emotes"][str(self.current_selection)])
+            self.set_entry(self.config.emotes.list[str(self.current_selection)])
             self.button.configure(state="normal")
 
     def set_entry(self, text):
@@ -671,14 +670,14 @@ class EmoteWindow:
         self.entry.insert(0, text)
 
     def edit_entry(self):
-        self.config["emotes"][str(self.current_selection)] = self.entry.get()
+        self.config.emotes.list[str(self.current_selection)] = self.entry.get()
         self.update_lbox()
         self.button.configure(state="disabled")
         self.entry.delete(0, tk.END)
-        json.dump(self.config, open(self.config_path, "w"), indent=4)
+        json.dump(self.config.to_dict(), open(self.config_path, "w"), indent=4)
 
     def update_lbox(self):
-        self.values = list(self.config["emotes"].items())
+        self.values = list(self.config.emotes.list.items())
         self.lbox.delete(0, tk.END)
         for key, value in self.values:
             self.lbox.insert(tk.END, f"{key}: \"{value}\"")
@@ -688,9 +687,9 @@ class EmoteWindow:
         self.tkui.destroy()
 
 class ReplacementWindow:
-    def __init__(self, config, config_path):
+    def __init__(self, conf: config, config_path):
         self.config_path = config_path
-        self.config = config
+        self.config: config = conf
         self.FONT = "Cascadia Code"
 
         self.tkui = tk.Tk()
@@ -743,11 +742,11 @@ class ReplacementWindow:
             self.entry_word.delete(0, tk.END)
             
             self.current_selection = self.lbox.curselection()[0]
-            self.current_key = list(self.config["word_replacements"])[self.current_selection]
+            self.current_key = list(self.config.wordreplacement.list)[self.current_selection]
 
             
             self.entry_word.insert(0, self.current_key)
-            self.entry_replace.insert(0, self.config["word_replacements"][self.current_key])
+            self.entry_replace.insert(0, self.config.wordreplacement.list[self.current_key])
             
             self.button_deselect.configure(state="normal")
             self.button_delete.configure(state="normal")
@@ -757,16 +756,16 @@ class ReplacementWindow:
             return
 
         if self.button_edit["text"] == "Add":
-            self.config["word_replacements"][self.entry_word.get()] = self.entry_replace.get()
-        elif self.current_key != self.entry_word.get() or self.config["word_replacements"][self.current_key] != self.entry_replace.get():
-            del self.config["word_replacements"][self.current_key]
-            self.config["word_replacements"][self.entry_word.get()] = self.entry_replace.get()
+            self.config.wordreplacement.list[self.entry_word.get()] = self.entry_replace.get()
+        elif self.current_key != self.entry_word.get() or self.config.wordreplacement.list[self.current_key] != self.entry_replace.get():
+            del self.config.wordreplacement.list[self.current_key]
+            self.config.wordreplacement.list[self.entry_word.get()] = self.entry_replace.get()
         
         self.button_deselect_pressed()
         self.update_lbox()
         self.entry_replace.delete(0, tk.END)
         self.entry_word.delete(0, tk.END)
-        json.dump(self.config, open(self.config_path, "w"), indent=4)
+        json.dump(self.config.to_dict(), open(self.config_path, "w"), indent=4)
     
     def button_deselect_pressed(self):
         self.button_edit.configure(text="Add")
@@ -777,8 +776,8 @@ class ReplacementWindow:
         self.button_delete.configure(state="disabled")
 
     def button_delete_pressed(self):
-        del self.config["word_replacements"][self.current_key]
-        json.dump(self.config, open(self.config_path, "w"), indent=4)
+        del self.config.wordreplacement.list[self.current_key]
+        json.dump(self.config.to_dict(), open(self.config_path, "w"), indent=4)
         self.entry_replace.delete(0, tk.END)
         self.entry_word.delete(0, tk.END)
         self.button_deselect_pressed()
@@ -786,16 +785,16 @@ class ReplacementWindow:
         pass
 
     def update_lbox(self):
-        self.values = list(self.config["word_replacements"].items())
+        self.values = list(self.config.wordreplacement.list.items())
         self.lbox.delete(0, tk.END)
         for key, value in self.values:
             self.lbox.insert(tk.END, f"{key} -> {value}")
 
 
 class OverlaySettingsWindow:
-    def __init__(self, config, config_path):
+    def __init__(self, conf: config, config_path):
         self.config_path = config_path
-        self.config = config
+        self.config: config = conf
         self.FONT = "Cascadia Code"
 
         self.tkui = tk.Tk()
@@ -811,49 +810,49 @@ class OverlaySettingsWindow:
         self.label_pos_x = tk.Label(self.tkui, text="Position X", bg="#333333", fg="white", font=(self.FONT, 12))
         self.label_pos_x.grid(row=0, column=1, padx=12, pady=5, sticky='ws')
         self.entry_pos_x = tk.Entry(self.tkui)
-        self.entry_pos_x.insert(0, self.config["overlay"]["pos_x"])
+        self.entry_pos_x.insert(0, self.config.overlay.pos_x)
         self.entry_pos_x.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666")
         self.entry_pos_x.grid(row=0, column=2, padx=12, pady=5, sticky='ws')
 
         self.label_pos_y = tk.Label(self.tkui, text="Position Y", bg="#333333", fg="white", font=(self.FONT, 12))
         self.label_pos_y.grid(row=1, column=1, padx=12, pady=5, sticky='ws')
         self.entry_pos_y = tk.Entry(self.tkui)
-        self.entry_pos_y.insert(0, self.config["overlay"]["pos_y"])
+        self.entry_pos_y.insert(0, self.config.overlay.pos_y)
         self.entry_pos_y.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666")
         self.entry_pos_y.grid(row=1, column=2, padx=12, pady=5, sticky='ws')
 
         self.label_size = tk.Label(self.tkui, text="Size", bg="#333333", fg="white", font=(self.FONT, 12))
         self.label_size.grid(row=2, column=1, padx=12, pady=5, sticky='ws')
         self.entry_size = tk.Entry(self.tkui)
-        self.entry_size.insert(0, self.config["overlay"]["size"])
+        self.entry_size.insert(0, self.config.overlay.size)
         self.entry_size.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666")
         self.entry_size.grid(row=2, column=2, padx=12, pady=5, sticky='ws')
 
         self.label_distance = tk.Label(self.tkui, text="Distance", bg="#333333", fg="white", font=(self.FONT, 12))
         self.label_distance.grid(row=3, column=1, padx=12, pady=5, sticky='ws')
         self.entry_distance = tk.Entry(self.tkui)
-        self.entry_distance.insert(0, self.config["overlay"]["distance"])
+        self.entry_distance.insert(0, self.config.overlay.distance)
         self.entry_distance.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666")
         self.entry_distance.grid(row=3, column=2, padx=12, pady=5, sticky='ws')
 
         self.label_font_color = tk.Label(self.tkui, text="Font Color", bg="#333333", fg="white", font=(self.FONT, 12))
         self.label_font_color.grid(row=4, column=1, padx=12, pady=5, sticky='ws')
         self.entry_font_color = tk.Entry(self.tkui)
-        self.entry_font_color.insert(0, self.config["overlay"]["font_color"])
+        self.entry_font_color.insert(0, self.config.overlay.font_color)
         self.entry_font_color.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666")
         self.entry_font_color.grid(row=4, column=2, padx=12, pady=5, sticky='ws')
 
         self.label_border_color = tk.Label(self.tkui, text="Border Color", bg="#333333", fg="white", font=(self.FONT, 12))
         self.label_border_color.grid(row=5, column=1, padx=12, pady=5, sticky='ws')
         self.entry_border_color = tk.Entry(self.tkui)
-        self.entry_border_color.insert(0, self.config["overlay"]["border_color"])
+        self.entry_border_color.insert(0, self.config.overlay.border_color)
         self.entry_border_color.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666")
         self.entry_border_color.grid(row=5, column=2, padx=12, pady=5, sticky='ws')
 
         self.label_opacity = tk.Label(self.tkui, text="Opacity", bg="#333333", fg="white", font=(self.FONT, 12))
         self.label_opacity.grid(row=6, column=1, padx=12, pady=5, sticky='ws')
         self.entry_opacity = tk.Entry(self.tkui)
-        self.entry_opacity.insert(0, self.config["overlay"]["opacity"])
+        self.entry_opacity.insert(0, self.config.overlay.opacity)
         self.entry_opacity.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666")
         self.entry_opacity.grid(row=6, column=2, padx=12, pady=5, sticky='ws')
 
@@ -864,24 +863,24 @@ class OverlaySettingsWindow:
         self.tkui.mainloop()
 
     def save(self):
-        self.config["overlay"]["pos_x"] = float(self.entry_pos_x.get())
-        self.config["overlay"]["pos_y"] = float(self.entry_pos_y.get())
-        self.config["overlay"]["size"] = float(self.entry_size.get())
-        self.config["overlay"]["distance"] = float(self.entry_distance.get())
-        self.config["overlay"]["font_color"] = self.entry_font_color.get()
-        self.config["overlay"]["border_color"] = self.entry_border_color.get()
-        self.config["overlay"]["opacity"] = float(self.entry_opacity.get())
+        self.config.overlay.pos_x = float(self.entry_pos_x.get())
+        self.config.overlay.pos_y = float(self.entry_pos_y.get())
+        self.config.overlay.size = float(self.entry_size.get())
+        self.config.overlay.distance = float(self.entry_distance.get())
+        self.config.overlay.font_color = self.entry_font_color.get()
+        self.config.overlay.border_color = self.entry_border_color.get()
+        self.config.overlay.opacity = float(self.entry_opacity.get())
 
-        json.dump(self.config, open(self.config_path, "w"), indent=4)
+        json.dump(self.config.to_dict(), open(self.config_path, "w"), indent=4)
         self.on_closing()
 
     def on_closing(self):
         self.tkui.destroy()
 
 class OBSSettingsWindow:
-    def __init__(self, config, config_path):
+    def __init__(self, conf: config, config_path):
         self.config_path = config_path
-        self.config = config
+        self.config: config = conf
         self.FONT = "Cascadia Code"
 
         self.tkui = tk.Tk()
@@ -897,35 +896,35 @@ class OBSSettingsWindow:
         self.label_port = tk.Label(self.tkui, text="Port", bg="#333333", fg="white", font=(self.FONT, 12))
         self.label_port.grid(row=0, column=1, padx=12, pady=5, sticky='ws')
         self.entry_port = tk.Entry(self.tkui)
-        self.entry_port.insert(0, self.config["obs_source"]["port"])
+        self.entry_port.insert(0, self.config.obs.port)
         self.entry_port.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666")
         self.entry_port.grid(row=0, column=2, padx=12, pady=5, sticky='ws')
 
         self.label_update_interval = tk.Label(self.tkui, text="Update Interval", bg="#333333", fg="white", font=(self.FONT, 12))
         self.label_update_interval.grid(row=1, column=1, padx=12, pady=5, sticky='ws')
         self.entry_update_interval = tk.Entry(self.tkui)
-        self.entry_update_interval.insert(0, self.config["obs_source"]["update_interval"])
+        self.entry_update_interval.insert(0, self.config.obs.update_interval)
         self.entry_update_interval.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666")
         self.entry_update_interval.grid(row=1, column=2, padx=12, pady=5, sticky='ws')
 
         self.label_font = tk.Label(self.tkui, text="Font", bg="#333333", fg="white", font=(self.FONT, 12))
         self.label_font.grid(row=2, column=1, padx=12, pady=5, sticky='ws')
         self.entry_font = tk.Entry(self.tkui)
-        self.entry_font.insert(0, self.config["obs_source"]["font"])
+        self.entry_font.insert(0, self.config.obs.font)
         self.entry_font.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666")
         self.entry_font.grid(row=2, column=2, padx=12, pady=5, sticky='ws')
 
         self.label_color = tk.Label(self.tkui, text="Color", bg="#333333", fg="white", font=(self.FONT, 12))
         self.label_color.grid(row=3, column=1, padx=12, pady=5, sticky='ws')
         self.entry_color = tk.Entry(self.tkui)
-        self.entry_color.insert(0, self.config["obs_source"]["color"])
+        self.entry_color.insert(0, self.config.obs.color)
         self.entry_color.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666")
         self.entry_color.grid(row=3, column=2, padx=12, pady=5, sticky='ws')
 
         self.label_align = tk.Label(self.tkui, text="Align", bg="#333333", fg="white", font=(self.FONT, 12))
         self.label_align.grid(row=4, column=1, padx=12, pady=5, sticky='ws')
         self.value_align = tk.StringVar(self.tkui)
-        self.value_align.set(self.config["obs_source"]["align"])
+        self.value_align.set(self.config.obs.align)
         self.opt_align = tk.OptionMenu(self.tkui, self.value_align, *["center", "left", "right"])
         self.opt_align.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=18, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_align.grid(row=4, column=2, padx=12, pady=5, sticky='ws')
@@ -938,22 +937,22 @@ class OBSSettingsWindow:
         self.tkui.mainloop()
 
     def save(self):
-        self.config["obs_source"]["port"] = int(self.entry_port.get())
-        self.config["obs_source"]["update_interval"] = int(self.entry_update_interval.get())
-        self.config["obs_source"]["font"] = self.entry_font.get()
-        self.config["obs_source"]["color"] = self.entry_color.get()
-        self.config["obs_source"]["align"] = self.value_align.get()
+        self.config.obs.port = int(self.entry_port.get())
+        self.config.obs.update_interval = int(self.entry_update_interval.get())
+        self.config.obs.font = self.entry_font.get()
+        self.config.obs.color = self.entry_color.get()
+        self.config.obs.align = self.value_align.get()
 
-        json.dump(self.config, open(self.config_path, "w"), indent=4)
+        json.dump(self.config.to_dict(), open(self.config_path, "w"), indent=4)
         self.on_closing()
 
     def on_closing(self):
         self.tkui.destroy()
 
 class DeviceSettingsWindow:
-    def __init__(self, config, config_path, device, device_index):
+    def __init__(self, conf: config, config_path, device, device_index):
         self.config_path = config_path
-        self.config = config
+        self.config: config = conf
         self.FONT = "Cascadia Code"
 
         self.tkui = tk.Tk()
@@ -970,10 +969,10 @@ class DeviceSettingsWindow:
         self.label_comptype.grid(row=0, column=0, padx=12, pady=5, sticky='es')
         self.options_comptype = list(get_supported_compute_types(device, device_index))
         self.value_comptype = tk.StringVar(self.tkui)
-        if self.config["compute_type"] is None:
+        if self.config.device.compute_type is None:
             self.value_comptype.set(get_best_compute_type(device, device_index))
         else:
-            self.value_comptype.set(self.config["compute_type"])
+            self.value_comptype.set(self.config.device.compute_type)
         self.opt_comptype = tk.OptionMenu(self.tkui, self.value_comptype, *self.options_comptype)
         self.opt_comptype.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=18, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_comptype.grid(row=0, column=1, padx=12, pady=5, sticky='ws')
@@ -981,14 +980,14 @@ class DeviceSettingsWindow:
         self.label_cpu_threads = tk.Label(self.tkui, text="CPU Threads", bg="#333333", fg="white", font=(self.FONT, 12))
         self.label_cpu_threads.grid(row=1, column=0, padx=12, pady=5, sticky='ws')
         self.entry_cpu_threads = tk.Entry(self.tkui)
-        self.entry_cpu_threads.insert(0, self.config["cpu_threads"])
+        self.entry_cpu_threads.insert(0, self.config.device.cpu_threads)
         self.entry_cpu_threads.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666")
         self.entry_cpu_threads.grid(row=1, column=1, padx=12, pady=5, sticky='ws')
 
         self.label_num_workers = tk.Label(self.tkui, text="Num Workers", bg="#333333", fg="white", font=(self.FONT, 12))
         self.label_num_workers.grid(row=2, column=0, padx=12, pady=5, sticky='ws')
         self.entry_num_workers = tk.Entry(self.tkui)
-        self.entry_num_workers.insert(0, self.config["num_workers"])
+        self.entry_num_workers.insert(0, self.config.device.num_workers)
         self.entry_num_workers.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666")
         self.entry_num_workers.grid(row=2, column=1, padx=12, pady=5, sticky='ws')
 
@@ -999,11 +998,11 @@ class DeviceSettingsWindow:
         self.tkui.mainloop()
 
     def save(self):
-        self.config["compute_type"] = self.value_comptype.get()
-        self.config["cpu_threads"] = int(self.entry_cpu_threads.get())
-        self.config["num_workers"] = int(self.entry_num_workers.get())
+        self.config.device.compute_type = self.value_comptype.get()
+        self.config.device.cpu_threads = int(self.entry_cpu_threads.get())
+        self.config.device.num_workers = int(self.entry_num_workers.get())
 
-        json.dump(self.config, open(self.config_path, "w"), indent=4)
+        json.dump(self.config.to_dict(), open(self.config_path, "w"), indent=4)
         self.on_closing()
 
     def on_closing(self):

@@ -42,7 +42,8 @@ packages = [
     "urllib3",
     "waitress",
     "werkzeug",
-    "yaml"
+    "yaml",
+    "dataclasses_json"
 ]
 gpu_packages = ["nvfuser"]
 if is_available():

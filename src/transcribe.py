@@ -1,45 +1,44 @@
 import os
 import torch
 import time
-from helper import get_absolute_path, get_best_compute_type, MODELS, LANGUAGE_TO_KEY
+from helper import get_absolute_path, get_best_compute_type
 from faster_whisper import WhisperModel
 from ctranslate2.converters import TransformersConverter
 from shutil import rmtree
+from config import whisper_config, device_config, MODELS, LANGUAGE_TO_KEY
 
 class TranscribeHandler(object):
-    def __init__(self, config, script_path) -> None:
-        self.config = config
+    def __init__(self, whisper_conf: whisper_config, device_conf: device_config, script_path) -> None:
+        self.whisper_config: whisper_config = whisper_conf
+        self.device_config: device_config = device_conf
         self.script_path = script_path
-        self.whisper_model = MODELS[self.config["model"]]
+        self.whisper_model = MODELS[self.whisper_config.model]
         self.language = None
         
-        if self.config["language"]:
-            self.language = LANGUAGE_TO_KEY[self.config["language"]]
+        if self.whisper_config.language:
+            self.language = LANGUAGE_TO_KEY[self.whisper_config.language]
 
         if "large" not in self.whisper_model and self.language == "en" and ".en" not in self.whisper_model and "openai" in self.whisper_model:
             self.whisper_model = self.whisper_model + ".en"
 
-        self.task = "translate" if self.config["translate_to_english"] and self.language != "english" else "transcribe"
+        self.task = "translate" if self.whisper_config.translate_to_english and self.language != "english" else "transcribe"
         print(f"Using model: {self.whisper_model} for language: {self.language} ({self.task}) ")
         
-        if torch.cuda.is_available() and self.config["device"] != "cpu":
-            _device_str = self.config["device"].split(":")
-            self.device_index = int(_device_str[1])
-            self.device = _device_str[0] if torch.cuda.is_available() else "cpu"
-            self.device_index = int(_device_str[1])
+        if torch.cuda.is_available():
+            self.device = self.device_config.type
+            self.device_index = self.device_config.index
         else:
-            self.device_index = 0
             self.device = "cpu"
-            
+            self.device_index = 0
         
         print(get_best_compute_type(self.device, self.device_index))
-        self.compute_type = self.config["compute_type"] if self.config["compute_type"] else get_best_compute_type(self.device, self.device_index)
+        self.compute_type = self.device_config.compute_type if self.device_config.compute_type else get_best_compute_type(self.device, self.device_index)
         self.use_cpu = True if str(self.device) == "cpu" else False
         self.model_path = self.load_model(self.whisper_model, self.compute_type)
 
         self.device_name = torch.cuda.get_device_name(self.device_index) if self.device == "cuda" else "CPU"
         
-        self.model: WhisperModel = WhisperModel(self.model_path, self.device,self.device_index, self.compute_type, self.config["cpu_threads"], self.config["num_workers"])
+        self.model: WhisperModel = WhisperModel(self.model_path, self.device,self.device_index, self.compute_type, self.device_config.cpu_threads, self.device_config.num_workers)
 
     def transcribe(self, audio) -> tuple:
         """
@@ -57,9 +56,7 @@ class TranscribeHandler(object):
         for segment in segments:
             _text += segment.text
 
-        print("Transcription: ", _text)
-
-        print("Transcription took {:.5f} seconds.".format(time.time() - pre))
+        print("Transcription ({:.4f}) : ".format(time.time() - pre), _text)
 
         return _text
     

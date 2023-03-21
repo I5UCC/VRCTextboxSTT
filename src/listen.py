@@ -1,15 +1,16 @@
 import speech_recognition as sr
 import numpy as np
 from queue import Queue
+from config import listener_config
 
 class ListenHandler(object):
-    def __init__(self, config) -> None:
-        self.config = config
+    def __init__(self, config: listener_config) -> None:
+        self.config: listener_config = config
         self.rec = sr.Recognizer()
-        self.rec.dynamic_energy_threshold = bool(self.config["dynamic_energy_threshold"])
-        self.rec.energy_threshold = int(self.config["energy_threshold"])
-        self.rec.pause_threshold = float(self.config["pause_threshold"])
-        self.source = sr.Microphone(sample_rate=16000, device_index=int(self.config["microphone_index"]) if self.config["microphone_index"] else None)
+        self.rec.dynamic_energy_threshold = bool(self.config.dynamic_energy_threshold)
+        self.rec.energy_threshold = self.config.energy_threshold
+        self.rec.pause_threshold = self.config.pause_threshold
+        self.source = sr.Microphone(sample_rate=16000, device_index=int(self.config.microphone_index) if self.config.microphone_index else None)
         self.data_queue = Queue()
 
     def listen_once(self) -> np.ndarray:
@@ -19,7 +20,7 @@ class ListenHandler(object):
 
         with self.source:
             try:
-                _audio = self.rec.listen(self.source, timeout=float(self.config["timeout_time"]))
+                _audio = self.rec.listen(self.source, timeout=self.config.timeout_time)
             except sr.WaitTimeoutError:
                 return None
 
@@ -33,7 +34,7 @@ class ListenHandler(object):
             _data = audio.get_raw_data()
             self.data_queue.put(_data)
 
-        self.stop_listening = self.rec.listen_in_background(self.source, record_callback, phrase_time_limit=self.config["phrase_time_limit"])
+        self.stop_listening = self.rec.listen_in_background(self.source, record_callback, phrase_time_limit=self.config.phrase_time_limit)
 
     def stop_listen_background(self) -> None:
         self.stop_listening(wait_for_stop=False)
