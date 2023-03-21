@@ -5,12 +5,12 @@ from helper import get_absolute_path, get_best_compute_type
 from faster_whisper import WhisperModel
 from ctranslate2.converters import TransformersConverter
 from shutil import rmtree
-from config import whisper, device, MODELS, LANGUAGE_TO_KEY
+from config import whisper_config, device_config, MODELS, LANGUAGE_TO_KEY
 
 class TranscribeHandler(object):
-    def __init__(self, whisper_config: whisper, device_config: device, script_path) -> None:
-        self.whisper_config: whisper = whisper_config
-        self.device_config: device = device_config
+    def __init__(self, whisper_conf: whisper_config, device_conf: device_config, script_path) -> None:
+        self.whisper_config: whisper_config = whisper_conf
+        self.device_config: device_config = device_conf
         self.script_path = script_path
         self.whisper_model = MODELS[self.whisper_config.model]
         self.language = None

@@ -5,12 +5,12 @@
 from threading import Timer
 from pythonosc import udp_client, osc_server, dispatcher
 import math, asyncio, threading
-from config import osc
+from config import osc_config
 
 
 class OscHandler:
-	def __init__(self, conf: osc):
-		self.config: osc = conf
+	def __init__(self, conf: osc_config):
+		self.config: osc_config = conf
 		self.isactive = False
 
 		self.osc_enable_server = True # Used to improve sync with in-game avatar and autodetect sync parameter count used for the avatar.

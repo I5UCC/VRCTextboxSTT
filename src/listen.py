@@ -1,11 +1,11 @@
 import speech_recognition as sr
 import numpy as np
 from queue import Queue
-from config import listener
+from config import listener_config
 
 class ListenHandler(object):
-    def __init__(self, config: listener) -> None:
-        self.config: listener = config
+    def __init__(self, config: listener_config) -> None:
+        self.config: listener_config = config
         self.rec = sr.Recognizer()
         self.rec.dynamic_energy_threshold = bool(self.config.dynamic_energy_threshold)
         self.rec.energy_threshold = self.config.energy_threshold

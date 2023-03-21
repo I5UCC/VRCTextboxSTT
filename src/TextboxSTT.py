@@ -1,7 +1,7 @@
 import os
 import sys
 import logging
-from helper import LogToFile, loadfont, get_absolute_path, play_sound, force_single_instance, get_config
+from helper import LogToFile, loadfont, get_absolute_path, play_sound, force_single_instance
 
 
 LOGFILE = get_absolute_path('out.log', __file__)
@@ -37,9 +37,10 @@ from ovr import OVRHandler
 from listen import ListenHandler
 from transcribe import TranscribeHandler
 from config import config
+import json
 
 
-conf: config = None
+conf: config = config.from_dict(json.load(open(CONFIG_PATH)))
 osc: OscHandler = None
 ovr: OVRHandler = None
 listen: ListenHandler = None
@@ -67,8 +68,6 @@ def init():
     global initialized
     global browsersource
     global listen
-    
-    conf = config.from_dict(get_config(CONFIG_PATH, DEFAULT_CONFIG_PATH))
 
     osc = OscHandler(conf.osc)
 
@@ -87,7 +86,7 @@ def init():
     main_window.set_status_label("INITIALIZING OVR", "orange")
     if ovr:
         ovr.shutdown()
-    ovr = OVRHandler(conf, __file__)
+    ovr = OVRHandler(conf.overlay, __file__)
     if ovr.initialized:
         main_window.set_status_label("INITIALZIED OVR", "green")
     else:

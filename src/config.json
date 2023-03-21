@@ -1,4 +1,7 @@
 {
+    "mode": 0,
+    "hotkey": "F1",
+    "audio_feedback": true,
     "device": {
         "type": "cuda",
         "index": 0,
@@ -48,10 +51,11 @@
         "align": "center"
     },
     "wordreplacement": {
-        "list": {},
-        "enabled": false
+        "enabled": false,
+        "list": {}
     },
     "emotes": {
+        "enabled": false,
         "list": {
             "0": "wicked emoji",
             "1": "clueless emoji",
@@ -133,10 +137,6 @@
             "77": "",
             "78": "",
             "79": ""
-        },
-        "enabled": false
-    },
-    "hotkey": "f1",
-    "audio_feedback": true,
-    "mode": 0
+        }
+    }
 }

@@ -1,7 +1,7 @@
 from flask import Flask, render_template_string, jsonify
 import waitress
 import kthread
-from config import obs
+from config import obs_config
 
 class FlaskAppWrapper(object):
 
@@ -37,10 +37,10 @@ class FlaskAppWrapper(object):
 
 class OBSBrowserSource(object):
 
-    def __init__(self, config: obs, template_path):
+    def __init__(self, config: obs_config, template_path):
         self.template_path = template_path
         self.text = ""
-        self.config: obs = config
+        self.config: obs_config = config
         self.app = FlaskAppWrapper(Flask(__name__), self.config.port)
         self.app.add_endpoint('/', 'flask_root', self.flask_root, methods=['GET'])
         self.app.add_endpoint('/transcript', 'flask_get_transcript', self.flask_get_transcript, methods=['GET'])

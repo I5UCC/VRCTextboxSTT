@@ -5,7 +5,6 @@ import logging
 import psutil
 from ctypes import windll, byref, create_unicode_buffer, create_string_buffer
 from ctranslate2 import get_supported_compute_types
-import json
 
 
 class LogToFile(object):
@@ -101,34 +100,3 @@ def force_single_instance():
         if proc.name() == PROCNAME and proc.pid != _pid:
             proc.kill()
             print("killed", proc.pid)
-
-
-def get_config(config_path: str, default_config_path: str) -> dict:
-    _default_config = json.load(open(default_config_path))
-    try:
-        _config = json.load(open(config_path))
-    except FileNotFoundError:
-        json.dump(_default_config, open(config_path, "w"), indent=4)
-        return _default_config
-
-    _tmp = check_config(_config, _default_config)
-
-    _res = dict()
-    for key in _default_config:
-        _res[key] = _tmp[key]
-
-    json.dump(_res, open(config_path, "w"), indent=4)
-
-    return _res
-
-
-def check_config(config: dict, default_config: dict) -> dict:
-    for key in default_config: 
-        try:
-            if isinstance(config[key], dict):
-                config[key] = check_config(config[key], default_config[key])
-        except KeyError:
-            print(f"Config key \"{key}\" not found. Using default value.")
-            config[key] = default_config[key]
-
-    return config

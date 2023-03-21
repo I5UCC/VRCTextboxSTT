@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from dataclasses_json import dataclass_json
 from typing import Optional
 
@@ -121,16 +121,17 @@ MODELS = {
 
 @dataclass_json
 @dataclass
-class device(object):
+class device_config(object):
     type: str = "cuda"
     index: int = 0
     compute_type: Optional[str] = None
     cpu_threads: int = 4
     num_workers: int = 1
 
+
 @dataclass_json
 @dataclass
-class osc(object):
+class osc_config(object):
     ip: str = "127.0.0.1"
     client_port: int = 9000
     server_port: int = 9001
@@ -138,16 +139,18 @@ class osc(object):
     use_kat: bool = True
     use_both: bool = False
 
+
 @dataclass_json
 @dataclass
-class whisper(object):
+class whisper_config(object):
     model: str = "base"
     language: str = "english"
     translate_to_english: bool = False
 
+
 @dataclass_json
 @dataclass
-class listener(object):
+class listener_config(object):
     microphone_index: Optional[int] = None
     dynamic_energy_threshold: bool = False
     energy_threshold: float = 200
@@ -156,9 +159,10 @@ class listener(object):
     hold_time: float = 1.5
     phrase_time_limit: float = 2.0
 
+
 @dataclass_json
 @dataclass
-class overlay(object):
+class overlay_config(object):
     enabled: bool = False
     pos_x: float = 0.0
     pos_y: float = -0.4
@@ -168,9 +172,10 @@ class overlay(object):
     border_color: str = "black"
     opacity: float = 1.0
 
+
 @dataclass_json
 @dataclass
-class obs(object):
+class obs_config(object):
     enabled: bool = False
     port: int = 5000
     update_interval: int = 200
@@ -179,29 +184,31 @@ class obs(object):
     shadow_color: str = "black"
     align: str = "center"
 
-@dataclass_json
-@dataclass
-class wordreplacement(object):
-    list: Optional[dict]
-    enabled: bool = False
 
 @dataclass_json
 @dataclass
-class emotes(object):
-    list: Optional[dict]
+class wordreplacement_config(object):
     enabled: bool = False
+    list: dict = field(default_factory=dict)
+
+@dataclass_json
+@dataclass
+class emotes_config(object):
+    enabled: bool = False
+    list: dict = field(default_factory=dict)
+    
 
 @dataclass_json
 @dataclass
 class config(object):
-    device: device
-    osc: osc
-    whisper: whisper
-    listener: listener
-    overlay: overlay
-    obs: obs
-    wordreplacement: wordreplacement
-    emotes: emotes
+    mode: int = 0
     hotkey: str = "F1"
     audio_feedback: bool = True
-    mode: int = 0
+    device: device_config = field(default_factory=device_config)
+    osc: osc_config = field(default_factory=osc_config)
+    whisper: whisper_config = field(default_factory=whisper_config)
+    listener: listener_config = field(default_factory=listener_config)
+    overlay: overlay_config = field(default_factory=overlay_config)
+    obs: obs_config = field(default_factory=obs_config)
+    wordreplacement: wordreplacement_config = field(default_factory=wordreplacement_config)
+    emotes: emotes_config = field(default_factory=emotes_config)
