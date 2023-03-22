@@ -6,9 +6,9 @@ from helper import LogToFile, loadfont, get_absolute_path, force_single_instance
 
 LOGFILE = get_absolute_path('out.log', __file__)
 open(LOGFILE, 'w').close()
-LOG = logging.getLogger('TextboxSTT')
-OUT_FILE_LOGGER = LogToFile(LOG, logging.INFO, LOGFILE)
-ERROR_FILE_LOGGER = LogToFile(LOG, logging.ERROR, LOGFILE)
+LOGGER = logging.getLogger('TextboxSTT')
+OUT_FILE_LOGGER = LogToFile(LOGGER, logging.INFO, LOGFILE)
+ERROR_FILE_LOGGER = LogToFile(LOGGER, logging.ERROR, LOGFILE)
 sys.stdout = OUT_FILE_LOGGER
 sys.stderr = ERROR_FILE_LOGGER
 

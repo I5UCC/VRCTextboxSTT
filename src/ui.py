@@ -80,7 +80,7 @@ class MainWindow(object):
             self.set_text_label("Done.")
 
     def set_conf_label(self, ip, port, server_port, ovr_initialized, device, model, compute_type, cpu_threads, num_workers):
-        _cpu_str = f", Threads: {num_workers}, Workers: {cpu_threads}" if device.lower() == "cpu" else ""
+        _cpu_str = f", Threads: {cpu_threads}, Workers: {num_workers}" if device.lower() == "cpu" else ""
         self.conf_lbl.configure(justify="left", text=f"OSC: {ip}#{port}:{server_port}, OVR: {'Connected' if ovr_initialized else 'Disconnected'}, Device: {device}\nModel: {model}, Compute Type: {compute_type}{_cpu_str}")
         self.update()
 
