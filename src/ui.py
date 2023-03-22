@@ -107,7 +107,7 @@ class SettingsWindow:
         PADX_R = '0'
         PADX_L = '10'
         PADY = '4'
-        self.yn_options = ["yes", "no"]
+        self.yn_options = ["ON", "OFF"]
         self.whisper_models = ["base"]
         self.whisper_models = [x for x in self.whisper_models if ".en" not in x]
         self.tooltip_window = None
@@ -216,7 +216,7 @@ class SettingsWindow:
         self.label_translate.bind("<Leave>", self.hide_tooltip)
         self.label_translate.grid(row=6, column=0, padx=PADX_L, pady=PADY, sticky='es')
         self.value_translate = tk.StringVar(self.tkui)
-        self.value_translate.set("yes" if bool(self.config.whisper.translate_to_english) else "no")
+        self.value_translate.set("ON" if bool(self.config.whisper.translate_to_english) else "OFF")
         self.opt_translate = tk.OptionMenu(self.tkui, self.value_translate, *self.yn_options)
         self.opt_translate.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_translate.grid(row=6, column=1, padx=PADX_R, pady=PADY, sticky='ws')
@@ -254,7 +254,7 @@ class SettingsWindow:
         self.label_det.bind("<Leave>", self.hide_tooltip)
         self.label_det.grid(row=9, column=0, padx=PADX_L, pady=PADY, sticky='es')
         self.value_det = tk.StringVar(self.tkui)
-        self.value_det.set("yes" if bool(self.config.listener.dynamic_energy_threshold) else "no")
+        self.value_det.set("ON" if bool(self.config.listener.dynamic_energy_threshold) else "OFF")
         self.opt_det = tk.OptionMenu(self.tkui, self.value_det, *self.yn_options)
         self.opt_det.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_det.grid(row=9, column=1, padx=PADX_R, pady=PADY, sticky='ws')
@@ -293,7 +293,7 @@ class SettingsWindow:
         self.label_audio_feedback.bind("<Enter>", (lambda event: self.show_tooltip("If you want enable Audio Feedback")))
         self.label_audio_feedback.bind("<Leave>", self.hide_tooltip)
         self.value_audio_feedback = tk.StringVar(self.tkui)
-        self.value_audio_feedback.set("yes" if bool(self.config.audio_feedback) else "no")
+        self.value_audio_feedback.set("ON" if bool(self.config.audio_feedback) else "OFF")
         self.opt_audio_feedback = tk.OptionMenu(self.tkui, self.value_audio_feedback, *self.yn_options)
         self.opt_audio_feedback.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_audio_feedback.grid(row=0, column=5, padx=PADX_R, pady=PADY, sticky='ws')
@@ -305,7 +305,7 @@ class SettingsWindow:
         self.label_enable_overlay.bind("<Enter>", (lambda event: self.show_tooltip("If you want to use the SteamVR Overlay")))
         self.label_enable_overlay.bind("<Leave>", self.hide_tooltip)
         self.value_enable_overlay = tk.StringVar(self.tkui)
-        self.value_enable_overlay.set("yes" if bool(self.config.overlay.enabled) else "no")
+        self.value_enable_overlay.set("ON" if bool(self.config.overlay.enabled) else "OFF")
         self.opt_enable_overlay = tk.OptionMenu(self.tkui, self.value_enable_overlay, *self.yn_options)
         self.opt_enable_overlay.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_enable_overlay.grid(row=1, column=5, padx=PADX_R, pady=PADY, sticky='ws')
@@ -323,7 +323,7 @@ class SettingsWindow:
         self.label_obs_source.bind("<Enter>", (lambda event: self.show_tooltip("If you want to use the OBS Browser Source (Requires Restart)")))
         self.label_obs_source.bind("<Leave>", self.hide_tooltip)
         self.value_obs_source = tk.StringVar(self.tkui)
-        self.value_obs_source.set("yes" if bool(self.config.obs.enabled) else "no")
+        self.value_obs_source.set("ON" if bool(self.config.obs.enabled) else "OFF")
         self.opt_obs_source = tk.OptionMenu(self.tkui, self.value_obs_source, *self.yn_options)
         self.opt_obs_source.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_obs_source.grid(row=2, column=5, padx=PADX_R, pady=PADY, sticky='ws')
@@ -388,7 +388,7 @@ class SettingsWindow:
         self.label_word_replacements.bind("<Enter>", (lambda event: self.show_tooltip("If you want to enable Word replacements.")))
         self.label_word_replacements.bind("<Leave>", self.hide_tooltip)
         self.value_word_replacements = tk.StringVar(self.tkui)
-        self.value_word_replacements.set("yes" if bool(self.config.wordreplacement.enabled) else "no")
+        self.value_word_replacements.set("ON" if bool(self.config.wordreplacement.enabled) else "OFF")
         self.opt_enable_replacement = tk.OptionMenu(self.tkui, self.value_word_replacements, *self.yn_options)
         self.opt_enable_replacement.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_enable_replacement.grid(row=7, column=5, padx=PADX_R, pady=PADY, sticky='ws')
@@ -405,7 +405,7 @@ class SettingsWindow:
         self.label_use_textbox.bind("<Enter>", (lambda event: self.show_tooltip("If you want to send your text to VRChats Textbox")))
         self.label_use_textbox.bind("<Leave>", self.hide_tooltip)
         self.value_use_textbox = tk.StringVar(self.tkui)
-        self.value_use_textbox.set("yes" if bool(self.config.osc.use_textbox) else "no")
+        self.value_use_textbox.set("ON" if bool(self.config.osc.use_textbox) else "OFF")
         self.opt_use_textbox = tk.OptionMenu(self.tkui, self.value_use_textbox, *self.yn_options)
         self.opt_use_textbox.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_use_textbox.grid(row=8, column=5, padx=PADX_R, pady=PADY, sticky='ws')
@@ -418,7 +418,7 @@ class SettingsWindow:
         self.label_use_kat.bind("<Enter>", (lambda event: self.show_tooltip("If you want to send your text to KillFrenzyAvatarText")))
         self.label_use_kat.bind("<Leave>", self.hide_tooltip)
         self.value_use_kat = tk.StringVar(self.tkui)
-        self.value_use_kat.set("yes" if bool(self.config.osc.use_kat) else "no")
+        self.value_use_kat.set("ON" if bool(self.config.osc.use_kat) else "OFF")
         self.opt_use_kat = tk.OptionMenu(self.tkui, self.value_use_kat, *self.yn_options)
         self.opt_use_kat.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_use_kat.grid(row=9, column=5, padx=PADX_R, pady=PADY, sticky='ws')
@@ -431,7 +431,7 @@ class SettingsWindow:
         self.label_use_both.bind("<Enter>", (lambda event: self.show_tooltip("If you want to send your text to both options above, if both available and set to 'Yes'.\nIf not, the program will prefer sending to KillFrenzyAvatarText if it is available.")))
         self.label_use_both.bind("<Leave>", self.hide_tooltip)
         self.value_use_both = tk.StringVar(self.tkui)
-        self.value_use_both.set("yes" if bool(self.config.osc.use_both) else "no")
+        self.value_use_both.set("ON" if bool(self.config.osc.use_both) else "OFF")
         self.opt_use_both = tk.OptionMenu(self.tkui, self.value_use_both, *self.yn_options)
         self.opt_use_both.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_use_both.grid(row=10, column=5, padx=PADX_R, pady=PADY, sticky='ws')
@@ -443,7 +443,7 @@ class SettingsWindow:
         self.label_emotes.bind("<Enter>", (lambda event: self.show_tooltip("If you want to use emotes on KAT")))
         self.label_emotes.bind("<Leave>", self.hide_tooltip)
         self.value_emotes = tk.StringVar(self.tkui)
-        self.value_emotes.set("yes" if bool(self.config.emotes.enabled) else "no")
+        self.value_emotes.set("ON" if bool(self.config.emotes.enabled) else "OFF")
         self.opt_emotes = tk.OptionMenu(self.tkui, self.value_emotes, *self.yn_options)
         self.opt_emotes.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_emotes.grid(row=11, column=5, padx=PADX_R, pady=PADY, sticky='ws')
@@ -455,6 +455,12 @@ class SettingsWindow:
         self.button_emotes.bind("<Enter>", (lambda event: self.show_tooltip("Edit the emotes you want to use on KAT")))
         self.button_emotes.bind("<Leave>", self.hide_tooltip)
 
+        self.button_reset_config = tk.Button(self.tkui, text="Reset Settings", command=self.reset_to_default)
+        self.button_reset_config.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, width=27, anchor="center", activebackground="#555555", activeforeground="white")
+        self.button_reset_config.place(relx=0.62, rely=0.95, anchor="center")
+        self.button_reset_config.bind("<Enter>", (lambda event: self.show_tooltip("Resets the config to default values.")))
+        self.button_reset_config.bind("<Leave>", self.hide_tooltip)
+
         self.button_reset_config = tk.Button(self.tkui, text="Reset OSC config", command=self.reset_osc_config)
         self.button_reset_config.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, width=27, anchor="center", activebackground="#555555", activeforeground="white")
         self.button_reset_config.place(relx=0.868, rely=0.95, anchor="center")
@@ -462,8 +468,8 @@ class SettingsWindow:
         self.button_reset_config.bind("<Leave>", self.hide_tooltip)
 
         self.btn_save = tk.Button(self.tkui, text="Save")
-        self.btn_save.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=82, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
-        self.btn_save.place(relx=0.375, rely=0.95, anchor="center")
+        self.btn_save.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=54, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.btn_save.place(relx=0.253, rely=0.95, anchor="center")
 
         self.language_changed()
         self.mode_changed()
@@ -538,7 +544,7 @@ class SettingsWindow:
         self.config.osc.server_port = int(self.entry_osc_server_port.get())
         self.config.whisper.model = self.value_model.get()
         self.config.whisper.language = None if self.value_language.get() == "Auto Detect" else self.value_language.get()
-        self.config.whisper.translate_to_english = True if self.value_translate.get() == "yes" else False
+        self.config.whisper.translate_to_english = True if self.value_translate.get() == "ON" else False
         self.config.hotkey = self.set_key
         _realtime = 0
         if self.value_mode.get() == "once_continuous":
@@ -546,23 +552,62 @@ class SettingsWindow:
         elif self.value_mode.get() == "realtime":
             _realtime = 2
         self.config.mode = _realtime
-        self.config.listener.dynamic_energy_threshold = True if self.value_det.get() == "yes" else False
+        self.config.listener.dynamic_energy_threshold = True if self.value_det.get() == "ON" else False
         self.config.listener.energy_threshold = int(self.entry_energy_threshold.get())
         self.config.listener.pause_threshold = float(self.entry_pause_threshold.get())
         self.config.listener.timeout_time = float(self.entry_timeout_time.get())
         self.config.listener.hold_time = float(self.entry_hold_time.get())
         self.config.listener.phrase_time_limit = float(self.entry_phrase_time_limit.get())
         self.config.listener.microphone_index = self.get_audiodevice_index()
-        self.config.osc.use_textbox = True if self.value_use_textbox.get() == "yes" else False
-        self.config.osc.use_kat = True if self.value_use_kat.get() == "yes" else False
-        self.config.osc.use_both = True if self.value_use_both.get() == "yes" else False
-        self.config.audio_feedback = True if self.value_audio_feedback.get() == "yes" else False
-        self.config.emotes.enabled = True if self.value_emotes.get() == "yes" else False
-        self.config.overlay.enabled = True if self.value_enable_overlay.get() == "yes" else False
-        self.config.wordreplacement.enabled = True if self.value_word_replacements.get() == "yes" else False
-        self.config.obs.enabled = True if self.value_obs_source.get() == "yes" else False
+        self.config.osc.use_textbox = True if self.value_use_textbox.get() == "ON" else False
+        self.config.osc.use_kat = True if self.value_use_kat.get() == "ON" else False
+        self.config.osc.use_both = True if self.value_use_both.get() == "ON" else False
+        self.config.audio_feedback = True if self.value_audio_feedback.get() == "ON" else False
+        self.config.emotes.enabled = True if self.value_emotes.get() == "ON" else False
+        self.config.overlay.enabled = True if self.value_enable_overlay.get() == "ON" else False
+        self.config.wordreplacement.enabled = True if self.value_word_replacements.get() == "ON" else False
+        self.config.obs.enabled = True if self.value_obs_source.get() == "ON" else False
 
         json.dump(self.config.to_dict(), open(self.config_path, "w"), indent=4)
+
+    def reset_to_default(self):
+        _config = config()
+        if _config.device.type == "cpu" or not torch.cuda.is_available():
+            self.value_device.set("CPU")
+        else:
+            self.value_device.set((0, torch.cuda.get_device_name(0)))
+        self.entry_osc_ip.delete(0, tk.END)
+        self.entry_osc_ip.insert(0, _config.osc.ip)
+        self.entry_osc_port.delete(0, tk.END)
+        self.entry_osc_port.insert(0, _config.osc.client_port)
+        self.entry_osc_server_port.delete(0, tk.END)
+        self.entry_osc_server_port.insert(0, _config.osc.server_port)
+        self.value_model.set(_config.whisper.model)
+        self.value_language.set(_config.whisper.language)
+        self.value_translate.set("ON" if _config.whisper.translate_to_english else "OFF")
+        self.button_hotkey.configure(text=_config.hotkey)
+        self.set_key = _config.hotkey
+        self.value_mode.set("once_continuous" if _config.mode == 1 else "realtime" if _config.mode == 2 else "once")
+        self.value_det.set("ON" if _config.listener.dynamic_energy_threshold else "OFF")
+        self.entry_energy_threshold.delete(0, tk.END)
+        self.entry_energy_threshold.insert(0, _config.listener.energy_threshold)
+        self.entry_pause_threshold.delete(0, tk.END)
+        self.entry_pause_threshold.insert(0, _config.listener.pause_threshold)
+        self.entry_timeout_time.delete(0, tk.END)
+        self.entry_timeout_time.insert(0, _config.listener.timeout_time)
+        self.entry_hold_time.delete(0, tk.END)
+        self.entry_hold_time.insert(0, _config.listener.hold_time)
+        self.entry_phrase_time_limit.delete(0, tk.END)
+        self.entry_phrase_time_limit.insert(0, _config.listener.phrase_time_limit)
+        self.value_use_textbox.set("ON" if _config.osc.use_textbox else "OFF")
+        self.value_use_kat.set("ON" if _config.osc.use_kat else "OFF")
+        self.value_use_both.set("ON" if _config.osc.use_both else "OFF")
+        self.value_audio_feedback.set("ON" if _config.audio_feedback else "OFF")
+        self.value_emotes.set("ON" if _config.emotes.enabled else "OFF")
+        self.value_enable_overlay.set("ON" if _config.overlay.enabled else "OFF")
+        self.value_word_replacements.set("ON" if _config.wordreplacement.enabled else "OFF")
+        self.value_obs_source.set("ON" if _config.obs.enabled else "OFF")
+        self.value_mic.set("Default")
 
     def update(self):
         self.tkui.update()
@@ -609,7 +654,7 @@ class SettingsWindow:
         self.tooltip_window = None
 
     def changed(self):
-        if self.value_use_kat.get() == "no" or self.value_use_textbox.get() == "no":
+        if self.value_use_kat.get() == "OFF" or self.value_use_textbox.get() == "OFF":
             self.opt_use_both.configure(state="disabled")
         else:
             self.opt_use_both.configure(state="normal")
