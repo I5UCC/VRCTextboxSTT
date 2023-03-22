@@ -1,7 +1,7 @@
 import os
 import sys
 import logging
-from helper import LogToFile, loadfont, get_absolute_path, play_sound, force_single_instance
+from helper import LogToFile, loadfont, get_absolute_path, force_single_instance
 
 
 LOGFILE = get_absolute_path('out.log', __file__)
@@ -18,6 +18,7 @@ try:
 except Exception:
     print("Failed to get version from VERSION file.")
 CONFIG_PATH = get_absolute_path('config.json', __file__)
+CACHE_PATH = get_absolute_path('cache/', __file__)
 
 force_single_instance()
 
@@ -35,7 +36,9 @@ from browsersource import OBSBrowserSource
 from ovr import OVRHandler
 from listen import ListenHandler
 from transcribe import TranscribeHandler
-from config import config_struct
+from config import config_struct, audio
+from pydub import AudioSegment
+import winsound
 
 
 config: config_struct = None
@@ -67,8 +70,18 @@ def init():
     global browsersource
     global listen
 
+    try:
+        os.mkdir(CACHE_PATH)
+    except FileExistsError:
+        pass
+    except Exception as e:
+        print("Failed to create cache directory: ", e)
+
     # Load config
     config = config_struct.load(CONFIG_PATH)
+
+    # Load audio files
+    modify_audio_files()
 
     # Initialize osc
     osc = OscHandler(config.osc)
@@ -76,7 +89,7 @@ def init():
     # Temporarily output stderr to text label for download progress.
     sys.stderr.write = main_window.loading_status
     main_window.set_status_label("LOADING WHISPER MODEL", "orange")
-    transcriber = TranscribeHandler(config.whisper, config.device, __file__)
+    transcriber = TranscribeHandler(config.whisper, config.device, CACHE_PATH)
     main_window.set_status_label(f"LOADED \"{transcriber.whisper_model}\"", "orange")
     sys.stderr = ERROR_FILE_LOGGER
     main_window.set_text_label("- No Text -")
@@ -109,13 +122,35 @@ def init():
     main_window.set_button_enabled(True)
 
 
-def sound(filename):
+def modify_audio_files():
+    global config
+    
+    audio_dict = config.audio_feedback.__dict__
+    del audio_dict["enabled"]
+    for key in audio_dict:
+        try:
+            _tmp_audio: audio = audio_dict[key]
+            _segment = AudioSegment.from_wav(get_absolute_path(f"resources/{_tmp_audio.file}", __file__))
+            _segment = _segment + _tmp_audio.gain
+            _segment.export(get_absolute_path(f"cache/{_tmp_audio.file}", __file__), format="wav")
+        except Exception as e:
+            print(f"Failed to modify audio file \"{_tmp_audio.file}\": {e}")
+
+
+def play_sound(au: audio):
     """Plays a sound file."""
 
     global config
 
-    if config.audio_feedback:
-        play_sound(filename, __file__)
+    _file = get_absolute_path(f"cache/{au.file}", __file__)
+    if not os.path.isfile(_file):
+        print(f"Sound file \"{_file}\" does not exist.")
+        return
+
+    try:
+        winsound.PlaySound(_file, winsound.SND_FILENAME | winsound.SND_ASYNC)
+    except Exception as e:
+        print(f"Failed to play sound \"{_file}\": {e}")
 
 
 def replace_emotes(text):
@@ -236,7 +271,7 @@ def process_forever():
     global listen
     global transcriber
 
-    sound("listen")
+    play_sound(config.audio_feedback.sound_listen)
 
     _text = ""
     _time_last = None
@@ -263,7 +298,7 @@ def process_forever():
                 sleep(0.05)
             if _held:
                 main_window.set_status_label("CLEARED", "#00008b")
-                sound("clear")
+                play_sound(config.audio_feedback.sound_clear)
                 clear_chatbox()
                 break
         elif not listen.data_queue.empty():
@@ -305,7 +340,7 @@ def process_loop():
     main_window.set_button_enabled(False)
     set_typing_indicator(True)
     main_window.set_status_label("LISTENING", "#FF00FF")
-    sound("listen")
+    play_sound(config.audio_feedback.sound_listen)
 
     listen.start_listen_background()
 
@@ -321,12 +356,12 @@ def process_loop():
                 sleep(0.05)
             if _held:
                 main_window.set_status_label("CLEARED - WAITING FOR INPUT", "#00008b")
-                sound("clear")
+                play_sound(config.audio_feedback.sound_clear)
                 clear_chatbox()
                 break
             elif _last_sample == bytes():
                 main_window.set_status_label("CANCELED - WAITING FOR INPUT", "#00008b")
-                sound("timeout")
+                play_sound(config.audio_feedback.sound_timeout)
                 break
         elif not listen.data_queue.empty():
             while not listen.data_queue.empty():
@@ -342,11 +377,11 @@ def process_loop():
         elif _last_sample != bytes() and time() - _time_last > config.listener.pause_threshold:
             main_window.set_status_label("FINISHED - WAITING FOR INPUT", "blue")
             print(_text)
-            sound("finished")
+            play_sound(config.audio_feedback.sound_finished)
             break
         elif _last_sample == bytes() and time() - _time_last > config.listener.timeout_time:
             main_window.set_status_label("TIMEOUT - WAITING FOR INPUT", "#00008b")
-            sound("timeout")
+            play_sound(config.audio_feedback.sound_timeout)
             break
         sleep(0.05)
 
@@ -367,14 +402,14 @@ def process_once():
     main_window.set_button_enabled(False)
     set_typing_indicator(True)
     main_window.set_status_label("LISTENING", "#FF00FF")
-    sound("listen")
+    play_sound(config.audio_feedback.sound_listen)
     _np_audio = listen.listen_once()
     if _np_audio is None:
         main_window.set_status_label("TIMEOUT - WAITING FOR INPUT", "orange")
-        sound("timeout")
+        play_sound(config.audio_feedback.sound_timeout)
         set_typing_indicator(False)
     else:
-        sound("donelisten")
+        play_sound(config.audio_feedback.sound_donelisten)
         set_typing_indicator(True)
         print(_np_audio)
         main_window.set_status_label("TRANSCRIBING", "orange")
@@ -383,17 +418,17 @@ def process_once():
             _trans = transcriber.transcribe(_np_audio)
             if pressed:
                 main_window.set_status_label("CANCELED - WAITING FOR INPUT", "orange")
-                sound("timeout")
+                play_sound(config.audio_feedback.sound_timeout)
             elif _trans:
                 main_window.set_status_label("FINISHED - WAITING FOR INPUT", "blue")
                 populate_chatbox(_trans)
-                sound("finished")
+                play_sound(config.audio_feedback.sound_finished)
             else:
                 main_window.set_status_label("ERROR TRANSCRIBING - WAITING FOR INPUT", "red")
-                sound("timeout")
+                play_sound(config.audio_feedback.sound_timeout)
         else:
             main_window.set_status_label("CANCELED - WAITING FOR INPUT", "orange")
-            sound("timeout")
+            play_sound(config.audio_feedback.sound_timeout)
 
     set_typing_indicator(False)
     main_window.set_button_enabled(True)
@@ -437,7 +472,7 @@ def handle_input():
         if time() - curr_time > config.listener.hold_time:
             clear_chatbox()
             main_window.set_status_label("CLEARED - WAITING FOR INPUT", "#00008b")
-            sound("clear")
+            play_sound(config.audio_feedback.sound_clear)
             held = True
             holding = False
     elif not pressed and holding and not held:
@@ -460,11 +495,11 @@ def entrybox_enter_event(text):
     enter_pressed = True
     if text:
         populate_chatbox(text, False, True)
-        sound("finished")
+        play_sound(config.audio_feedback.sound_finished)
         main_window.clear_textfield()
     else:
         clear_chatbox()
-        sound("clear")
+        play_sound(config.audio_feedback.sound_clear)
 
 
 def textfield_keyrelease(text):

@@ -8,10 +8,10 @@ from shutil import rmtree
 from config import whisper_config, device_config, MODELS, LANGUAGE_TO_KEY
 
 class TranscribeHandler(object):
-    def __init__(self, config_whisper: whisper_config, config_device: device_config, script_path) -> None:
+    def __init__(self, config_whisper: whisper_config, config_device: device_config, cache_path) -> None:
         self.whisper_config: whisper_config = config_whisper
         self.device_config: device_config = config_device
-        self.script_path = script_path
+        self.cache_path = cache_path
         self.whisper_model = MODELS[self.whisper_config.model]
         self.language = None
         
@@ -68,7 +68,7 @@ class TranscribeHandler(object):
         :param quantization: The quantization to use for the model.
         :return: The path to the ctranslate2 model.
         """
-        _model_path = get_absolute_path("whisper_cache/" + model_name.split("/")[1], self.script_path) + "-ct2" + "-" + quantization
+        _model_path = f"{self.cache_path}{model_name.split('/')[1]}-ct2-{quantization}"
         _converter = TransformersConverter(model_name, copy_files=["tokenizer.json"])
         try:
             _converter.convert(_model_path, force=False, quantization=quantization)

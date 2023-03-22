@@ -122,6 +122,24 @@ MODELS = {
 
 @dataclass_json
 @dataclass
+class audio(object):
+    enabled: bool = True
+    file: Optional[str] = None
+    gain: int = 0
+
+@dataclass_json
+@dataclass
+class audio_feedback_config(object):
+    enabled: bool = True
+    sound_clear: audio = audio(True, "clear.wav", 0)
+    sound_donelisten: audio = audio(True, "donelisten.wav", 0)
+    sound_finished: audio = audio(True, "finished.wav", 0)
+    sound_listen: audio = audio(True, "listen.wav", 0)
+    sound_timeout: audio = audio(True, "timeout.wav", 0)
+    
+
+@dataclass_json
+@dataclass
 class device_config(object):
     type: str = "cuda"
     index: int = 0
@@ -196,7 +214,88 @@ class wordreplacement_config(object):
 @dataclass
 class emotes_config(object):
     enabled: bool = False
-    list: dict = field(default_factory=dict)
+    list: dict = field(default_factory=lambda: {
+        "0": "wicked emoji",
+        "1": "clueless emoji",
+        "2": "aware emoji",
+        "3": "shy emoji",
+        "4": "pog emoji",
+        "5": "happy emoji",
+        "6": "cry emoji",
+        "7": "weird emoji",
+        "8": "okay emoji",
+        "9": "think emoji",
+        "10": "dead emoji",
+        "11": "sleep emoji",
+        "12": "woke emoji",
+        "13": "heart emoji",
+        "14": "stare emoji",
+        "15": "",
+        "16": "",
+        "17": "",
+        "18": "",
+        "19": "",
+        "20": "",
+        "21": "",
+        "22": "",
+        "23": "",
+        "24": "",
+        "25": "",
+        "26": "",
+        "27": "",
+        "28": "",
+        "29": "",
+        "30": "",
+        "31": "",
+        "32": "",
+        "33": "",
+        "34": "",
+        "35": "",
+        "36": "",
+        "37": "",
+        "38": "",
+        "39": "",
+        "40": "",
+        "41": "",
+        "42": "",
+        "43": "",
+        "44": "",
+        "45": "",
+        "46": "",
+        "47": "",
+        "48": "",
+        "49": "",
+        "50": "",
+        "51": "",
+        "52": "",
+        "53": "",
+        "54": "",
+        "55": "",
+        "56": "",
+        "57": "",
+        "58": "",
+        "59": "",
+        "60": "",
+        "61": "",
+        "62": "",
+        "63": "",
+        "64": "",
+        "65": "",
+        "66": "",
+        "67": "",
+        "68": "",
+        "69": "",
+        "70": "",
+        "71": "",
+        "72": "",
+        "73": "",
+        "74": "",
+        "75": "",
+        "76": "",
+        "77": "",
+        "78": "",
+        "79": ""
+    })
     
 
 @dataclass_json
@@ -204,7 +303,7 @@ class emotes_config(object):
 class config_struct(object):
     mode: int = 0
     hotkey: str = "f1"
-    audio_feedback: bool = True
+    audio_feedback: audio_feedback_config = field(default_factory=audio_feedback_config)
     device: device_config = field(default_factory=device_config)
     osc: osc_config = field(default_factory=osc_config)
     whisper: whisper_config = field(default_factory=whisper_config)

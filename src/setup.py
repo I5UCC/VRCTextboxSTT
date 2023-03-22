@@ -43,7 +43,8 @@ packages = [
     "waitress",
     "werkzeug",
     "yaml",
-    "dataclasses_json"
+    "dataclasses_json",
+    "pydub"
 ]
 gpu_packages = ["nvfuser"]
 if is_available():

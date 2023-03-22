@@ -9,6 +9,7 @@ Pillow
 waitress
 flask
 kthread
+pydub
 ctranslate2
 transformers
 dataclasses-json

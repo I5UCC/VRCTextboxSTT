@@ -1,7 +1,9 @@
 build/
 dist/
+TextboxSTT/
+*.7z
 .*/
 __pycache__/
+cache/
 out.log
-whisper_cache/
-src/test.py
+src/test*.py
