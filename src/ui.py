@@ -300,6 +300,11 @@ class SettingsWindow:
         self.opt_audio_feedback.grid(row=0, column=5, padx=PADX_R, pady=PADY, sticky='ws')
         self.opt_audio_feedback.bind("<Enter>", (lambda event: self.show_tooltip("If you want enable Audio Feedback")))
         self.opt_audio_feedback.bind("<Leave>", self.hide_tooltip)
+        self.button_audio_feedback = tk.Button(self.tkui, text=" ⚙ ", command=self.open_audio_window)
+        self.button_audio_feedback.configure(bg="#333333", fg="white", height=1, highlightthickness=0, anchor="center", activebackground="#555555", activeforeground="white")
+        self.button_audio_feedback.grid(row=0, column=6, padx=2, pady=7, sticky='ws')
+        self.button_audio_feedback.bind("<Enter>", (lambda event: self.show_tooltip("Edit OBS Source Settings (Requires Restart)")))
+        self.button_audio_feedback.bind("<Leave>", self.hide_tooltip)
 
         self.label_enable_overlay = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Enable Overlay', font=(self.FONT, 12))
         self.label_enable_overlay.grid(row=1, column=4, padx=PADX_L, pady=PADY, sticky='es')
@@ -487,6 +492,9 @@ class SettingsWindow:
 
     def open_obs_window(self):
         _ = OBSSettingsWindow(self.config, self.config_path)
+
+    def open_audio_window(self):
+        _ = AudioSettingsWindow(self.config, self.config_path)
     
     def open_device_window(self):
         _device = self.value_device.get().lower()
@@ -563,7 +571,7 @@ class SettingsWindow:
         self.config.osc.use_textbox = True if self.value_use_textbox.get() == "ON" else False
         self.config.osc.use_kat = True if self.value_use_kat.get() == "ON" else False
         self.config.osc.use_both = True if self.value_use_both.get() == "ON" else False
-        self.config.audio_feedback = True if self.value_audio_feedback.get() == "ON" else False
+        self.config.audio_feedback.enabled = True if self.value_audio_feedback.get() == "ON" else False
         self.config.emotes.enabled = True if self.value_emotes.get() == "ON" else False
         self.config.overlay.enabled = True if self.value_enable_overlay.get() == "ON" else False
         self.config.wordreplacement.enabled = True if self.value_word_replacements.get() == "ON" else False
@@ -1006,7 +1014,7 @@ class DeviceSettingsWindow:
         self.tkui.maxsize(350, 150)
         self.tkui.resizable(False, False)
         self.tkui.configure(bg="#333333")
-        self.tkui.title("TextboxSTT - OBS Source Settings")
+        self.tkui.title("TextboxSTT - Device Settings")
 
         self.devices_list = []
         self.value_device = tk.StringVar(self.tkui)
@@ -1048,6 +1056,110 @@ class DeviceSettingsWindow:
         self.config.device.cpu_threads = int(self.entry_cpu_threads.get())
         self.config.device.num_workers = int(self.entry_num_workers.get())
 
+        json.dump(self.config.to_dict(), open(self.config_path, "w"), indent=4)
+        self.on_closing()
+
+    def on_closing(self):
+        self.tkui.destroy()
+
+class AudioSettingsWindow:
+    def __init__(self, conf: config_struct, config_path):
+        self.config_path = config_path
+        self.config: config_struct = conf
+        self.FONT = "Cascadia Code"
+
+        self.yn_options = ["ON", "OFF"]
+
+        self.tkui = tk.Tk()
+        self.tkui.minsize(340, 475)
+        self.tkui.maxsize(340, 475)
+        self.tkui.resizable(False, False)
+        self.tkui.configure(bg="#333333")
+        self.tkui.title("TextboxSTT - Audio Feedback Settings")
+
+        self.label_clear = tk.Label(self.tkui, text="clear", bg="#333333", fg="white", font=(self.FONT, 12))
+        self.label_clear.grid(row=0, column=0, padx=12, pady=5, sticky='ws')
+        self.label_clear_gain = tk.Label(self.tkui, text="gain (dB)", bg="#333333", fg="#888888", font=(self.FONT, 12))
+        self.label_clear_gain.grid(row=1, column=0, padx=12, pady=5, sticky='e')
+        self.value_clear = tk.StringVar(self.tkui)
+        self.value_clear.set("ON" if self.config.audio_feedback.sound_clear.enabled else "OFF")
+        self.opt_clear = tk.OptionMenu(self.tkui, self.value_clear, *self.yn_options)
+        self.opt_clear.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.opt_clear.grid(row=0, column=1, padx=12, pady=5, sticky='ws')
+        self.scale_clear = tk.Scale(self.tkui, from_=-50, to=50, orient=tk.HORIZONTAL, bg="#333333", fg="white", highlightthickness=0, length=190)
+        self.scale_clear.grid(row=1, column=1, padx=12, pady=5, sticky='ws')
+        self.scale_clear.set(self.config.audio_feedback.sound_clear.gain)
+
+        self.label_donelisten = tk.Label(self.tkui, text="donelisten", bg="#333333", fg="white", font=(self.FONT, 12))
+        self.label_donelisten.grid(row=2, column=0, padx=12, pady=5, sticky='ws')
+        self.label_donelisten_gain = tk.Label(self.tkui, text="gain (dB)", bg="#333333", fg="#888888", font=(self.FONT, 12))
+        self.label_donelisten_gain.grid(row=3, column=0, padx=12, pady=5, sticky='e')
+        self.value_donelisten = tk.StringVar(self.tkui)
+        self.value_donelisten.set("ON" if self.config.audio_feedback.sound_donelisten.enabled else "OFF")
+        self.opt_donelisten = tk.OptionMenu(self.tkui, self.value_donelisten, *self.yn_options)
+        self.opt_donelisten.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.opt_donelisten.grid(row=2, column=1, padx=12, pady=5, sticky='ws')
+        self.scale_donelisten = tk.Scale(self.tkui, from_=-50, to=50, orient=tk.HORIZONTAL, bg="#333333", fg="white", highlightthickness=0, length=190)
+        self.scale_donelisten.grid(row=3, column=1, padx=12, pady=5, sticky='ws')
+        self.scale_donelisten.set(self.config.audio_feedback.sound_donelisten.gain)
+
+        self.label_finished = tk.Label(self.tkui, text="finished", bg="#333333", fg="white", font=(self.FONT, 12))
+        self.label_finished.grid(row=4, column=0, padx=12, pady=5, sticky='ws')
+        self.label_finished_gain = tk.Label(self.tkui, text="gain (dB)", bg="#333333", fg="#888888", font=(self.FONT, 12))
+        self.label_finished_gain.grid(row=5, column=0, padx=12, pady=5, sticky='e')
+        self.value_finished = tk.StringVar(self.tkui)
+        self.value_finished.set("ON" if self.config.audio_feedback.sound_finished.enabled else "OFF")
+        self.opt_finished = tk.OptionMenu(self.tkui, self.value_finished, *self.yn_options)
+        self.opt_finished.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.opt_finished.grid(row=4, column=1, padx=12, pady=5, sticky='ws')
+        self.scale_finished = tk.Scale(self.tkui, from_=-50, to=50, orient=tk.HORIZONTAL, bg="#333333", fg="white", highlightthickness=0, length=190)
+        self.scale_finished.grid(row=5, column=1, padx=12, pady=5, sticky='ws')
+        self.scale_finished.set(self.config.audio_feedback.sound_finished.gain)
+
+        self.label_listen = tk.Label(self.tkui, text="listen", bg="#333333", fg="white", font=(self.FONT, 12))
+        self.label_listen.grid(row=6, column=0, padx=12, pady=5, sticky='ws')
+        self.label_listen_gain = tk.Label(self.tkui, text="gain (dB)", bg="#333333", fg="#888888", font=(self.FONT, 12))
+        self.label_listen_gain.grid(row=7, column=0, padx=12, pady=5, sticky='e')
+        self.value_listen = tk.StringVar(self.tkui)
+        self.value_listen.set("ON" if self.config.audio_feedback.sound_listen.enabled else "OFF")
+        self.opt_listen = tk.OptionMenu(self.tkui, self.value_listen, *self.yn_options)
+        self.opt_listen.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.opt_listen.grid(row=6, column=1, padx=12, pady=5, sticky='ws')
+        self.scale_listen = tk.Scale(self.tkui, from_=-50, to=50, orient=tk.HORIZONTAL, bg="#333333", fg="white", highlightthickness=0, length=190)
+        self.scale_listen.grid(row=7, column=1, padx=12, pady=5, sticky='ws')
+        self.scale_listen.set(self.config.audio_feedback.sound_listen.gain)
+
+        self.label_timeout = tk.Label(self.tkui, text="timeout", bg="#333333", fg="white", font=(self.FONT, 12))
+        self.label_timeout.grid(row=8, column=0, padx=12, pady=5, sticky='ws')
+        self.label_timeout_gain = tk.Label(self.tkui, text="gain (dB)", bg="#333333", fg="#888888", font=(self.FONT, 12))
+        self.label_timeout_gain.grid(row=9, column=0, padx=12, pady=5, sticky='e')
+        self.value_timeout = tk.StringVar(self.tkui)
+        self.value_timeout.set("ON" if self.config.audio_feedback.sound_timeout.enabled else "OFF")
+        self.opt_timeout = tk.OptionMenu(self.tkui, self.value_timeout, *self.yn_options)
+        self.opt_timeout.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.opt_timeout.grid(row=8, column=1, padx=12, pady=5, sticky='ws')
+        self.scale_timeout = tk.Scale(self.tkui, from_=-50, to=50, orient=tk.HORIZONTAL, bg="#333333", fg="white", highlightthickness=0, length=190)
+        self.scale_timeout.grid(row=9, column=1, padx=12, pady=5, sticky='ws')
+        self.scale_timeout.set(self.config.audio_feedback.sound_timeout.gain)
+
+        self.btn_save = tk.Button(self.tkui, text="Save", command=self.save)
+        self.btn_save.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=40, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.btn_save.place(relx=0.5, rely=0.958, anchor="center")
+
+        self.tkui.mainloop()
+
+    def save(self):
+        self.config.audio_feedback.sound_clear.enabled = self.value_clear.get() == "ON"
+        self.config.audio_feedback.sound_clear.gain = self.scale_clear.get()
+        self.config.audio_feedback.sound_donelisten.enabled = self.value_donelisten.get() == "ON"
+        self.config.audio_feedback.sound_donelisten.gain = self.scale_donelisten.get()
+        self.config.audio_feedback.sound_finished.enabled = self.value_finished.get() == "ON"
+        self.config.audio_feedback.sound_finished.gain = self.scale_finished.get()
+        self.config.audio_feedback.sound_listen.enabled = self.value_listen.get() == "ON"
+        self.config.audio_feedback.sound_listen.gain = self.scale_listen.get()
+        self.config.audio_feedback.sound_timeout.enabled = self.value_timeout.get() == "ON"
+        self.config.audio_feedback.sound_timeout.gain = self.scale_timeout.get()
+        
         json.dump(self.config.to_dict(), open(self.config_path, "w"), indent=4)
         self.on_closing()
 

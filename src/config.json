@@ -1,7 +1,34 @@
 {
     "mode": 0,
     "hotkey": "f1",
-    "audio_feedback": true,
+    "audio_feedback": {
+        "enabled": false,
+        "sound_clear": {
+            "enabled": true,
+            "file": "clear.wav",
+            "gain": 0
+        },
+        "sound_donelisten": {
+            "enabled": true,
+            "file": "donelisten.wav",
+            "gain": 0
+        },
+        "sound_finished": {
+            "enabled": true,
+            "file": "finished.wav",
+            "gain": 0
+        },
+        "sound_listen": {
+            "enabled": true,
+            "file": "listen.wav",
+            "gain": 0
+        },
+        "sound_timeout": {
+            "enabled": true,
+            "file": "timeout.wav",
+            "gain": 0
+        }
+    },
     "device": {
         "type": "cuda",
         "index": 0,
