@@ -29,7 +29,6 @@ import re
 from threading import Thread
 from time import time, sleep
 from keyboard import is_pressed
-from psutil import process_iter
 from ui import MainWindow, SettingsWindow
 from osc import OscHandler
 from browsersource import OBSBrowserSource
@@ -104,7 +103,7 @@ def init():
         else:
             main_window.set_status_label("COULDNT INITIALIZE FLASK SERVER, CONTINUING WITHOUT OBS SOURCE", "orange")
 
-    main_window.set_conf_label(config.osc.ip, config.osc.client_port, config.osc.server_port, ovr.initialized, transcriber.device_name, transcriber.whisper_model, transcriber.compute_type)
+    main_window.set_conf_label(config.osc.ip, config.osc.client_port, config.osc.server_port, ovr.initialized, transcriber.device_name, transcriber.whisper_model, transcriber.compute_type, config.device.cpu_threads, config.device.num_workers)
     main_window.set_status_label("INITIALIZED - WAITING FOR INPUT", "green")
     initialized = True
     main_window.set_button_enabled(True)
@@ -590,7 +589,7 @@ def check_ovr():
     global ovr
     global config_ui_open
 
-    if not initialized or config_ui_open or ovr.initialized or (os.name == 'nt' and "vrmonitor.exe" not in (p.name() for p in process_iter())):
+    if not initialized or config_ui_open or ovr.initialized or not OVRHandler.is_running():
         return
 
     print("check ovr")

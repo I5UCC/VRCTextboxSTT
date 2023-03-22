@@ -1,9 +1,11 @@
+import os
 import openvr
 from helper import get_absolute_path
 from PIL import Image, ImageDraw, ImageFont
 import ctypes
 import textwrap
 from config import overlay_config
+from psutil import process_iter
 
 ACTIONSETHANDLE = "/actions/textboxstt"
 STTLISTENHANDLE = "/actions/textboxstt/in/sttlisten"
@@ -133,3 +135,9 @@ class OVRHandler(object):
         except Exception as e:
             print("Error shutting down OVR: " + str(e))
             return False
+
+    @staticmethod
+    def is_running() -> bool:
+        """Checks if SteamVR is running."""
+        _proc_name = "vrmonitor.exe" if os.name == 'nt' else "vrmonitor"
+        return _proc_name in (p.name() for p in process_iter())
