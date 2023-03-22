@@ -307,9 +307,10 @@ def process_forever():
                 data = listen.data_queue.get()
                 _last_sample += data
 
-            _torch_audio = listen.raw_to_np(_last_sample)
+            _np_audio = listen.raw_to_np(_last_sample)
 
-            _text = transcriber.transcribe(_torch_audio)
+            _text = transcriber.transcribe(_np_audio)
+            main_window.set_time_label(transcriber.last_transciption_time)
 
             _time_last = time()
             populate_chatbox(_text, True)
@@ -372,6 +373,7 @@ def process_loop():
             _np_audio = listen.raw_to_np(_last_sample)
 
             _text = transcriber.transcribe(_np_audio)
+            main_window.set_time_label(transcriber.last_transciption_time)
 
             _time_last = time()
             populate_chatbox(_text, True)
@@ -417,6 +419,7 @@ def process_once():
 
         if not pressed:
             _trans = transcriber.transcribe(_np_audio)
+            main_window.set_time_label(transcriber.last_transciption_time)
             if pressed:
                 main_window.set_status_label("CANCELED - WAITING FOR INPUT", "orange")
                 play_sound(config.audio_feedback.sound_timeout)

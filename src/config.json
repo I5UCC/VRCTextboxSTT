@@ -2,7 +2,7 @@
     "mode": 0,
     "hotkey": "f1",
     "audio_feedback": {
-        "enabled": false,
+        "enabled": true,
         "sound_clear": {
             "enabled": true,
             "file": "clear.wav",
@@ -52,7 +52,7 @@
     "listener": {
         "microphone_index": null,
         "dynamic_energy_threshold": false,
-        "energy_threshold": 200,
+        "energy_threshold": 100,
         "pause_threshold": 0.8,
         "timeout_time": 3.0,
         "hold_time": 1.5,

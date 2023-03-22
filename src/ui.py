@@ -31,6 +31,10 @@ class MainWindow(object):
         self.conf_lbl.configure(bg="#333333", fg="#666666", font=(self.FONT, 10))
         self.conf_lbl.place(relx=0.01, rely=0.935, anchor="w")
 
+        self.time_lbl = tk.Label(self.tkui, text=f"0.000s")
+        self.time_lbl.configure(bg="#333333", fg="#666666", font=(self.FONT, 10))
+        self.time_lbl.place(relx=0.99, rely=0.78, anchor="e")
+
         self.ver_lbl = tk.Label(self.tkui, text=f" VRCTextboxSTT {version} by I5UCC")
         self.ver_lbl.configure(bg="#333333", fg="#666666", font=(self.FONT, 10))
         self.ver_lbl.place(relx=0.99, rely=0.05, anchor="e")
@@ -82,6 +86,10 @@ class MainWindow(object):
     def set_conf_label(self, ip, port, server_port, ovr_initialized, device, model, compute_type, cpu_threads, num_workers):
         _cpu_str = f", Threads: {cpu_threads}, Workers: {num_workers}" if device.lower() == "cpu" else ""
         self.conf_lbl.configure(justify="left", text=f"OSC: {ip}#{port}:{server_port}, OVR: {'Connected' if ovr_initialized else 'Disconnected'}, Device: {device}\nModel: {model}, Compute Type: {compute_type}{_cpu_str}")
+        self.update()
+
+    def set_time_label(self, time):
+        self.time_lbl.configure(text=f"{time:0.3f}s")
         self.update()
 
     def clear_textfield(self):

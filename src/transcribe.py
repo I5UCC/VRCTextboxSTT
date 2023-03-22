@@ -1,7 +1,7 @@
 import os
 import torch
 import time
-from helper import get_absolute_path, get_best_compute_type
+from helper import get_best_compute_type
 from faster_whisper import WhisperModel
 from ctranslate2.converters import TransformersConverter
 from shutil import rmtree
@@ -13,6 +13,8 @@ class TranscribeHandler(object):
         self.device_config: device_config = config_device
         self.cache_path = cache_path
         self.whisper_model = MODELS[self.whisper_config.model]
+        self.last_transciption = ""
+        self.last_transciption_time = 0
         self.language = None
         
         if self.whisper_config.language:
@@ -56,7 +58,11 @@ class TranscribeHandler(object):
         for segment in segments:
             _text += segment.text
 
-        print("Transcription ({:.4f}) : ".format(time.time() - pre), _text)
+        self.last_transciption = _text
+        
+        _time_taken = time.time() - pre
+        self.last_transciption_time = _time_taken
+        print("Transcription ({:.4f}s) : ".format(_time_taken), _text)
 
         return _text
     
