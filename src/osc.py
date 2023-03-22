@@ -9,8 +9,8 @@ from config import osc_config
 
 
 class OscHandler:
-	def __init__(self, conf: osc_config):
-		self.config: osc_config = conf
+	def __init__(self, config: osc_config):
+		self.config: osc_config = config
 		self.isactive = False
 
 		self.osc_enable_server = True # Used to improve sync with in-game avatar and autodetect sync parameter count used for the avatar.

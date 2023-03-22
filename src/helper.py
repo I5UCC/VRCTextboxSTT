@@ -1,8 +1,8 @@
 import os
 import sys
-import winsound
 import logging
 import psutil
+from winsound import PlaySound, SND_FILENAME, SND_ASYNC
 from ctypes import windll, byref, create_unicode_buffer, create_string_buffer
 from ctranslate2 import get_supported_compute_types
 
@@ -68,7 +68,7 @@ def get_absolute_path(relative_path, script_path=__file__) -> str:
 def play_sound(filename, script_path=__file__):
     """Plays a wave file."""
     filename = f"resources/{filename}.wav"
-    winsound.PlaySound(get_absolute_path(filename, script_path), winsound.SND_FILENAME | winsound.SND_ASYNC)
+    PlaySound(get_absolute_path(filename, script_path), SND_FILENAME | SND_ASYNC)
 
 
 def get_best_compute_type(device, device_index=0) -> str:

@@ -8,9 +8,9 @@ from shutil import rmtree
 from config import whisper_config, device_config, MODELS, LANGUAGE_TO_KEY
 
 class TranscribeHandler(object):
-    def __init__(self, whisper_conf: whisper_config, device_conf: device_config, script_path) -> None:
-        self.whisper_config: whisper_config = whisper_conf
-        self.device_config: device_config = device_conf
+    def __init__(self, config_whisper: whisper_config, config_device: device_config, script_path) -> None:
+        self.whisper_config: whisper_config = config_whisper
+        self.device_config: device_config = config_device
         self.script_path = script_path
         self.whisper_model = MODELS[self.whisper_config.model]
         self.language = None

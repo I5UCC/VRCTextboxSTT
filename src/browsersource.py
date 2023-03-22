@@ -1,6 +1,6 @@
-from flask import Flask, render_template_string, jsonify
 import waitress
-import kthread
+from flask import Flask, render_template_string, jsonify
+from kthread import KThread
 from config import obs_config
 
 class FlaskAppWrapper(object):
@@ -10,7 +10,7 @@ class FlaskAppWrapper(object):
         self.port = port
         self.configs(**configs)
         self.server = waitress.create_server(self.app, host="127.0.0.1", port=self.port)
-        self.flask_thread = kthread.KThread(target=self.server.run)
+        self.flask_thread = KThread(target=self.server.run)
 
     def configs(self, **configs):
         for config, value in configs:

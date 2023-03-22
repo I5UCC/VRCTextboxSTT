@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from dataclasses_json import dataclass_json
 from typing import Optional
+from json import load
 
 LANGUAGE_TO_KEY = {
     'english': 'en',
@@ -200,9 +201,9 @@ class emotes_config(object):
 
 @dataclass_json
 @dataclass
-class config(object):
+class config_struct(object):
     mode: int = 0
-    hotkey: str = "F1"
+    hotkey: str = "f1"
     audio_feedback: bool = True
     device: device_config = field(default_factory=device_config)
     osc: osc_config = field(default_factory=osc_config)
@@ -212,3 +213,8 @@ class config(object):
     obs: obs_config = field(default_factory=obs_config)
     wordreplacement: wordreplacement_config = field(default_factory=wordreplacement_config)
     emotes: emotes_config = field(default_factory=emotes_config)
+
+    @staticmethod
+    def load(path: str):
+        """Load a config from a file path. Returns a config_struct object."""
+        return config_struct.from_dict(load(open(path)))

@@ -10,8 +10,8 @@ STTLISTENHANDLE = "/actions/textboxstt/in/sttlisten"
 
 
 class OVRHandler(object):
-    def __init__(self, overlay_conf: overlay_config, script_path) -> None:
-        self.overlay_conf: overlay_config = overlay_conf
+    def __init__(self, config_overlay: overlay_config, script_path) -> None:
+        self.overlay_conf: overlay_config = config_overlay
         
         self.initialized = True
         try:

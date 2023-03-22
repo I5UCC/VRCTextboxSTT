@@ -1,6 +1,6 @@
 {
     "mode": 0,
-    "hotkey": "F1",
+    "hotkey": "f1",
     "audio_feedback": true,
     "device": {
         "type": "cuda",

@@ -8,7 +8,7 @@ import os
 import torch
 from helper import get_best_compute_type
 from ctranslate2 import get_supported_compute_types
-from config import config, LANGUAGE_TO_KEY, MODELS
+from config import config_struct, LANGUAGE_TO_KEY, MODELS
 
 class MainWindow(object):
     def __init__(self, version):
@@ -98,7 +98,7 @@ class MainWindow(object):
 
 
 class SettingsWindow:
-    def __init__(self, conf: config, config_path):
+    def __init__(self, conf: config_struct, config_path):
         self.languages = ["Auto Detect"] + list(LANGUAGE_TO_KEY.keys())
         
         self.config = conf
@@ -571,7 +571,7 @@ class SettingsWindow:
         json.dump(self.config.to_dict(), open(self.config_path, "w"), indent=4)
 
     def reset_to_default(self):
-        _config = config()
+        _config = config_struct()
         if _config.device.type == "cpu" or not torch.cuda.is_available():
             self.value_device.set("CPU")
         else:
@@ -673,9 +673,9 @@ class SettingsWindow:
             shutil.rmtree(dir)
 
 class EmoteWindow:
-    def __init__(self, conf: config, config_path):
+    def __init__(self, conf: config_struct, config_path):
         self.config_path = config_path
-        self.config: config = conf
+        self.config: config_struct = conf
         self.FONT = "Cascadia Code"
 
         self.tkui = tk.Tk()
@@ -732,9 +732,9 @@ class EmoteWindow:
         self.tkui.destroy()
 
 class ReplacementWindow:
-    def __init__(self, conf: config, config_path):
+    def __init__(self, conf: config_struct, config_path):
         self.config_path = config_path
-        self.config: config = conf
+        self.config: config_struct = conf
         self.FONT = "Cascadia Code"
 
         self.tkui = tk.Tk()
@@ -837,9 +837,9 @@ class ReplacementWindow:
 
 
 class OverlaySettingsWindow:
-    def __init__(self, conf: config, config_path):
+    def __init__(self, conf: config_struct, config_path):
         self.config_path = config_path
-        self.config: config = conf
+        self.config: config_struct = conf
         self.FONT = "Cascadia Code"
 
         self.tkui = tk.Tk()
@@ -923,9 +923,9 @@ class OverlaySettingsWindow:
         self.tkui.destroy()
 
 class OBSSettingsWindow:
-    def __init__(self, conf: config, config_path):
+    def __init__(self, conf: config_struct, config_path):
         self.config_path = config_path
-        self.config: config = conf
+        self.config: config_struct = conf
         self.FONT = "Cascadia Code"
 
         self.tkui = tk.Tk()
@@ -995,9 +995,9 @@ class OBSSettingsWindow:
         self.tkui.destroy()
 
 class DeviceSettingsWindow:
-    def __init__(self, conf: config, config_path, device, device_index):
+    def __init__(self, conf: config_struct, config_path, device, device_index):
         self.config_path = config_path
-        self.config: config = conf
+        self.config: config_struct = conf
         self.FONT = "Cascadia Code"
 
         self.tkui = tk.Tk()
