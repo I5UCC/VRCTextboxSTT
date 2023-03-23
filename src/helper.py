@@ -124,7 +124,7 @@ def force_single_instance():
 
         _pid = os.getpid()
         PROCNAME = psutil.Process(_pid).name()
-        print(f"Current process: {_pid}, {PROCNAME}")
+        log.info(f"Current process: {_pid}, {PROCNAME}")
 
         if __debug__:
             return
@@ -132,6 +132,6 @@ def force_single_instance():
         for proc in psutil.process_iter():
             if proc.name() == PROCNAME and proc.pid != _pid:
                 proc.kill()
-                print("killed", proc.pid)
+                log.info("killed: " + proc.pid)
     except Exception as e:
         logging.error("Error in force_single_instance: %s", e)

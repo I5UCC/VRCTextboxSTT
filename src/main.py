@@ -92,7 +92,7 @@ def init():
         browsersource = OBSBrowserSource(config, get_absolute_path('resources/obs_source.html', __file__))
         if browsersource.start():
             main_window.set_status_label("INITIALIZED FLASK SERVER", "green")
-            print(f"Flask server started on 127.0.0.1:{config.obs.port}")
+            log.info(f"Flask server started on 127.0.0.1:{config.obs.port}")
         else:
             main_window.set_status_label("COULDNT INITIALIZE FLASK SERVER, CONTINUING WITHOUT OBS SOURCE", "orange")
 
@@ -127,7 +127,7 @@ def play_sound(au: audio):
 
     _file = get_absolute_path(f"cache/{au.file}", __file__)
     if not os.path.isfile(_file):
-        print(f"Sound file \"{_file}\" does not exist.")
+        log.info(f"Sound file \"{_file}\" does not exist.")
         return
 
     try:
@@ -297,7 +297,7 @@ def process_forever():
             _time_last = time()
             populate_chatbox(_text, True)
         elif _last_sample != bytes() and time() - _time_last > config.listener.pause_threshold:
-            print(_text)
+            log.info(_text)
             _last_sample = bytes()
 
         sleep(0.05)
@@ -361,7 +361,7 @@ def process_loop():
             populate_chatbox(_text, True)
         elif _last_sample != bytes() and time() - _time_last > config.listener.pause_threshold:
             main_window.set_status_label("FINISHED - WAITING FOR INPUT", "blue")
-            print(_text)
+            log.info(_text)
             play_sound(config.audio_feedback.sound_finished)
             break
         elif _last_sample == bytes() and time() - _time_last > config.listener.timeout_time:
@@ -517,7 +517,7 @@ def main_window_closing():
     global osc
     global browsersource
 
-    print("Closing...")
+    log.info("Closing...")
     try:
         osc.stop()
     except Exception as e:
@@ -614,7 +614,7 @@ def check_ovr():
         main_window.tkui.after(7000, check_ovr)
         return
 
-    print("check ovr")
+    log.info("check ovr")
     settings_closing(True)
 
 

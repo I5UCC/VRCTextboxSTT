@@ -6,7 +6,7 @@ import glob
 import shutil
 import os
 import torch
-from helper import get_best_compute_type, get_absolute_path
+from helper import get_best_compute_type, get_absolute_path, log
 from ctranslate2 import get_supported_compute_types
 from config import config_struct, LANGUAGE_TO_KEY, MODELS
 
@@ -19,7 +19,7 @@ class MainWindow(object):
         except Exception:
             pass
 
-        print(f"VRCTextboxSTT {version} by I5UCC")
+        log.info(f"VRCTextboxSTT {version} by I5UCC")
 
         self.FONT = "Cascadia Code"
 
@@ -82,7 +82,7 @@ class MainWindow(object):
         self.status_lbl.configure(text=text)
         self.color_lbl.configure(bg=color)
         self.update()
-        print(text)
+        log.info(text)
 
     def set_text_label(self, text):
         self.text_lbl.configure(text=text)
@@ -644,7 +644,7 @@ class SettingsWindow:
         self.tkui.update_idletasks()
 
     def open(self):
-        print("OPEN SETTINGS")
+        log.info("OPEN SETTINGS")
         self.tkui.deiconify()
         self.tkui.mainloop()
 
@@ -695,7 +695,7 @@ class SettingsWindow:
         self.update()
 
     def reset_osc_config(self):
-        print("RESET OSC CONFIG")
+        log.info("RESET OSC CONFIG")
         appdata_path = os.getenv('APPDATA')
         osc_path = appdata_path + "\\..\\LocalLow\\VRChat\\VRChat\\OSC"
         dirs = glob.glob(osc_path + "\\usr_*\\")

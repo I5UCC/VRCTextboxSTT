@@ -34,7 +34,7 @@ class TranscribeHandler(object):
 
         self.compute_type = self.device_config.compute_type if self.device_config.compute_type else get_best_compute_type(self.device, self.device_index)
         
-        print(f"Using model: {self.whisper_model} for language: {self.language} ({self.task}) - {self.compute_type}")
+        log.info(f"Using model: {self.whisper_model} for language: {self.language} ({self.task}) - {self.compute_type}")
         
         self.use_cpu = True if str(self.device) == "cpu" else False
         self.model_path = self.load_model(self.whisper_model, self.compute_type)
@@ -67,7 +67,7 @@ class TranscribeHandler(object):
         self.last_transciption = _text
         _time_taken = time.time() - pre
         self.last_transciption_time = _time_taken
-        print("Transcription ({:.4f}s) : ".format(_time_taken) + _text)
+        log.info("Transcription ({:.4f}s) : ".format(_time_taken) + _text)
 
         return _text
 

@@ -59,7 +59,7 @@ class OBSBrowserSource(object):
         _html = _html.replace("[PORT]", str(self.config.port))
         _html = _html.replace("[INTERVAL]", str(self.config.update_interval))
 
-        print("Website Accessed.")
+        log.info("Website Accessed.")
         return render_template_string(_html)
     
     def flask_get_transcript(self):
