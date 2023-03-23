@@ -35,7 +35,7 @@ class MainWindow(object):
         self.time_lbl.configure(bg="#333333", fg="#666666", font=(self.FONT, 10))
         self.time_lbl.place(relx=0.99, rely=0.78, anchor="e")
 
-        self.ver_lbl = tk.Label(self.tkui, text=f" VRCTextboxSTT {version} by I5UCC")
+        self.ver_lbl = tk.Label(self.tkui, text=f"VRCTextboxSTT {version} by I5UCC")
         self.ver_lbl.configure(bg="#333333", fg="#666666", font=(self.FONT, 10))
         self.ver_lbl.place(relx=0.99, rely=0.05, anchor="e")
 
@@ -47,9 +47,13 @@ class MainWindow(object):
         self.color_lbl.configure(bg="red", width=2, fg="white", font=(self.FONT, 12))
         self.color_lbl.place(relx=0.01, rely=0.07, anchor="w")
 
-        self.btn_settings = tk.Button(self.tkui, text="Settings")
-        self.btn_settings.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=20, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white", state="disabled")
+        self.btn_settings = tk.Button(self.tkui, text="⚙")
+        self.btn_settings.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=6, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white", state="disabled")
         self.btn_settings.place(relx=0.99, rely=0.94, anchor="e")
+
+        self.btn_refresh = tk.Button(self.tkui, text="⭯")
+        self.btn_refresh.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=6, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white", state="disabled")
+        self.btn_refresh.place(relx=0.915, rely=0.94, anchor="e")
 
         self.textfield = tk.Entry(self.tkui)
         self.textfield.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=25, highlightthickness=0, insertbackground="#666666")
@@ -102,8 +106,10 @@ class MainWindow(object):
     def set_button_enabled(self, state=False):
         if state:
             self.btn_settings.configure(state="normal")
+            self.btn_refresh.configure(state="normal")
         else:
             self.btn_settings.configure(state="disabled")
+            self.btn_refresh.configure(state="disabled")
 
 
 class SettingsWindow:

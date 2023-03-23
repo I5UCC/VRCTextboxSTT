@@ -554,7 +554,7 @@ def main_window_closing():
         print(e)
 
 
-def settings_closing(save=False):
+def settings_closing(reload=False):
     """Handles the closing of the settings menu. If save is True, saves the settings and restarts the program."""
 
     global config
@@ -563,7 +563,7 @@ def settings_closing(save=False):
     global config_ui_open
     global browsersource
 
-    if save:
+    if reload:
         try:
             if config_ui_open:
                 config_ui.save()
@@ -626,8 +626,10 @@ def check_ovr():
     global initialized
     global ovr
     global config_ui_open
+    global main_window
 
     if not initialized or config_ui_open or ovr.initialized or not OVRHandler.is_running():
+        main_window.tkui.after(7000, check_ovr)
         return
 
     print("check ovr")
@@ -644,6 +646,7 @@ main_window.tkui.protocol("WM_DELETE_WINDOW", main_window_closing)
 main_window.textfield.bind("<Return>", (lambda event: entrybox_enter_event(main_window.textfield.get())))
 main_window.textfield.bind("<KeyRelease>", (lambda event: textfield_keyrelease(main_window.textfield.get())))
 main_window.btn_settings.configure(command=open_settings)
-main_window.create_loop(7000, check_ovr)
+main_window.btn_refresh.configure(command=lambda: settings_closing(True))
+main_window.tkui.after(7000, check_ovr)
 main_window.create_loop(50, handle_input)
 main_window.open()
