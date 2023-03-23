@@ -19,6 +19,8 @@ class MainWindow(object):
         except Exception:
             pass
 
+        self.icon_path = get_absolute_path("resources/icon.ico", script_path)
+
         log.info(f"VRCTextboxSTT {version} by I5UCC")
 
         self.FONT = "Cascadia Code"
@@ -29,6 +31,8 @@ class MainWindow(object):
         self.tkui.resizable(False, False)
         self.tkui.configure(bg="#333333")
         self.tkui.title("TextboxSTT")
+        self.tkui.iconbitmap(self.icon_path)
+        self.coodinates = (self.tkui.winfo_x(), self.tkui.winfo_y())
 
         self.text_lbl = tk.Label(self.tkui, wraplength=800, text="- No Text -")
         self.text_lbl.configure(bg="#333333", fg="white", font=(self.FONT, 27))
@@ -67,7 +71,7 @@ class MainWindow(object):
         self.textfield.place(relx=0.5, rely=0.845, anchor="center", width=792, height=25)
         self.update()
 
-    def open(self):
+    def run_loop(self):
         self.tkui.mainloop()
 
     def update(self):
@@ -118,10 +122,14 @@ class MainWindow(object):
             self.btn_settings.configure(state="disabled")
             self.btn_refresh.configure(state="disabled")
 
+    def get_coordinates(self):
+        return (self.tkui.winfo_x(), self.tkui.winfo_y())
+
 
 class SettingsWindow:
-    def __init__(self, conf: config_struct, config_path):
+    def __init__(self, conf: config_struct, config_path, script_path, get_coodinates):
         self.languages = ["Auto Detect"] + list(LANGUAGE_TO_KEY.keys())
+        self.icon_path = get_absolute_path("resources/icon.ico", script_path)
         
         self.config = conf
         self.config_path = config_path
@@ -135,11 +143,14 @@ class SettingsWindow:
         self.tooltip_window = None
 
         self.tkui = tk.Tk()
+        coordinates = get_coodinates()
+        self.tkui.geometry(f"+{coordinates[0] - 22}+{coordinates[1] - 22}")
         self.tkui.minsize(920, 490)
         self.tkui.maxsize(920, 490)
         self.tkui.resizable(False, False)
         self.tkui.configure(bg="#333333")
         self.tkui.title("TextboxSTT - Settings")
+        self.tkui.iconbitmap(self.icon_path)
 
         self.devices_list = []
         self.value_device = tk.StringVar(self.tkui)
@@ -503,19 +514,19 @@ class SettingsWindow:
         self.tkui.withdraw()
 
     def open_emote_window(self):
-        _ = EmoteWindow(self.config, self.config_path)
+        _ = EmoteWindow(self.config, self.config_path, self.icon_path, self.get_coordinates)
 
     def open_replacement_window(self):
-        _ = ReplacementWindow(self.config, self.config_path)
+        _ = ReplacementWindow(self.config, self.config_path, self.icon_path, self.get_coordinates)
 
     def open_overlay_window(self):
-        _ = OverlaySettingsWindow(self.config, self.config_path)
+        _ = OverlaySettingsWindow(self.config, self.config_path, self.icon_path, self.get_coordinates)
 
     def open_obs_window(self):
-        _ = OBSSettingsWindow(self.config, self.config_path)
+        _ = OBSSettingsWindow(self.config, self.config_path, self.icon_path, self.get_coordinates)
 
     def open_audio_window(self):
-        _ = AudioSettingsWindow(self.config, self.config_path)
+        _ = AudioSettingsWindow(self.config, self.config_path, self.icon_path, self.get_coordinates)
     
     def open_device_window(self):
         _device = self.value_device.get().lower()
@@ -523,7 +534,7 @@ class SettingsWindow:
         if _device != "cpu":
             _index = int(_device[1])
             _device = "cuda"
-        _ = DeviceSettingsWindow(self.config, self.config_path, _device, _index)
+        _ = DeviceSettingsWindow(self.config, self.config_path, _device, _index, self.icon_path, self.get_coordinates)
 
     def mode_changed(self, *args):
         if self.value_mode.get() == "realtime":
@@ -701,19 +712,25 @@ class SettingsWindow:
         dirs = glob.glob(osc_path + "\\usr_*\\")
         for dir in dirs:
             shutil.rmtree(dir)
+    
+    def get_coordinates(self):
+        return (self.tkui.winfo_x(), self.tkui.winfo_y())
 
 class EmoteWindow:
-    def __init__(self, conf: config_struct, config_path):
+    def __init__(self, conf: config_struct, config_path, icon_path, get_coordinates):
         self.config_path = config_path
         self.config: config_struct = conf
         self.FONT = "Cascadia Code"
 
         self.tkui = tk.Tk()
+        coordinates = get_coordinates()
+        self.tkui.geometry(f"+{coordinates[0]}+{coordinates[1]}")
         self.tkui.minsize(650, 390)
         self.tkui.maxsize(650, 390)
         self.tkui.resizable(False, False)
         self.tkui.configure(bg="#333333")
         self.tkui.title("TextboxSTT - Emotes")
+        self.tkui.iconbitmap(icon_path)
 
         self.current_selection = None
         
@@ -762,17 +779,20 @@ class EmoteWindow:
         self.tkui.destroy()
 
 class ReplacementWindow:
-    def __init__(self, conf: config_struct, config_path):
+    def __init__(self, conf: config_struct, config_path, icon_path, get_coordinates):
         self.config_path = config_path
         self.config: config_struct = conf
         self.FONT = "Cascadia Code"
 
         self.tkui = tk.Tk()
+        coordinates = get_coordinates()
+        self.tkui.geometry(f"+{coordinates[0]}+{coordinates[1]}")
         self.tkui.minsize(760, 430)
         self.tkui.maxsize(760, 430)
         self.tkui.resizable(False, False)
         self.tkui.configure(bg="#333333")
         self.tkui.title("TextboxSTT - Word Replacement")
+        self.tkui.iconbitmap(icon_path)
 
         self.current_selection = None
         self.current_key = None
@@ -867,17 +887,20 @@ class ReplacementWindow:
 
 
 class OverlaySettingsWindow:
-    def __init__(self, conf: config_struct, config_path):
+    def __init__(self, conf: config_struct, config_path, icon_path, get_coordinates):
         self.config_path = config_path
         self.config: config_struct = conf
         self.FONT = "Cascadia Code"
 
         self.tkui = tk.Tk()
+        coordinates = get_coordinates()
+        self.tkui.geometry(f"+{coordinates[0]}+{coordinates[1]}")
         self.tkui.minsize(350, 305)
         self.tkui.maxsize(350, 305)
         self.tkui.resizable(False, False)
         self.tkui.configure(bg="#333333")
         self.tkui.title("TextboxSTT - Overlay Settings")
+        self.tkui.iconbitmap(icon_path)
 
         self.current_selection = None
         self.current_key = None
@@ -953,17 +976,20 @@ class OverlaySettingsWindow:
         self.tkui.destroy()
 
 class OBSSettingsWindow:
-    def __init__(self, conf: config_struct, config_path):
+    def __init__(self, conf: config_struct, config_path, icon_path, get_coordinates):
         self.config_path = config_path
         self.config: config_struct = conf
         self.FONT = "Cascadia Code"
 
         self.tkui = tk.Tk()
+        coordinates = get_coordinates()
+        self.tkui.geometry(f"+{coordinates[0]}+{coordinates[1]}")
         self.tkui.minsize(370, 230)
         self.tkui.maxsize(370, 230)
         self.tkui.resizable(False, False)
         self.tkui.configure(bg="#333333")
         self.tkui.title("TextboxSTT - OBS Source Settings")
+        self.tkui.iconbitmap(icon_path)
 
         self.current_selection = None
         self.current_key = None
@@ -1025,17 +1051,20 @@ class OBSSettingsWindow:
         self.tkui.destroy()
 
 class DeviceSettingsWindow:
-    def __init__(self, conf: config_struct, config_path, device, device_index):
+    def __init__(self, conf: config_struct, config_path, device, device_index, icon_path, get_coordinates):
         self.config_path = config_path
         self.config: config_struct = conf
         self.FONT = "Cascadia Code"
 
         self.tkui = tk.Tk()
+        coordinates = get_coordinates()
+        self.tkui.geometry(f"+{coordinates[0]}+{coordinates[1]}")
         self.tkui.minsize(350, 150)
         self.tkui.maxsize(350, 150)
         self.tkui.resizable(False, False)
         self.tkui.configure(bg="#333333")
         self.tkui.title("TextboxSTT - Device Settings")
+        self.tkui.iconbitmap(icon_path)
 
         self.devices_list = []
         self.value_device = tk.StringVar(self.tkui)
@@ -1084,7 +1113,7 @@ class DeviceSettingsWindow:
         self.tkui.destroy()
 
 class AudioSettingsWindow:
-    def __init__(self, conf: config_struct, config_path):
+    def __init__(self, conf: config_struct, config_path, icon_path, get_coordinates):
         self.config_path = config_path
         self.config: config_struct = conf
         self.FONT = "Cascadia Code"
@@ -1092,11 +1121,14 @@ class AudioSettingsWindow:
         self.yn_options = ["ON", "OFF"]
 
         self.tkui = tk.Tk()
+        coordinates = get_coordinates()
+        self.tkui.geometry(f"+{coordinates[0]}+{coordinates[1]}")
         self.tkui.minsize(340, 475)
         self.tkui.maxsize(340, 475)
         self.tkui.resizable(False, False)
         self.tkui.configure(bg="#333333")
         self.tkui.title("TextboxSTT - Audio Feedback Settings")
+        self.tkui.iconbitmap(icon_path)
 
         self.label_clear = tk.Label(self.tkui, text="clear", bg="#333333", fg="white", font=(self.FONT, 12))
         self.label_clear.grid(row=0, column=0, padx=12, pady=5, sticky='ws')

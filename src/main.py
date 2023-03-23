@@ -583,7 +583,7 @@ def open_settings():
 
     main_window.set_status_label("WAITING FOR SETTINGS MENU TO CLOSE", "orange")
     config_ui_open = True
-    config_ui = SettingsWindow(config, CONFIG_PATH)
+    config_ui = SettingsWindow(config, CONFIG_PATH, __file__, main_window.get_coordinates)
     config_ui.button_refresh.configure(command=determine_energy_threshold)
     config_ui.btn_save.configure(command=(lambda: settings_closing(True)))
     config_ui.tkui.protocol("WM_DELETE_WINDOW", settings_closing)
@@ -614,7 +614,7 @@ def check_ovr():
         main_window.tkui.after(7000, check_ovr)
         return
 
-    log.info("check ovr")
+    log.info("OVR is running, reinitalizing...")
     settings_closing(True)
 
 
@@ -638,4 +638,4 @@ if __name__ == "__main__":
     main_window.btn_settings.configure(command=open_settings)
     main_window.btn_refresh.configure(command=lambda: settings_closing(True))
     main_window.create_loop(50, handle_input)
-    main_window.open()
+    main_window.run_loop()

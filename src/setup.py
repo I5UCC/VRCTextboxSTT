@@ -84,5 +84,5 @@ setup(
     version=version,
     description="TextboxSTT",
     options={"build_exe": build_exe_options},
-    executables=[Executable("main.py", target_name="TextboxSTT.exe", base=base, icon="icon.ico")],
+    executables=[Executable("main.py", target_name="TextboxSTT.exe", base=base, icon="resources/icon.ico")],
 )

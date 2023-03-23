@@ -20,7 +20,7 @@ class LogToFile(object):
         self.ui_output = None
 
         logging.basicConfig(
-            level=logging.DEBUG,
+            level=self.level,
             format='%(asctime)s:%(levelname)s:%(name)s: %(message)s',
             filename=logfile,
             filemode='a'
