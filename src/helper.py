@@ -10,7 +10,10 @@ from glob import glob
 log = logging.getLogger('TextboxSTT')
 
 class LogToFile(object):
-    def __init__(self, logfile):
+    def __init__(self, cache_path):
+        logfile = os.path.join(cache_path, 'latest.log')
+        process_cache(cache_path, logfile)
+
         self.logger = log
         self.level = logging.NOTSET
         self.linebuf = ''
@@ -39,7 +42,14 @@ class LogToFile(object):
         self.ui_output = None
 
 
-def process_logs(cache_path, latest_log):
+def process_cache(cache_path, latest_log):
+    try:
+        os.mkdir(cache_path)
+    except FileExistsError:
+        pass
+    except Exception as e:
+        log.fatal("Failed to create cache directory: " + str(e))
+
     try:
         logs = glob(cache_path + "/*.log")
         if len(logs) >= 5:

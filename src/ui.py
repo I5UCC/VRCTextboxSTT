@@ -6,15 +6,22 @@ import glob
 import shutil
 import os
 import torch
-from helper import get_best_compute_type
+from helper import get_best_compute_type, get_absolute_path
 from ctranslate2 import get_supported_compute_types
 from config import config_struct, LANGUAGE_TO_KEY, MODELS
 
 class MainWindow(object):
-    def __init__(self, version):
+    def __init__(self, script_path):
+
+        version = "RELEASE"
+        try:
+            version = open(get_absolute_path("VERSION", script_path)).readline().rstrip()
+        except Exception:
+            pass
+
+        print(f"VRCTextboxSTT {version} by I5UCC")
 
         self.FONT = "Cascadia Code"
-        print(version)
 
         self.tkui = tk.Tk()
         self.tkui.minsize(810, 380)
@@ -88,8 +95,8 @@ class MainWindow(object):
             self.set_text_label("Done.")
 
     def set_conf_label(self, ip, port, server_port, ovr_initialized, device, model, compute_type, cpu_threads, num_workers):
-        _cpu_str = f", Threads: {cpu_threads}, Workers: {num_workers}" if device.lower() == "cpu" else ""
-        self.conf_lbl.configure(justify="left", text=f"OSC: {ip}#{port}:{server_port}, OVR: {'Connected' if ovr_initialized else 'Disconnected'}, Device: {device}\nModel: {model}, Compute Type: {compute_type}{_cpu_str}")
+        _cpu_str = f", CPU Threads: {cpu_threads}" if device.lower() == "cpu" else ""
+        self.conf_lbl.configure(justify="left", text=f"OSC: {ip}#{port}:{server_port}, OVR: {'Connected' if ovr_initialized else 'Disconnected'}, Device: {device}{_cpu_str}\nModel: {model}, Compute Type: {compute_type}, Workers: {num_workers}")
         self.update()
 
     def set_time_label(self, time):

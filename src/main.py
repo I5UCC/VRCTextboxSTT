@@ -1,27 +1,13 @@
-import os
 import sys
-from helper import LogToFile, loadfont, get_absolute_path, force_single_instance, process_logs, log
+from helper import LogToFile, get_absolute_path
 
-CONFIG_PATH = get_absolute_path('config.json', __file__)
+# Log to file before importing other modules
 CACHE_PATH = get_absolute_path('cache/', __file__)
-latest_log = os.path.join(CACHE_PATH, 'latest.log')
-process_logs(CACHE_PATH, latest_log)
-OUT_FILE_LOGGER = LogToFile(latest_log)
+OUT_FILE_LOGGER = LogToFile(CACHE_PATH)
 sys.stdout = OUT_FILE_LOGGER
 sys.stderr = OUT_FILE_LOGGER
 
-VERSION = ""
-try:
-    VERSION = open(get_absolute_path("VERSION", __file__)).readline().rstrip()
-except Exception:
-    pass
-
-force_single_instance()
-
-if os.name == 'nt':
-    loadfont(get_absolute_path("resources/CascadiaCode.ttf", __file__))
-
-
+import os
 import re
 from threading import Thread
 from time import time, sleep
@@ -34,10 +20,13 @@ from listen import ListenHandler
 from transcribe import TranscribeHandler
 from config import config_struct, audio
 from pydub import AudioSegment
+from helper import force_single_instance, loadfont, log
 import winsound
 
 
-main_window = MainWindow(VERSION)
+CONFIG_PATH = get_absolute_path('config.json', __file__)
+
+main_window: MainWindow = None
 config: config_struct = None
 osc: OscHandler = None
 ovr: OVRHandler = None
@@ -67,13 +56,6 @@ def init():
     global browsersource
     global listen
 
-    try:
-        os.mkdir(CACHE_PATH)
-    except FileExistsError:
-        pass
-    except Exception as e:
-        log.error("Failed to create cache directory: " + str(e))
-
     # Load config
     config = config_struct.load(CONFIG_PATH)
 
@@ -102,6 +84,7 @@ def init():
     if ovr.initialized:
         main_window.set_status_label("INITIALZIED OVR", "green")
     else:
+        main_window.tkui.after(7000, check_ovr)
         main_window.set_status_label("COULDNT INITIALIZE OVR, CONTINUING DESKTOP ONLY", "orange")
 
     # Start Flask server
@@ -138,6 +121,9 @@ def play_sound(au: audio):
     """Plays a sound file."""
 
     global config
+
+    if not config.audio_feedback.enabled:
+        return
 
     _file = get_absolute_path(f"cache/{au.file}", __file__)
     if not os.path.isfile(_file):
@@ -632,17 +618,24 @@ def check_ovr():
     settings_closing(True)
 
 
-try:
-    init()
-except Exception as e:
-    log.error(e)
-    main_window.set_status_label("ERROR INITIALIZING, PLEASE CHECK YOUR SETTINGS,\nLOOK INTO out.log for more info on the error", "red")
+if __name__ == "__main__":
+    force_single_instance()
 
-main_window.tkui.protocol("WM_DELETE_WINDOW", main_window_closing)
-main_window.textfield.bind("<Return>", (lambda event: entrybox_enter_event(main_window.textfield.get())))
-main_window.textfield.bind("<KeyRelease>", (lambda event: textfield_keyrelease(main_window.textfield.get())))
-main_window.btn_settings.configure(command=open_settings)
-main_window.btn_refresh.configure(command=lambda: settings_closing(True))
-main_window.tkui.after(7000, check_ovr)
-main_window.create_loop(50, handle_input)
-main_window.open()
+    if os.name == 'nt':
+        loadfont(get_absolute_path("resources/CascadiaCode.ttf", __file__))
+
+    main_window = MainWindow(__file__)
+
+    try:
+        init()
+    except Exception as e:
+        log.error(e)
+        main_window.set_status_label("ERROR INITIALIZING, PLEASE CHECK YOUR SETTINGS,\nLOOK INTO out.log for more info on the error", "red")
+
+    main_window.tkui.protocol("WM_DELETE_WINDOW", main_window_closing)
+    main_window.textfield.bind("<Return>", (lambda event: entrybox_enter_event(main_window.textfield.get())))
+    main_window.textfield.bind("<KeyRelease>", (lambda event: textfield_keyrelease(main_window.textfield.get())))
+    main_window.btn_settings.configure(command=open_settings)
+    main_window.btn_refresh.configure(command=lambda: settings_closing(True))
+    main_window.create_loop(50, handle_input)
+    main_window.open()
