@@ -96,7 +96,7 @@ class MainWindow(object):
         try:
             self.set_text_label(f"Downloading Model:{s[s.rindex('|')+1:]}")
         except Exception:
-            self.set_text_label("Done.")
+            pass
 
     def set_conf_label(self, ip, port, server_port, ovr_initialized, device, model, compute_type, cpu_threads, num_workers):
         _cpu_str = f", CPU Threads: {cpu_threads}" if device.lower() == "cpu" else ""
@@ -258,13 +258,13 @@ class SettingsWindow:
 
         self.label_hotkey = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Hotkey', font=(self.FONT, 12))
         self.label_hotkey.grid(row=7, column=0, padx=PADX_L, pady=PADY, sticky='es')
-        self.label_hotkey.bind("<Enter>", (lambda event: self.show_tooltip("The key that is used to trigger listening.\nKlick on the button and press the button you want to use.")))
+        self.label_hotkey.bind("<Enter>", (lambda event: self.show_tooltip("The key that is used to trigger listening.\nClick on the button and press the button you want to use.")))
         self.label_hotkey.bind("<Leave>", self.hide_tooltip)
         self.set_key = self.config.hotkey
         self.button_hotkey = tk.Button(self.tkui, text=self.config.hotkey, command=self.button_hotkey_pressed)
         self.button_hotkey.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, width=23, anchor="center", activebackground="#555555", activeforeground="white")
         self.button_hotkey.grid(row=7, column=1, padx=PADX_R, pady=PADY, sticky='ws')
-        self.button_hotkey.bind("<Enter>", (lambda event: self.show_tooltip("The key that is used to trigger listening.\nKlick on the button and press the button you want to use.")))
+        self.button_hotkey.bind("<Enter>", (lambda event: self.show_tooltip("The key that is used to trigger listening.\nClick on the button and press the button you want to use.")))
         self.button_hotkey.bind("<Leave>", self.hide_tooltip)
 
         self.label_mode = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Transcription Mode', font=(self.FONT, 12))
