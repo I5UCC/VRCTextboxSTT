@@ -1,14 +1,15 @@
 import os
 import sys
 import logging
-from helper import LogToFile, loadfont, get_absolute_path, force_single_instance
+from helper import LogToFile, loadfont, get_absolute_path, force_single_instance, process_logs
 
-
-LOGFILE = get_absolute_path('out.log', __file__)
-open(LOGFILE, 'w').close()
+CONFIG_PATH = get_absolute_path('config.json', __file__)
+CACHE_PATH = get_absolute_path('cache/', __file__)
+latest_log = os.path.join(CACHE_PATH, 'latest.log')
+process_logs(CACHE_PATH, latest_log)
 LOGGER = logging.getLogger('TextboxSTT')
-OUT_FILE_LOGGER = LogToFile(LOGGER, logging.INFO, LOGFILE)
-ERROR_FILE_LOGGER = LogToFile(LOGGER, logging.ERROR, LOGFILE)
+OUT_FILE_LOGGER = LogToFile(LOGGER, logging.INFO, latest_log)
+ERROR_FILE_LOGGER = LogToFile(LOGGER, logging.ERROR, latest_log)
 sys.stdout = OUT_FILE_LOGGER
 sys.stderr = ERROR_FILE_LOGGER
 
@@ -16,9 +17,7 @@ VERSION = ""
 try:
     VERSION = open(get_absolute_path("VERSION", __file__)).readline().rstrip()
 except Exception:
-    print("Failed to get version from VERSION file.")
-CONFIG_PATH = get_absolute_path('config.json', __file__)
-CACHE_PATH = get_absolute_path('cache/', __file__)
+    pass
 
 force_single_instance()
 
@@ -391,7 +390,7 @@ def process_loop():
     set_typing_indicator(False)
     main_window.set_button_enabled(True)
     listen.stop_listen_background()
-    sleep(0.1)
+    sleep(0.2)
 
 
 def process_once():

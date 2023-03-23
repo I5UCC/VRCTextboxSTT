@@ -4,6 +4,8 @@ import logging
 import psutil
 from ctypes import windll, byref, create_unicode_buffer, create_string_buffer
 from ctranslate2 import get_supported_compute_types
+from datetime import datetime
+from glob import glob
 
 
 class LogToFile(object):
@@ -25,6 +27,19 @@ class LogToFile(object):
 
     def flush(self):
         pass
+
+
+def process_logs(cache_path, latest_log):
+    logs = glob(cache_path + "/*.log")
+    if len(logs) >= 5:
+        logs.sort(key=os.path.getmtime)
+        for log in logs[:-5]:
+            os.remove(log)
+
+    if os.path.isfile(latest_log):
+        os.rename(latest_log, os.path.join(cache_path, datetime.now().strftime("%Y-%m-%d_%H-%M-%S.log")))
+
+    open(latest_log, 'w').close()
 
 
 def loadfont(fontpath, private=True, enumerable=False) -> bool:
