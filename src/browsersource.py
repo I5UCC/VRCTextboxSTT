@@ -2,6 +2,7 @@ import waitress
 from flask import Flask, render_template_string, jsonify
 from kthread import KThread
 from config import obs_config
+from helper import log
 
 class FlaskAppWrapper(object):
 
@@ -24,7 +25,7 @@ class FlaskAppWrapper(object):
             self.flask_thread.start()
             return True
         except Exception as e:
-            print(f"Error starting Waitress server: {str(e)}")
+            log.error(f"Error starting Waitress server: {str(e)}")
             return False
 
     def kill(self):
@@ -32,7 +33,7 @@ class FlaskAppWrapper(object):
             self.flask_thread.kill()
             return True
         except Exception as e:
-            print(f"Error killing Waitress server: {str(e)}")
+            log.error(f"Error killing Waitress server: {str(e)}")
             return False
 
 class OBSBrowserSource(object):

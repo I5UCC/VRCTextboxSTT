@@ -1,17 +1,14 @@
 import os
 import sys
-import logging
-from helper import LogToFile, loadfont, get_absolute_path, force_single_instance, process_logs
+from helper import LogToFile, loadfont, get_absolute_path, force_single_instance, process_logs, log
 
 CONFIG_PATH = get_absolute_path('config.json', __file__)
 CACHE_PATH = get_absolute_path('cache/', __file__)
 latest_log = os.path.join(CACHE_PATH, 'latest.log')
 process_logs(CACHE_PATH, latest_log)
-LOGGER = logging.getLogger('TextboxSTT')
-OUT_FILE_LOGGER = LogToFile(LOGGER, logging.INFO, latest_log)
-ERROR_FILE_LOGGER = LogToFile(LOGGER, logging.ERROR, latest_log)
+OUT_FILE_LOGGER = LogToFile(latest_log)
 sys.stdout = OUT_FILE_LOGGER
-sys.stderr = ERROR_FILE_LOGGER
+sys.stderr = OUT_FILE_LOGGER
 
 VERSION = ""
 try:
@@ -75,7 +72,7 @@ def init():
     except FileExistsError:
         pass
     except Exception as e:
-        print("Failed to create cache directory: ", e)
+        log.error("Failed to create cache directory: " + str(e))
 
     # Load config
     config = config_struct.load(CONFIG_PATH)
@@ -87,11 +84,11 @@ def init():
     osc = OscHandler(config.osc)
 
     # Temporarily output stderr to text label for download progress.
-    sys.stderr.write = main_window.loading_status
+    OUT_FILE_LOGGER.set_ui_output(main_window.loading_status)
     main_window.set_status_label("LOADING WHISPER MODEL", "orange")
     transcriber = TranscribeHandler(config.whisper, config.device, CACHE_PATH)
     main_window.set_status_label(f"LOADED \"{transcriber.whisper_model}\"", "orange")
-    sys.stderr = ERROR_FILE_LOGGER
+    OUT_FILE_LOGGER.delete_ui_output()
     main_window.set_text_label("- No Text -")
 
     # load the speech recognizer
@@ -134,7 +131,7 @@ def modify_audio_files():
             _segment = _segment + _tmp_audio.gain
             _segment.export(get_absolute_path(f"cache/{_tmp_audio.file}", __file__), format="wav")
         except Exception as e:
-            print(f"Failed to modify audio file \"{_tmp_audio.file}\": {e}")
+            log.error(f"Failed to modify audio file \"{_tmp_audio.file}\": {e}")
 
 
 def play_sound(au: audio):
@@ -150,7 +147,7 @@ def play_sound(au: audio):
     try:
         winsound.PlaySound(_file, winsound.SND_FILENAME | winsound.SND_ASYNC)
     except Exception as e:
-        print(f"Failed to play sound \"{_file}\": {e}")
+        log.error(f"Failed to play sound \"{_file}\": {e}")
 
 
 def replace_emotes(text):
@@ -308,7 +305,7 @@ def process_forever():
 
             _np_audio = listen.raw_to_np(_last_sample)
 
-            _text = transcriber.transcribe(_np_audio)
+            _text = transcriber.transcribe(_np_audio, True)
             main_window.set_time_label(transcriber.last_transciption_time)
 
             _time_last = time()
@@ -371,7 +368,7 @@ def process_loop():
 
             _np_audio = listen.raw_to_np(_last_sample)
 
-            _text = transcriber.transcribe(_np_audio)
+            _text = transcriber.transcribe(_np_audio, True)
             main_window.set_time_label(transcriber.last_transciption_time)
 
             _time_last = time()
@@ -413,11 +410,10 @@ def process_once():
     else:
         play_sound(config.audio_feedback.sound_donelisten)
         set_typing_indicator(True)
-        print(_np_audio)
         main_window.set_status_label("TRANSCRIBING", "orange")
 
         if not pressed:
-            _trans = transcriber.transcribe(_np_audio)
+            _trans = transcriber.transcribe(_np_audio, False)
             main_window.set_time_label(transcriber.last_transciption_time)
             if pressed:
                 main_window.set_status_label("CANCELED - WAITING FOR INPUT", "orange")
@@ -539,19 +535,19 @@ def main_window_closing():
     try:
         osc.stop()
     except Exception as e:
-        print(e)
+        log.error(e)
     try:
         main_window.on_closing()
     except Exception as e:
-        print(e)
+        log.error(e)
     try:
         config_ui.on_closing()
     except Exception as e:
-        print(e)
+        log.error(e)
     try:
         browsersource.stop()
     except Exception as e:
-        print(e)
+        log.error(e)
 
 
 def settings_closing(reload=False):
@@ -569,19 +565,19 @@ def settings_closing(reload=False):
                 config_ui.save()
                 config_ui.on_closing()
         except Exception as e:
-            print("Error saving settings: " + str(e))
+            log.error("Error saving settings: " + str(e))
         try:
             ovr.destroy_overlay()
         except Exception as e:
-            print("Error destroying overlay: " + str(e))
+            log.error("Error destroying overlay: " + str(e))
         try:
             osc.stop()
         except Exception as e:
-            print("Error stopping osc: " + str(e))
+            log.error("Error stopping osc: " + str(e))
         try:
             init()
         except Exception as e:
-            print(e)
+            log.error("ERROR INITIALIZING" + str(e))
             main_window.set_status_label("ERROR INITIALIZING, PLEASE CHECK YOUR SETTINGS,\nLOOK INTO out.log for more info on the error", "red")
     else:
         config_ui.on_closing()
@@ -639,7 +635,7 @@ def check_ovr():
 try:
     init()
 except Exception as e:
-    print(e)
+    log.error(e)
     main_window.set_status_label("ERROR INITIALIZING, PLEASE CHECK YOUR SETTINGS,\nLOOK INTO out.log for more info on the error", "red")
 
 main_window.tkui.protocol("WM_DELETE_WINDOW", main_window_closing)

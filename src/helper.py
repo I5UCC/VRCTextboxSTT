@@ -7,12 +7,14 @@ from ctranslate2 import get_supported_compute_types
 from datetime import datetime
 from glob import glob
 
+log = logging.getLogger('TextboxSTT')
 
 class LogToFile(object):
-    def __init__(self, logger, level, logfile):
-        self.logger = logger
-        self.level = level
+    def __init__(self, logfile):
+        self.logger = log
+        self.level = logging.NOTSET
         self.linebuf = ''
+        self.ui_output = None
 
         logging.basicConfig(
             level=logging.DEBUG,
@@ -24,9 +26,17 @@ class LogToFile(object):
     def write(self, buf):
         for line in buf.rstrip().splitlines():
             self.logger.log(self.level, line.rstrip())
+            if self.ui_output:
+                self.ui_output(line.rstrip())
 
     def flush(self):
         pass
+
+    def set_ui_output(self, output_method):
+        self.ui_output = output_method
+    
+    def delete_ui_output(self):
+        self.ui_output = None
 
 
 def process_logs(cache_path, latest_log):
@@ -97,14 +107,18 @@ def get_best_compute_type(device, device_index=0) -> str:
 def force_single_instance():
     """Force single instance by killing other instances of the same Name."""
 
-    _pid = os.getpid()
-    PROCNAME = psutil.Process(_pid).name()
-    print(f"Current process: {_pid}, {PROCNAME}")
+    try:
 
-    if __debug__:
-        return
+        _pid = os.getpid()
+        PROCNAME = psutil.Process(_pid).name()
+        print(f"Current process: {_pid}, {PROCNAME}")
+
+        if __debug__:
+            return
     
-    for proc in psutil.process_iter():
-        if proc.name() == PROCNAME and proc.pid != _pid:
-            proc.kill()
-            print("killed", proc.pid)
+        for proc in psutil.process_iter():
+            if proc.name() == PROCNAME and proc.pid != _pid:
+                proc.kill()
+                print("killed", proc.pid)
+    except Exception as e:
+        logging.error("Error in force_single_instance: %s", e)

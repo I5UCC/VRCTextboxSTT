@@ -6,6 +6,7 @@ import ctypes
 import textwrap
 from config import overlay_config
 from psutil import process_iter
+from helper import log
 
 ACTIONSETHANDLE = "/actions/textboxstt"
 STTLISTENHANDLE = "/actions/textboxstt/in/sttlisten"
@@ -33,7 +34,7 @@ class OVRHandler(object):
                 self.set_overlay_position_hmd()
         except Exception as e:
             self.initialized = False
-            print("Error initializing OVR: " + str(e))
+            log.error("Error initializing OVR: " + str(e))
 
     def check_init(self) -> bool:
         """Checks if OpenVR is initialized."""
@@ -57,7 +58,7 @@ class OVRHandler(object):
             openvr.VROverlay().setOverlayTransformTrackedDeviceRelative(self.overlay_handle, openvr.k_unTrackedDeviceIndex_Hmd, overlay_matrix)
             return True
         except Exception as e:
-            print("Error setting overlay position: " + str(e))
+            log.error("Error setting overlay position: " + str(e))
             return False
 
     def set_overlay_text(self, text: str) -> bool:
@@ -90,7 +91,7 @@ class OVRHandler(object):
             openvr.VROverlay().setOverlayRaw(self.overlay_handle, _buffer, _width, _height, 4)
             return True
         except Exception as e:
-            print("Error setting overlay text: " + str(e))
+            log.error("Error setting overlay text: " + str(e))
             return False
 
     def get_ovraction_bstate(self) -> bool:
@@ -109,7 +110,7 @@ class OVRHandler(object):
             openvr.VRInput().updateActionState(_actionsets)
             return bool(openvr.VRInput().getDigitalActionData(self.button_action_handle, openvr.k_ulInvalidInputValueHandle).bState)
         except Exception as e:
-            print("Error getting OVR action state: " + str(e))
+            log.error("Error getting OVR action state: " + str(e))
             return False
 
     def destroy_overlay(self) -> bool:
@@ -121,7 +122,7 @@ class OVRHandler(object):
             openvr.VROverlay().destroyOverlay(self.overlay_handle)
             return True
         except Exception as e:
-            print("Error destroying overlay: " + str(e))
+            log.error("Error destroying overlay: " + str(e))
             return False
 
     def shutdown(self) -> bool:
@@ -133,7 +134,7 @@ class OVRHandler(object):
             openvr.shutdown()
             return True
         except Exception as e:
-            print("Error shutting down OVR: " + str(e))
+            log.error("Error shutting down OVR: " + str(e))
             return False
 
     @staticmethod

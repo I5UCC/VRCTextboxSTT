@@ -6,6 +6,7 @@ from threading import Timer
 from pythonosc import udp_client, osc_server, dispatcher
 import math, asyncio, threading
 from config import osc_config
+from helper import log
 
 
 class OscHandler:
@@ -597,15 +598,15 @@ class OscHandler:
 		try:
 			self.osc_timer.stop()
 		except Exception as e:
-			print(e)
+			log.error(e)
 		try:
 			self.osc_chatbox_timer.stop()
 		except Exception as e:
-			print(e)
+			log.error(e)
 		try:
 			self.osc_stop_server()
 		except Exception as e:
-			print(e)
+			log.error(e)
 		self.hide()
 		self.clear_kat()
 		self.clear_chatbox()
@@ -617,15 +618,15 @@ class OscHandler:
 		try:
 			self.osc_timer.start()
 		except Exception as e:
-			print(e)
+			log.error(e)
 		try:
 			self.osc_chatbox_timer.start()
 		except Exception as e:
-			print(e)
+			log.error(e)
 		try:
 			self.osc_start_server()
 		except Exception as e:
-			print(e)
+			log.error(e)
 		self.osc_timer.start()
 		self.osc_chatbox_timer.start()
 		self.hide()
