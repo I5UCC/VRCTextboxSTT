@@ -65,7 +65,7 @@ def init():
     # Initialize osc
     osc = OscHandler(config.osc)
 
-    # Temporarily output stderr to text label for download progress.
+    # Temporarily output to text label for download progress.
     OUT_FILE_LOGGER.set_ui_output(main_window.loading_status)
     main_window.set_status_label("LOADING WHISPER MODEL", "orange")
     transcriber = TranscribeHandler(config.whisper, config.device, CACHE_PATH)
