@@ -2,6 +2,7 @@ import speech_recognition as sr
 import numpy as np
 from queue import Queue
 from config import listener_config
+from helper import log
 
 class ListenHandler(object):
     def __init__(self, config: listener_config) -> None:
@@ -23,6 +24,9 @@ class ListenHandler(object):
                 _audio = self.rec.listen(self.source, timeout=self.config.timeout_time)
             except sr.WaitTimeoutError:
                 return None
+            except Exception as e:
+                log.error("Error listening: " + str(e))
+                return None
 
             return self.raw_to_np(_audio.get_raw_data())
         
@@ -31,25 +35,45 @@ class ListenHandler(object):
         Listens in the background and puts the audio data into a queue.
         """
         def record_callback(_, audio:sr.AudioData) -> None:
-            _data = audio.get_raw_data()
-            self.data_queue.put(_data)
+            try:
+                _data = audio.get_raw_data()
+                self.data_queue.put(_data)
+            except Exception as e:
+                log.error("Error getting raw data: " + str(e))
 
         self.stop_listening = self.rec.listen_in_background(self.source, record_callback, phrase_time_limit=self.config.phrase_time_limit)
 
     def stop_listen_background(self) -> None:
-        self.stop_listening(wait_for_stop=False)
-        self.clear_queue()
+        try:
+            self.stop_listening(wait_for_stop=False)
+        except Exception as e:
+            log.error("Error stopping listening: " + str(e))
+        try:
+            self.clear_queue()
+        except Exception as e:
+            log.error("Error clearing queue: " + str(e))
 
     def raw_to_np(self, raw_data:bytes) -> np.ndarray:
-        return np.frombuffer(raw_data, np.int16).flatten().astype(np.float32) / 32768.0
+        try:
+            return np.frombuffer(raw_data, np.int16).flatten().astype(np.float32) / 32768.0
+        except Exception as e:
+            log.error("Error converting raw data to np: " + str(e))
+            return None
     
     def clear_queue(self) -> None:
-        self.data_queue.queue.clear()
+        try:
+            self.data_queue.queue.clear()
+        except Exception as e:
+            log.error("Error clearing queue: " + str(e))
 
     def get_energy_threshold(self) -> int:
-        with self.source:
-            _last = self.rec.energy_threshold
-            self.rec.adjust_for_ambient_noise(self.source, 5)
-            _value = round(self.rec.energy_threshold) + 20
-            self.rec.energy_threshold = _last
-            return _value
+        try:
+            with self.source:
+                _last = self.rec.energy_threshold
+                self.rec.adjust_for_ambient_noise(self.source, 5)
+                _value = round(self.rec.energy_threshold) + 20
+                self.rec.energy_threshold = _last
+                return _value
+        except Exception as e:
+            log.error("Error getting energy threshold: " + str(e))
+            return 100
