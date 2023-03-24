@@ -221,10 +221,17 @@ class SettingsWindow:
         self.label_model.bind("<Leave>", self.hide_tooltip)
         self.value_model = tk.StringVar(self.tkui)
         self.value_model.set(self.config.whisper.model)
+        self.value_model.trace("w", self.model_changed)
         self.models = []
         for key in MODELS:
             if ".en" not in key:
                 self.models.append(key)
+        self.models.append("custom")
+        self.entry_model = tk.Entry(self.tkui)
+        self.entry_model.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
+        self.entry_model.bind("<Return>", (lambda event: self.entry_model_enter_event(self.entry_model.get())))
+        self.entry_model.bind("<Enter>", (lambda event: self.show_tooltip("Custom Model to use, should be the huggingface path. i.e. openai/whisper-tiny\nPress enter on the empty field to switch back to selecting a model.")))
+        self.entry_model.bind("<Leave>", self.hide_tooltip)
         self.opt_model = tk.OptionMenu(self.tkui, self.value_model, *self.models)
         self.opt_model.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_model.grid(row=4, column=1, padx=PADX_R, pady=PADY, sticky='ws')
@@ -536,6 +543,19 @@ class SettingsWindow:
             _device = "cuda"
         _ = DeviceSettingsWindow(self.config, self.config_path, _device, _index, self.icon_path, self.get_coordinates)
 
+    def model_changed(self, *args):
+        if self.value_model.get() == "custom":
+            self.opt_model.grid_forget()
+            self.entry_model.grid(row=4, column=1, padx=0, pady=4, sticky='ws')
+            
+    def entry_model_enter_event(self, text):
+        if text == "":
+            self.entry_model.delete(0, tk.END)
+            self.entry_model.grid_forget()
+            self.opt_model.grid(row=4, column=1, padx=0, pady=4, sticky='ws')
+            self.value_model.set("base")
+
+
     def mode_changed(self, *args):
         if self.value_mode.get() == "realtime":
             self.entry_pause_threshold.delete(0, tk.END)
@@ -583,7 +603,7 @@ class SettingsWindow:
         self.config.osc.ip = self.entry_osc_ip.get()
         self.config.osc.client_port = int(self.entry_osc_port.get())
         self.config.osc.server_port = int(self.entry_osc_server_port.get())
-        self.config.whisper.model = self.value_model.get()
+        self.config.whisper.model = self.value_model.get() if self.value_model.get() != "custom" else self.entry_model.get()
         self.config.whisper.language = None if self.value_language.get() == "Auto Detect" else self.value_language.get()
         self.config.whisper.translate_to_english = True if self.value_translate.get() == "ON" else False
         self.config.hotkey = self.set_key

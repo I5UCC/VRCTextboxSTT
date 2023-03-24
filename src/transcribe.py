@@ -12,7 +12,8 @@ class TranscribeHandler(object):
         self.whisper_config: whisper_config = config_whisper
         self.device_config: device_config = config_device
         self.cache_path = cache_path
-        self.whisper_model = MODELS[self.whisper_config.model]
+        self.whisper_model = self.whisper_config.model if "/" in self.whisper_config.model else MODELS[self.whisper_config.model]
+        self.is_openai_model = True if "openai" in self.whisper_model else False
         self.last_transciption = ""
         self.last_transciption_time = 0
         self.language = None
@@ -20,7 +21,7 @@ class TranscribeHandler(object):
         if self.whisper_config.language:
             self.language = LANGUAGE_TO_KEY[self.whisper_config.language]
 
-        if "large" not in self.whisper_model and self.language == "en" and ".en" not in self.whisper_model and "openai" in self.whisper_model:
+        if self.is_openai_model and "large" not in self.whisper_model and self.language == "en" and ".en" not in self.whisper_model:
             self.whisper_model = self.whisper_model + ".en"
 
         self.task = "translate" if self.whisper_config.translate_to_english and self.language != "english" else "transcribe"
@@ -37,7 +38,7 @@ class TranscribeHandler(object):
         log.info(f"Using model: {self.whisper_model} for language: {self.language} ({self.task}) - {self.compute_type}")
         
         self.use_cpu = True if str(self.device) == "cpu" else False
-        self.model_path = self.load_model(self.whisper_model, self.compute_type)
+        self.model_path = self.load_model(self.whisper_model, self.compute_type, self.is_openai_model)
 
         self.device_name = torch.cuda.get_device_name(self.device_index) if self.device == "cuda" else "CPU"
         
@@ -71,7 +72,7 @@ class TranscribeHandler(object):
 
         return _text
 
-    def load_model(self, model_name: str = "openai/whisper-base.en", quantization = "float32"):
+    def load_model(self, model_name: str = "openai/whisper-base.en", quantization = "float32", download_tokenizer = True):
         """
         Loads a Transformer model from the given path and converts it to a ctranslate2 model.
 
@@ -80,8 +81,9 @@ class TranscribeHandler(object):
         :return: The path to the ctranslate2 model.
         """
         try:
-            _model_path = f"{self.cache_path}{model_name.split('/')[1]}-ct2-{quantization}"
-            _converter = TransformersConverter(model_name, copy_files=["tokenizer.json"])
+            model_split = model_name.split('/')
+            _model_path = f"{self.cache_path}{model_split[0]}-{model_split[1]}-ct2-{quantization}"
+            _converter = TransformersConverter(model_name, copy_files=["tokenizer.json"] if download_tokenizer else None)
             _converter.convert(_model_path, force=False, quantization=quantization)
 
             rmtree(os.path.join(os.path.expanduser("~"), ".cache\huggingface"))

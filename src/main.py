@@ -441,14 +441,16 @@ def handle_input():
     global pressed
     global curr_time
     global config_ui_open
+    global initialized
+
+    if not initialized or thread_process.is_alive() or config_ui_open:
+        return
 
     pressed = get_trigger_state()
 
     if not thread_process.is_alive() and config.mode == 2 and not config_ui_open:
         thread_process = Thread(target=process_forever)
         thread_process.start()
-    elif thread_process.is_alive() or config_ui_open:
-        return
     elif pressed and not holding and not held:
         holding = True
         curr_time = time()
@@ -614,7 +616,7 @@ def check_ovr():
         main_window.tkui.after(7000, check_ovr)
         return
 
-    log.info("OVR is running, reinitalizing...")
+    log.info("SteamVR is running, reinitalizing...")
     settings_closing(True)
 
 
