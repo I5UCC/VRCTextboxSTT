@@ -196,6 +196,9 @@ def clear_chatbox():
     global osc
     global ovr
     global browsersource
+    global transcriber
+
+    transcriber.last_transciption = None
 
     if browsersource:
         browsersource.setText("")
@@ -299,6 +302,7 @@ def process_forever():
             populate_chatbox(_text, True)
         elif _last_sample != bytes() and time() - _time_last > config.listener.pause_threshold:
             log.info(_text)
+            transcriber.last_transciption = None
             _last_sample = bytes()
 
         sleep(0.05)
@@ -317,6 +321,7 @@ def process_loop():
     global main_window
     global pressed
     global listen
+    global transcriber
 
     _text = ""
     _time_last = None
@@ -374,6 +379,7 @@ def process_loop():
     set_typing_indicator(False)
     main_window.set_button_enabled(True)
     listen.stop_listen_background()
+    transcriber.last_transciption = None
     sleep(0.2)
 
 

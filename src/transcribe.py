@@ -14,7 +14,7 @@ class TranscribeHandler(object):
         self.cache_path = cache_path
         self.whisper_model = self.whisper_config.model if "/" in self.whisper_config.model else MODELS[self.whisper_config.model]
         self.is_openai_model = True if "openai" in self.whisper_model else False
-        self.last_transciption = ""
+        self.last_transciption = None
         self.last_transciption_time = 0
         self.language = None
 
