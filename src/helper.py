@@ -134,4 +134,4 @@ def force_single_instance():
                 proc.kill()
                 log.info("killed: " + proc.pid)
     except Exception as e:
-        logging.error("Error in force_single_instance: %s", e)
+        pass

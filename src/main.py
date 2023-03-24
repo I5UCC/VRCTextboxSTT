@@ -1,6 +1,7 @@
 import sys
-from helper import LogToFile, get_absolute_path
+from helper import LogToFile, get_absolute_path, force_single_instance
 
+force_single_instance()
 # Log to file before importing other modules
 CACHE_PATH = get_absolute_path('cache/', __file__)
 OUT_FILE_LOGGER = LogToFile(CACHE_PATH)
@@ -20,7 +21,7 @@ from listen import ListenHandler
 from transcribe import TranscribeHandler
 from config import config_struct, audio
 from pydub import AudioSegment
-from helper import force_single_instance, loadfont, log
+from helper import loadfont, log
 import winsound
 
 
@@ -621,8 +622,6 @@ def check_ovr():
 
 
 if __name__ == "__main__":
-    force_single_instance()
-
     if os.name == 'nt':
         loadfont(get_absolute_path("resources/CascadiaCode.ttf", __file__))
 
