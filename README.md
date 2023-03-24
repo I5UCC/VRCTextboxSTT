@@ -158,6 +158,10 @@ You can set the boolean "sttlisten" in the Binding UI of SteamVR. Anyone who has
 You can set it to any action that supports a boolean input. By default it is the left A button (X button on Oculus/Meta respectively).
 ![image](https://user-images.githubusercontent.com/43730681/210201138-d60d0936-22e5-4845-bbc1-4d1b0c412c43.png)
 
+If you want to use a Chord, you have to create **empty actions** for the buttons you want to use for that chord and they will show up in the chrod menu: <br>
+![image](https://user-images.githubusercontent.com/43730681/227457598-47b68d7b-3f4c-49d3-aa50-97c2b2bfeca7.png)
+![image](https://user-images.githubusercontent.com/43730681/227457640-b2c3a55b-edad-4d66-84d7-5f331fe67ca4.png)
+
 # Automatic launch with SteamVR
 On first launch of the program, it registers as an Overlay app on SteamVR just like other well known programs like XSOverlay or OVRAdvancedSettings and can be launched on startup: <br>
 ![Screenshot 2022-12-04 184629](https://user-images.githubusercontent.com/43730681/205506892-0927ed45-69c6-480f-b4b3-bc02d89c151e.png) <br>
