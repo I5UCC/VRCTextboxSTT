@@ -11,7 +11,7 @@ from ctranslate2 import get_supported_compute_types
 from config import config_struct, LANGUAGE_TO_KEY, MODELS
 
 class MainWindow(object):
-    def __init__(self, script_path):
+    def __init__(self, script_path, x=None, y=None):
 
         version = "RELEASE"
         try:
@@ -26,13 +26,17 @@ class MainWindow(object):
         self.FONT = "Cascadia Code"
 
         self.tkui = tk.Tk()
+        if x and y:
+            self.tkui.geometry(f"+{x}+{y}")
+            self.coodinates = (x, y)
+        else:
+            self.coodinates = self.get_coordinates()
         self.tkui.minsize(810, 380)
         self.tkui.maxsize(810, 380)
         self.tkui.resizable(False, False)
         self.tkui.configure(bg="#333333")
         self.tkui.title("TextboxSTT")
         self.tkui.iconbitmap(self.icon_path)
-        self.coodinates = (self.tkui.winfo_x(), self.tkui.winfo_y())
 
         self.text_lbl = tk.Label(self.tkui, wraplength=800, text="- No Text -")
         self.text_lbl.configure(bg="#333333", fg="white", font=(self.FONT, 27))

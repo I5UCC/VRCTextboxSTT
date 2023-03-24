@@ -8,11 +8,16 @@ class ListenHandler(object):
     def __init__(self, config: listener_config) -> None:
         self.config: listener_config = config
         self.rec = sr.Recognizer()
+        self.source = sr.Microphone(sample_rate=16000)
+        self.data_queue = Queue()
+
+    def set_config(self, config: listener_config):
+        self.config = config
+
         self.rec.dynamic_energy_threshold = bool(self.config.dynamic_energy_threshold)
         self.rec.energy_threshold = self.config.energy_threshold
         self.rec.pause_threshold = self.config.pause_threshold
-        self.source = sr.Microphone(sample_rate=16000, device_index=int(self.config.microphone_index) if self.config.microphone_index else None)
-        self.data_queue = Queue()
+        self.source.device_index = int(self.config.microphone_index) if self.config.microphone_index else None
 
     def listen_once(self) -> np.ndarray:
         """

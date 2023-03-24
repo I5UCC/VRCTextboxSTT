@@ -6,6 +6,7 @@ from ctypes import windll, byref, create_unicode_buffer, create_string_buffer
 from ctranslate2 import get_supported_compute_types
 from datetime import datetime
 from glob import glob
+import traceback
 
 log = logging.getLogger('TextboxSTT')
 
@@ -15,7 +16,7 @@ class LogToFile(object):
         process_cache(cache_path, logfile)
 
         self.logger = log
-        self.level = logging.NOTSET
+        self.level = logging.DEBUG
         self.linebuf = ''
         self.ui_output = None
 
@@ -49,6 +50,7 @@ def process_cache(cache_path, latest_log):
         pass
     except Exception as e:
         log.fatal("Failed to create cache directory: " + str(e))
+        log.error(traceback.format_exc())
 
     try:
         logs = glob(cache_path + "/*.log")
@@ -61,6 +63,7 @@ def process_cache(cache_path, latest_log):
             os.rename(latest_log, os.path.join(cache_path, datetime.now().strftime("%Y-%m-%d_%H-%M-%S.log")))
     except Exception as e:
         logging.error("Error processing old logs: %s" + str(e))
+        log.error(traceback.format_exc())
 
     open(latest_log, 'w').close()
 
@@ -134,4 +137,5 @@ def force_single_instance():
                 proc.kill()
                 log.info("killed: " + proc.pid)
     except Exception as e:
-        pass
+        log.error("Error while killing other instances: " + str(e))
+        log.error(traceback.format_exc())

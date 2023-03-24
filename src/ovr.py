@@ -7,6 +7,7 @@ import textwrap
 from config import overlay_config
 from psutil import process_iter
 from helper import log
+import traceback
 
 ACTIONSETHANDLE = "/actions/textboxstt"
 STTLISTENHANDLE = "/actions/textboxstt/in/sttlisten"
@@ -15,37 +16,57 @@ STTLISTENHANDLE = "/actions/textboxstt/in/sttlisten"
 class OVRHandler(object):
     def __init__(self, config_overlay: overlay_config, script_path) -> None:
         self.overlay_conf: overlay_config = config_overlay
+        self._script_path = script_path
+        self.initialized = False
         
-        self.initialized = True
+    def init(self):
+        if self.initialized:
+            self.shutdown()
+
         try:
             self.application = openvr.init(openvr.VRApplication_Background)
-            self.action_path = get_absolute_path("bindings/textboxstt_actions.json", script_path)
-            self.appmanifest_path = get_absolute_path("app.vrmanifest", script_path)
+            self.action_path = get_absolute_path("bindings/textboxstt_actions.json", self._script_path)
+            self.appmanifest_path = get_absolute_path("app.vrmanifest", self._script_path)
             openvr.VRApplications().addApplicationManifest(self.appmanifest_path)
             openvr.VRInput().setActionManifestPath(self.action_path)
             self.action_set_handle = openvr.VRInput().getActionSetHandle(ACTIONSETHANDLE)
             self.button_action_handle = openvr.VRInput().getActionHandle(STTLISTENHANDLE)
+            self.initialized = True
             if self.overlay_conf.enabled:
                 self.overlay_handle = openvr.VROverlay().createOverlay("i5ucc.textboxstt", "TextboxSTT")
                 openvr.VROverlay().setOverlayWidthInMeters(self.overlay_handle, 1)
                 openvr.VROverlay().setOverlayColor(self.overlay_handle, 1.0, 1.0, 1.0)
                 openvr.VROverlay().setOverlayAlpha(self.overlay_handle, self.overlay_conf.opacity)
-                self.overlay_font = ImageFont.truetype(get_absolute_path("resources/CascadiaCode.ttf", script_path), 46)
-                self.set_overlay_position_hmd()
-        except Exception as e:
+                self.overlay_font = ImageFont.truetype(get_absolute_path("resources/CascadiaCode.ttf", self._script_path), 46)
+                self.set_overlay_position_to_device()
+        except openvr.openvr.error_code.InitError_Init_NoServerForBackgroundApp:
             self.initialized = False
-            log.error("Error initializing OVR: " + str(e))
+            log.info("SteamVR is not running.")
+        except Exception:
+            self.initialized = False
+            log.error("Error initializing OVR: ")
+            log.error(traceback.format_exc())
 
     def check_init(self) -> bool:
         """Checks if OpenVR is initialized."""
         if not self.initialized:
             raise Exception("OpenVR not initialized")
 
-    def set_overlay_position_hmd(self) -> bool:
-        """Sets the overlay position to the HMD position."""
+    def set_overlay_position_to_device(self, device: str="HMD") -> bool:
+        """Sets the overlay position to the position relative to the given device."""
 
         try:
             self.check_init()
+
+            tracked_device = openvr.k_unTrackedDeviceIndex_Hmd
+
+            match device.upper():
+                case "HAND_LEFT":
+                    tracked_device = openvr.TrackedControllerRole_LeftHand
+                case "HAND_RIGHT":
+                    tracked_device = openvr.TrackedControllerRole_RightHand
+                case _:
+                    tracked_device = openvr.k_unTrackedDeviceIndex_Hmd
 
             overlay_matrix = openvr.HmdMatrix34_t()
             overlay_matrix[0][0] = self.overlay_conf.size
@@ -55,7 +76,7 @@ class OVRHandler(object):
             overlay_matrix[1][3] = self.overlay_conf.pos_y
             overlay_matrix[2][3] = self.overlay_conf.distance
 
-            openvr.VROverlay().setOverlayTransformTrackedDeviceRelative(self.overlay_handle, openvr.k_unTrackedDeviceIndex_Hmd, overlay_matrix)
+            openvr.VROverlay().setOverlayTransformTrackedDeviceRelative(self.overlay_handle, tracked_device, overlay_matrix)
             return True
         except Exception as e:
             log.error("Error setting overlay position: " + str(e))
@@ -128,9 +149,9 @@ class OVRHandler(object):
     def shutdown(self) -> bool:
         """Shuts down the OVR handler."""
 
+        self.destroy_overlay()
         try:
             self.check_init()
-
             openvr.shutdown()
             return True
         except Exception as e:

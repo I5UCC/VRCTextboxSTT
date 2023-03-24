@@ -1,13 +1,14 @@
 import sys
 from helper import LogToFile, get_absolute_path, force_single_instance
 
-force_single_instance()
 # Log to file before importing other modules
 CACHE_PATH = get_absolute_path('cache/', __file__)
 OUT_FILE_LOGGER = LogToFile(CACHE_PATH)
 sys.stdout = OUT_FILE_LOGGER
 sys.stderr = OUT_FILE_LOGGER
+force_single_instance()
 
+import traceback
 import os
 import re
 from threading import Thread
@@ -23,6 +24,7 @@ from config import config_struct, audio
 from pydub import AudioSegment
 from helper import loadfont, log
 import winsound
+import copy
 
 
 CONFIG_PATH = get_absolute_path('config.json', __file__)
@@ -57,40 +59,33 @@ def init():
     global browsersource
     global listen
 
-    # Load config
-    config = config_struct.load(CONFIG_PATH)
-
     # Load audio files
     modify_audio_files()
 
     # Initialize osc
-    osc = OscHandler(config.osc)
+    osc.reinitialize(config.osc)
 
     # Temporarily output to text label for download progress.
     OUT_FILE_LOGGER.set_ui_output(main_window.loading_status)
     main_window.set_status_label("LOADING WHISPER MODEL", "orange")
-    transcriber = TranscribeHandler(config.whisper, config.device, CACHE_PATH)
+    if not transcriber or config.whisper != transcriber.whisper_config or config.device != transcriber.device_config:
+        transcriber = TranscribeHandler(copy.copy(config.whisper), copy.copy(config.device), CACHE_PATH)
     main_window.set_status_label(f"LOADED \"{transcriber.whisper_model}\"", "orange")
     OUT_FILE_LOGGER.delete_ui_output()
     main_window.set_text_label("- No Text -")
 
     # load the speech recognizer
-    listen = ListenHandler(config.listener)
+    listen.set_config(config.listener)
 
     # Initialize OpenVR
-    main_window.set_status_label("INITIALIZING OVR", "orange")
-    if ovr:
-        ovr.shutdown()
-    ovr = OVRHandler(config.overlay, __file__)
+    ovr.init()
     if ovr.initialized:
         main_window.set_status_label("INITIALZIED OVR", "green")
     else:
-        main_window.tkui.after(7000, check_ovr)
         main_window.set_status_label("COULDNT INITIALIZE OVR, CONTINUING DESKTOP ONLY", "orange")
 
     # Start Flask server
-    if config.obs.enabled and not browsersource:
-        browsersource = OBSBrowserSource(config, get_absolute_path('resources/obs_source.html', __file__))
+    if config.obs.enabled and not browsersource.running:
         if browsersource.start():
             main_window.set_status_label("INITIALIZED FLASK SERVER", "green")
             log.info(f"Flask server started on 127.0.0.1:{config.obs.port}")
@@ -106,7 +101,7 @@ def init():
 def modify_audio_files():
     global config
     
-    audio_dict = config.audio_feedback.__dict__
+    audio_dict = config.audio_feedback.__dict__.copy()
     del audio_dict["enabled"]
     for key in audio_dict:
         try:
@@ -115,6 +110,7 @@ def modify_audio_files():
             _segment = _segment + _tmp_audio.gain
             _segment.export(get_absolute_path(f"cache/{_tmp_audio.file}", __file__), format="wav")
         except Exception as e:
+            log.error(traceback.format_exc())
             log.error(f"Failed to modify audio file \"{_tmp_audio.file}\": {e}")
 
 
@@ -134,6 +130,7 @@ def play_sound(au: audio):
     try:
         winsound.PlaySound(_file, winsound.SND_FILENAME | winsound.SND_ASYNC)
     except Exception as e:
+        log.error(traceback.format_exc())
         log.error(f"Failed to play sound \"{_file}\": {e}")
 
 
@@ -530,18 +527,22 @@ def main_window_closing():
     try:
         osc.stop()
     except Exception as e:
+        log.error(traceback.format_exc())
         log.error(e)
     try:
         main_window.on_closing()
     except Exception as e:
+        log.error(traceback.format_exc())
         log.error(e)
     try:
         config_ui.on_closing()
     except Exception as e:
+        log.error(traceback.format_exc())
         log.error(e)
     try:
         browsersource.stop()
     except Exception as e:
+        log.error(traceback.format_exc())
         log.error(e)
 
 
@@ -560,19 +561,12 @@ def settings_closing(reload=False):
                 config_ui.save()
                 config_ui.on_closing()
         except Exception as e:
+            log.error(traceback.format_exc())
             log.error("Error saving settings: " + str(e))
-        try:
-            ovr.destroy_overlay()
-        except Exception as e:
-            log.error("Error destroying overlay: " + str(e))
-        try:
-            osc.stop()
-        except Exception as e:
-            log.error("Error stopping osc: " + str(e))
         try:
             init()
         except Exception as e:
-            log.error("ERROR INITIALIZING" + str(e))
+            log.error(traceback.format_exc())
             main_window.set_status_label("ERROR INITIALIZING, PLEASE CHECK YOUR SETTINGS,\nLOOK INTO out.log for more info on the error", "red")
     else:
         config_ui.on_closing()
@@ -620,23 +614,61 @@ def check_ovr():
     global main_window
 
     if not initialized or config_ui_open or ovr.initialized or not OVRHandler.is_running():
-        main_window.tkui.after(7000, check_ovr)
         return
 
     log.info("SteamVR is running, reinitalizing...")
-    settings_closing(True)
+    ovr.init()
+    main_window.set_conf_label(config.osc.ip, config.osc.client_port, config.osc.server_port, ovr.initialized, transcriber.device_name, transcriber.whisper_model, transcriber.compute_type, config.device.cpu_threads, config.device.num_workers)
+
+
+def restart():
+    """Restarts the program."""
+
+    global main_window
+    global config_ui
+
+    
+    executable = sys.executable
+    log.info("Restarting...")
+    try:
+        coordinates = main_window.get_coordinates()
+        tmp = sys.argv[0]
+        sys.argv.clear()
+        sys.argv.append(tmp)
+        sys.argv.append(str(coordinates[0]))
+        sys.argv.append(str(coordinates[1]))
+        print(sys.argv)
+    except Exception as e:
+        log.error("Error restarting: " + str(e))
+        log.error(traceback.format_exc())
+    
+    os.execl(executable, executable, *sys.argv)
 
 
 if __name__ == "__main__":
     if os.name == 'nt':
         loadfont(get_absolute_path("resources/CascadiaCode.ttf", __file__))
 
-    main_window = MainWindow(__file__)
+    # Load config
+    config = config_struct.load(CONFIG_PATH)
+
+    try:
+        x = int(sys.argv[1])
+        y = int(sys.argv[2])
+    except Exception as e:
+        x = None
+        y = None
+
+    main_window = MainWindow(__file__, x, y)
+    ovr = OVRHandler(config.overlay, __file__)
+    listen = ListenHandler(config.listener)
+    browsersource = OBSBrowserSource(config.obs, get_absolute_path('resources/obs_source.html', __file__))
+    osc = OscHandler(config.osc)
 
     try:
         init()
     except Exception as e:
-        log.error(e)
+        log.error(traceback.format_exc())
         main_window.set_status_label("ERROR INITIALIZING, PLEASE CHECK YOUR SETTINGS,\nLOOK INTO out.log for more info on the error", "red")
 
     main_window.tkui.protocol("WM_DELETE_WINDOW", main_window_closing)
@@ -644,5 +676,6 @@ if __name__ == "__main__":
     main_window.textfield.bind("<KeyRelease>", (lambda event: textfield_keyrelease(main_window.textfield.get())))
     main_window.btn_settings.configure(command=open_settings)
     main_window.btn_refresh.configure(command=lambda: settings_closing(True))
+    main_window.create_loop(7000, check_ovr)
     main_window.create_loop(50, handle_input)
     main_window.run_loop()

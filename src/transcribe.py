@@ -6,6 +6,7 @@ from faster_whisper import WhisperModel
 from ctranslate2.converters import TransformersConverter
 from shutil import rmtree
 from config import whisper_config, device_config, MODELS, LANGUAGE_TO_KEY
+import traceback
 
 class TranscribeHandler(object):
     def __init__(self, config_whisper: whisper_config, config_device: device_config, cache_path) -> None:
@@ -42,7 +43,7 @@ class TranscribeHandler(object):
 
         self.device_name = torch.cuda.get_device_name(self.device_index) if self.device == "cuda" else "CPU"
         
-        self.model: WhisperModel = WhisperModel(self.model_path, self.device,self.device_index, self.compute_type, self.device_config.cpu_threads, self.device_config.num_workers)
+        self.model: WhisperModel = WhisperModel(self.model_path, self.device, self.device_index, self.compute_type, self.device_config.cpu_threads, self.device_config.num_workers)
 
     def transcribe(self, audio, use_prefix = False) -> str:
         """
@@ -61,6 +62,7 @@ class TranscribeHandler(object):
                     _text += segment.text
         except Exception as e:
             log.error("Error transcribing: " + str(e))
+            log.error(traceback.format_exc())
             self.last_transciption = ""
             self.last_transciption_time = 0
             return None
@@ -93,5 +95,6 @@ class TranscribeHandler(object):
             log.error("Model Cache doesnt exist." + str(e))
         except Exception as e:
             log.error("Unknown error loading model: " + str(e))
+            log.error(traceback.format_exc())
 
         return _model_path
