@@ -357,19 +357,6 @@ class OscHandler:
 		self.osc_chatbox_timer.start()
 		self.osc_timer.start()
 
-	def osc_create_client(self):
-		self.osc_client = udp_client.SimpleUDPClient(self.osc_ip, self.osc_port)
-
-	def reinitialize(self, config: osc_config):
-		self.stop()
-
-		self.config = config
-		self.osc_server_ip = self.config.ip # OSC server IP to listen too
-		self.osc_server_port = self.config.server_port # OSC network port for recieving messages
-		self.osc_ip = self.config.ip # OSC server IP to send too
-		self.osc_port = self.config.client_port # OSC network port for sending messages
-		self.osc_create_client()
-
 	# Starts the OSC Server
 	def osc_start_server(self):
 		if self.osc_server == None:

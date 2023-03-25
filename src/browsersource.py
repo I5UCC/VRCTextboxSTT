@@ -10,6 +10,7 @@ class FlaskAppWrapper(object):
     def __init__(self, app, port, **configs):
         self.app = app
         self.port = port
+        self.running = False
         self.configs(**configs)
         self.server = waitress.create_server(self.app, host="127.0.0.1", port=self.port)
         self.flask_thread = KThread(target=self.server.run)
@@ -24,18 +25,23 @@ class FlaskAppWrapper(object):
     def start(self):
         try:
             self.flask_thread.start()
+            self.running = True
             return True
-        except Exception as e:
-            log.error(f"Error starting Waitress server: {str(e)}")
+        except Exception:
+            log.error(f"Error starting Waitress server: ")
             log.error(traceback.format_exc())
             return False
 
     def kill(self):
+        if not self.running:
+            return True
+
         try:
             self.flask_thread.kill()
+            self.running = False
             return True
-        except Exception as e:
-            log.error(f"Error killing Waitress server: {str(e)}")
+        except Exception:
+            log.error(f"Error killing Waitress server: ")
             log.error(traceback.format_exc())
             return False
 

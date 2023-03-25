@@ -3,6 +3,7 @@ import numpy as np
 from queue import Queue
 from config import listener_config
 from helper import log
+import traceback
 
 class ListenHandler(object):
     def __init__(self, config: listener_config) -> None:
@@ -10,6 +11,7 @@ class ListenHandler(object):
         self.rec = sr.Recognizer()
         self.source = sr.Microphone(sample_rate=16000)
         self.data_queue = Queue()
+        self.set_config(config)
 
     def set_config(self, config: listener_config):
         self.config = config
@@ -29,8 +31,9 @@ class ListenHandler(object):
                 _audio = self.rec.listen(self.source, timeout=self.config.timeout_time)
             except sr.WaitTimeoutError:
                 return None
-            except Exception as e:
-                log.error("Error listening: " + str(e))
+            except Exception:
+                log.error("Error listening: ")
+                log.error(traceback.format_exc())
                 return None
 
             return self.raw_to_np(_audio.get_raw_data())
@@ -43,33 +46,38 @@ class ListenHandler(object):
             try:
                 _data = audio.get_raw_data()
                 self.data_queue.put(_data)
-            except Exception as e:
-                log.error("Error getting raw data: " + str(e))
+            except Exception:
+                log.error("Error in record callback data: ")
+                log.error(traceback.format_exc())
 
         self.stop_listening = self.rec.listen_in_background(self.source, record_callback, phrase_time_limit=self.config.phrase_time_limit)
 
     def stop_listen_background(self) -> None:
         try:
             self.stop_listening(wait_for_stop=False)
-        except Exception as e:
-            log.error("Error stopping listening: " + str(e))
+        except Exception:
+            log.error("Error stopping listening: ")
+            log.error(traceback.format_exc())
         try:
             self.clear_queue()
-        except Exception as e:
-            log.error("Error clearing queue: " + str(e))
+        except Exception:
+            log.error("Error clearing queue: ")
+            log.error(traceback.format_exc())
 
     def raw_to_np(self, raw_data:bytes) -> np.ndarray:
         try:
             return np.frombuffer(raw_data, np.int16).flatten().astype(np.float32) / 32768.0
-        except Exception as e:
-            log.error("Error converting raw data to np: " + str(e))
+        except Exception:
+            log.error("Error converting raw data to np: ")
+            log.error(traceback.format_exc())
             return None
     
     def clear_queue(self) -> None:
         try:
             self.data_queue.queue.clear()
-        except Exception as e:
-            log.error("Error clearing queue: " + str(e))
+        except Exception:
+            log.error("Error clearing queue: ")
+            log.error(traceback.format_exc())
 
     def get_energy_threshold(self) -> int:
         try:
@@ -79,6 +87,7 @@ class ListenHandler(object):
                 _value = round(self.rec.energy_threshold) + 20
                 self.rec.energy_threshold = _last
                 return _value
-        except Exception as e:
-            log.error("Error getting energy threshold: " + str(e))
+        except Exception:
+            log.error("Error getting energy threshold: ")
+            log.error(traceback.format_exc())
             return 100

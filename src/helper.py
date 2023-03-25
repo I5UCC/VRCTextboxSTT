@@ -39,7 +39,7 @@ class LogToFile(object):
     def set_ui_output(self, output_method):
         self.ui_output = output_method
     
-    def delete_ui_output(self):
+    def remove_ui_output(self):
         self.ui_output = None
 
 

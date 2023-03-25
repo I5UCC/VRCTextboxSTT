@@ -23,6 +23,7 @@ from transcribe import TranscribeHandler
 from config import config_struct, audio
 from pydub import AudioSegment
 from helper import loadfont, log
+from torch.cuda import is_available
 import winsound
 import copy
 
@@ -59,38 +60,52 @@ def init():
     global browsersource
     global listen
 
-    # Load audio files
-    modify_audio_files()
+    modify_audio_files(config.audio_feedback.__dict__.copy())
 
-    # Initialize osc
-    osc.reinitialize(config.osc)
-
-    # Temporarily output to text label for download progress.
-    OUT_FILE_LOGGER.set_ui_output(main_window.loading_status)
-    main_window.set_status_label("LOADING WHISPER MODEL", "orange")
-    if not transcriber or config.whisper != transcriber.whisper_config or config.device != transcriber.device_config:
-        transcriber = TranscribeHandler(copy.copy(config.whisper), copy.copy(config.device), CACHE_PATH)
-    main_window.set_status_label(f"LOADED \"{transcriber.whisper_model}\"", "orange")
-    OUT_FILE_LOGGER.delete_ui_output()
-    main_window.set_text_label("- No Text -")
-
-    # load the speech recognizer
-    listen.set_config(config.listener)
+    # Initialize ListenHandler
+    if not listen:
+        listen = ListenHandler(config.listener)
+    else:
+        listen.set_config(config.listener)
 
     # Initialize OpenVR
-    ovr.init()
+    if not ovr:
+        ovr = OVRHandler(config.overlay, __file__)
+    else:
+        ovr.init()
     if ovr.initialized:
         main_window.set_status_label("INITIALZIED OVR", "green")
     else:
         main_window.set_status_label("COULDNT INITIALIZE OVR, CONTINUING DESKTOP ONLY", "orange")
+    
+    # Initialize OSC Handler
+    if not osc:
+        osc = OscHandler(copy.copy(config.osc))
+    elif osc.osc_ip != config.osc.ip or osc.osc_port != config.osc.client_port or osc.osc_server_port != config.osc.server_port:
+        restart()
 
     # Start Flask server
-    if config.obs.enabled and not browsersource.running:
+    if not browsersource:
+        browsersource = OBSBrowserSource(config.obs, get_absolute_path('resources/obs_source.html', __file__))
+    elif config.obs.enabled and not browsersource.running:
         if browsersource.start():
             main_window.set_status_label("INITIALIZED FLASK SERVER", "green")
             log.info(f"Flask server started on 127.0.0.1:{config.obs.port}")
         else:
             main_window.set_status_label("COULDNT INITIALIZE FLASK SERVER, CONTINUING WITHOUT OBS SOURCE", "orange")
+    elif not config.obs.enabled and browsersource.running:
+        restart()
+    
+    main_window.set_status_label("LOADING WHISPER MODEL", "orange")
+    if not transcriber:
+        # Temporarily output to text label for download progress.
+        OUT_FILE_LOGGER.set_ui_output(main_window.loading_status)
+        transcriber = TranscribeHandler(copy.copy(config.whisper), copy.copy(config.device), CACHE_PATH)
+        OUT_FILE_LOGGER.remove_ui_output()
+    elif config.whisper != transcriber.whisper_config or config.device != transcriber.device_config:
+        restart()
+    main_window.set_status_label(f"LOADED \"{transcriber.whisper_model}\"", "orange")
+    main_window.set_text_label("- No Text -")
 
     main_window.set_conf_label(config.osc.ip, config.osc.client_port, config.osc.server_port, ovr.initialized, transcriber.device_name, transcriber.whisper_model, transcriber.compute_type, config.device.cpu_threads, config.device.num_workers)
     main_window.set_status_label("INITIALIZED - WAITING FOR INPUT", "green")
@@ -98,10 +113,9 @@ def init():
     main_window.set_button_enabled(True)
 
 
-def modify_audio_files():
+def modify_audio_files(audio_dict):
     global config
     
-    audio_dict = config.audio_feedback.__dict__.copy()
     del audio_dict["enabled"]
     for key in audio_dict:
         try:
@@ -109,9 +123,8 @@ def modify_audio_files():
             _segment = AudioSegment.from_wav(get_absolute_path(f"resources/{_tmp_audio.file}", __file__))
             _segment = _segment + _tmp_audio.gain
             _segment.export(get_absolute_path(f"cache/{_tmp_audio.file}", __file__), format="wav")
-        except Exception as e:
-            log.error(traceback.format_exc())
-            log.error(f"Failed to modify audio file \"{_tmp_audio.file}\": {e}")
+        except Exception:
+            log.error(f"Failed to modify audio file \"{_tmp_audio.file}\": {traceback.format_exc()}")
 
 
 def play_sound(au: audio):
@@ -129,9 +142,8 @@ def play_sound(au: audio):
 
     try:
         winsound.PlaySound(_file, winsound.SND_FILENAME | winsound.SND_ASYNC)
-    except Exception as e:
-        log.error(traceback.format_exc())
-        log.error(f"Failed to play sound \"{_file}\": {e}")
+    except Exception:
+        log.error(f"Failed to play sound \"{_file}\": {traceback.format_exc()}")
 
 
 def replace_emotes(text):
@@ -194,8 +206,6 @@ def clear_chatbox():
     global ovr
     global browsersource
     global transcriber
-
-    transcriber.last_transciption = None
 
     if browsersource:
         browsersource.setText("")
@@ -292,14 +302,13 @@ def process_forever():
 
             _np_audio = listen.raw_to_np(_last_sample)
 
-            _text = transcriber.transcribe(_np_audio, True)
+            _text = transcriber.transcribe(_np_audio)
             main_window.set_time_label(transcriber.last_transciption_time)
 
             _time_last = time()
             populate_chatbox(_text, True)
         elif _last_sample != bytes() and time() - _time_last > config.listener.pause_threshold:
             log.info(_text)
-            transcriber.last_transciption = None
             _last_sample = bytes()
 
         sleep(0.05)
@@ -357,7 +366,7 @@ def process_loop():
 
             _np_audio = listen.raw_to_np(_last_sample)
 
-            _text = transcriber.transcribe(_np_audio, True)
+            _text = transcriber.transcribe(_np_audio)
             main_window.set_time_label(transcriber.last_transciption_time)
 
             _time_last = time()
@@ -376,7 +385,6 @@ def process_loop():
     set_typing_indicator(False)
     main_window.set_button_enabled(True)
     listen.stop_listen_background()
-    transcriber.last_transciption = None
     sleep(0.2)
 
 
@@ -403,7 +411,7 @@ def process_once():
         main_window.set_status_label("TRANSCRIBING", "orange")
 
         if not pressed:
-            _trans = transcriber.transcribe(_np_audio, False)
+            _trans = transcriber.transcribe(_np_audio)
             main_window.set_time_label(transcriber.last_transciption_time)
             if pressed:
                 main_window.set_status_label("CANCELED - WAITING FOR INPUT", "orange")
@@ -428,6 +436,10 @@ def get_trigger_state():
 
     global config
     global ovr
+    global initialized
+
+    if not initialized:
+        return False
 
     if ovr.initialized and ovr.get_ovraction_bstate():
         return True
@@ -447,10 +459,10 @@ def handle_input():
     global config_ui_open
     global initialized
 
+    pressed = get_trigger_state()
+
     if not initialized or thread_process.is_alive() or config_ui_open:
         return
-
-    pressed = get_trigger_state()
 
     if not thread_process.is_alive() and config.mode == 2 and not config_ui_open:
         thread_process = Thread(target=process_forever)
@@ -526,24 +538,20 @@ def main_window_closing():
     log.info("Closing...")
     try:
         osc.stop()
-    except Exception as e:
+    except Exception:
         log.error(traceback.format_exc())
-        log.error(e)
     try:
         main_window.on_closing()
-    except Exception as e:
+    except Exception:
         log.error(traceback.format_exc())
-        log.error(e)
     try:
         config_ui.on_closing()
-    except Exception as e:
+    except Exception:
         log.error(traceback.format_exc())
-        log.error(e)
     try:
         browsersource.stop()
-    except Exception as e:
+    except Exception:
         log.error(traceback.format_exc())
-        log.error(e)
 
 
 def settings_closing(reload=False):
@@ -652,24 +660,24 @@ if __name__ == "__main__":
     # Load config
     config = config_struct.load(CONFIG_PATH)
 
+    if not is_available():
+        config.device.type = "cpu"
+
+    x = None
+    y = None
     try:
         x = int(sys.argv[1])
         y = int(sys.argv[2])
     except Exception as e:
-        x = None
-        y = None
+        pass
 
     main_window = MainWindow(__file__, x, y)
-    ovr = OVRHandler(config.overlay, __file__)
-    listen = ListenHandler(config.listener)
-    browsersource = OBSBrowserSource(config.obs, get_absolute_path('resources/obs_source.html', __file__))
-    osc = OscHandler(config.osc)
 
     try:
         init()
     except Exception as e:
         log.error(traceback.format_exc())
-        main_window.set_status_label("ERROR INITIALIZING, PLEASE CHECK YOUR SETTINGS,\nLOOK INTO out.log for more info on the error", "red")
+        main_window.set_status_label("ERROR INITIALIZING, PLEASE CHECK YOUR SETTINGS,\nLOOK INTO latest.log in cache/ for more info on the error", "red")
 
     main_window.tkui.protocol("WM_DELETE_WINDOW", main_window_closing)
     main_window.textfield.bind("<Return>", (lambda event: entrybox_enter_event(main_window.textfield.get())))

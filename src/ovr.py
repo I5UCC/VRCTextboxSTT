@@ -12,6 +12,10 @@ import traceback
 ACTIONSETHANDLE = "/actions/textboxstt"
 STTLISTENHANDLE = "/actions/textboxstt/in/sttlisten"
 
+class NotInitializedException(Exception):
+    """Raised when OpenVR is not initialized."""
+    pass
+
 
 class OVRHandler(object):
     def __init__(self, config_overlay: overlay_config, script_path) -> None:
@@ -39,6 +43,9 @@ class OVRHandler(object):
                 openvr.VROverlay().setOverlayAlpha(self.overlay_handle, self.overlay_conf.opacity)
                 self.overlay_font = ImageFont.truetype(get_absolute_path("resources/CascadiaCode.ttf", self._script_path), 46)
                 self.set_overlay_position_to_device()
+        except openvr.openvr.error_code.InitError_Init_HmdNotFound:
+            self.initialized = False
+            log.info("SteamVR is not running.")
         except openvr.openvr.error_code.InitError_Init_NoServerForBackgroundApp:
             self.initialized = False
             log.info("SteamVR is not running.")
@@ -50,7 +57,7 @@ class OVRHandler(object):
     def check_init(self) -> bool:
         """Checks if OpenVR is initialized."""
         if not self.initialized:
-            raise Exception("OpenVR not initialized")
+            raise NotInitializedException("OpenVR not initialized")
 
     def set_overlay_position_to_device(self, device: str="HMD") -> bool:
         """Sets the overlay position to the position relative to the given device."""
@@ -78,8 +85,11 @@ class OVRHandler(object):
 
             openvr.VROverlay().setOverlayTransformTrackedDeviceRelative(self.overlay_handle, tracked_device, overlay_matrix)
             return True
+        except NotInitializedException:
+            return False
         except Exception as e:
-            log.error("Error setting overlay position: " + str(e))
+            log.error("Error setting overlay position: ")
+            log.error(traceback.format_exc())
             return False
 
     def set_overlay_text(self, text: str) -> bool:
@@ -111,8 +121,11 @@ class OVRHandler(object):
 
             openvr.VROverlay().setOverlayRaw(self.overlay_handle, _buffer, _width, _height, 4)
             return True
-        except Exception as e:
-            log.error("Error setting overlay text: " + str(e))
+        except NotInitializedException:
+            return False
+        except Exception:
+            log.error("Error setting overlay text: ")
+            log.error(traceback.format_exc())
             return False
 
     def get_ovraction_bstate(self) -> bool:
@@ -130,8 +143,11 @@ class OVRHandler(object):
             _actionset.ulActionSet = self.action_set_handle
             openvr.VRInput().updateActionState(_actionsets)
             return bool(openvr.VRInput().getDigitalActionData(self.button_action_handle, openvr.k_ulInvalidInputValueHandle).bState)
-        except Exception as e:
-            log.error("Error getting OVR action state: " + str(e))
+        except NotInitializedException:
+            return False
+        except Exception:
+            log.error("Error getting OVR action state: ")
+            log.error(traceback.format_exc())
             return False
 
     def destroy_overlay(self) -> bool:
@@ -142,8 +158,11 @@ class OVRHandler(object):
 
             openvr.VROverlay().destroyOverlay(self.overlay_handle)
             return True
-        except Exception as e:
-            log.error("Error destroying overlay: " + str(e))
+        except NotInitializedException:
+            return False
+        except Exception:
+            log.error("Error destroying overlay: ")
+            log.error(traceback.format_exc())
             return False
 
     def shutdown(self) -> bool:
@@ -154,6 +173,8 @@ class OVRHandler(object):
             self.check_init()
             openvr.shutdown()
             return True
+        except NotInitializedException:
+            return False
         except Exception as e:
             log.error("Error shutting down OVR: " + str(e))
             return False

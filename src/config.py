@@ -207,13 +207,13 @@ class obs_config(object):
 @dataclass_json
 @dataclass
 class wordreplacement_config(object):
-    enabled: bool = False
+    enabled: bool = True
     list: dict = field(default_factory=dict)
 
 @dataclass_json
 @dataclass
 class emotes_config(object):
-    enabled: bool = False
+    enabled: bool = True
     list: dict = field(default_factory=lambda: {
         "0": "wicked emoji",
         "1": "clueless emoji",

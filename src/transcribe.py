@@ -15,7 +15,6 @@ class TranscribeHandler(object):
         self.cache_path = cache_path
         self.whisper_model = self.whisper_config.model if "/" in self.whisper_config.model else MODELS[self.whisper_config.model]
         self.is_openai_model = True if "openai" in self.whisper_model else False
-        self.last_transciption = None
         self.last_transciption_time = 0
         self.language = None
 
@@ -45,7 +44,7 @@ class TranscribeHandler(object):
         
         self.model: WhisperModel = WhisperModel(self.model_path, self.device, self.device_index, self.compute_type, self.device_config.cpu_threads, self.device_config.num_workers)
 
-    def transcribe(self, audio, use_prefix = False) -> str:
+    def transcribe(self, audio) -> str:
         """
         Transcribes the given audio data using the model and returns the text and the tokens.
 
@@ -56,18 +55,14 @@ class TranscribeHandler(object):
         _text = ""
         pre = time.time()
         try:
-            with torch.no_grad():
-                segments, _ = self.model.transcribe(audio, beam_size=5, language=self.language, prefix=self.last_transciption if use_prefix else None, without_timestamps=True, word_timestamps=False, task=self.task)
-                for segment in segments:
-                    _text += segment.text
-        except Exception as e:
-            log.error("Error transcribing: " + str(e))
+            segments, _ = self.model.transcribe(audio, beam_size=5, language=self.language, word_timestamps=False, without_timestamps=True, task=self.task)
+            _text = "".join([segment.text for segment in segments])
+        except Exception:
+            log.error("Error transcribing: ")
             log.error(traceback.format_exc())
-            self.last_transciption = ""
             self.last_transciption_time = 0
             return None
 
-        self.last_transciption = _text
         _time_taken = time.time() - pre
         self.last_transciption_time = _time_taken
         log.info("Transcription ({:.4f}s) : ".format(_time_taken) + _text)
@@ -89,12 +84,13 @@ class TranscribeHandler(object):
             _converter.convert(_model_path, force=False, quantization=quantization)
 
             rmtree(os.path.join(os.path.expanduser("~"), ".cache\huggingface"))
-        except RuntimeError as e:
-            log.info("Model already exists, skipping conversion." + str(e))
-        except FileNotFoundError as e:
-            log.error("Model Cache doesnt exist." + str(e))
-        except Exception as e:
-            log.error("Unknown error loading model: " + str(e))
+        except RuntimeError:
+            log.info("Model already exists, skipping conversion.")
+        except FileNotFoundError:
+            log.error("Model Cache doesnt exist.")
+            log.error(traceback.format_exc())
+        except Exception:
+            log.error("Unknown error loading model: ")
             log.error(traceback.format_exc())
 
         return _model_path

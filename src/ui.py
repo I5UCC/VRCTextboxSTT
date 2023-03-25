@@ -149,8 +149,8 @@ class SettingsWindow:
         self.tkui = tk.Tk()
         coordinates = get_coodinates()
         self.tkui.geometry(f"+{coordinates[0] - 22}+{coordinates[1] - 22}")
-        self.tkui.minsize(920, 490)
-        self.tkui.maxsize(920, 490)
+        self.tkui.minsize(920, 515)
+        self.tkui.maxsize(920, 515)
         self.tkui.resizable(False, False)
         self.tkui.configure(bg="#333333")
         self.tkui.title("TextboxSTT - Settings")
@@ -171,7 +171,7 @@ class SettingsWindow:
 
         self.devices_list.append("CPU")
 
-        self.label_device = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Device', font=(self.FONT, 12))
+        self.label_device = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Device *', font=(self.FONT, 12))
         self.label_device.grid(row=0, column=0, padx=PADX_L, pady=PADY, sticky='es')
         self.opt_device = tk.OptionMenu(self.tkui, self.value_device, *self.devices_list)
         self.opt_device.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
@@ -186,7 +186,7 @@ class SettingsWindow:
         self.button_device_overlay.bind("<Enter>", (lambda event: self.show_tooltip("Edit Device Settings")))
         self.button_device_overlay.bind("<Leave>", self.hide_tooltip)
 
-        self.label_osc_ip = tk.Label(master=self.tkui, bg="#333333", fg="white", text='OSC IP', font=(self.FONT, 12))
+        self.label_osc_ip = tk.Label(master=self.tkui, bg="#333333", fg="white", text='OSC IP *', font=(self.FONT, 12))
         self.label_osc_ip.grid(row=1, column=0, padx=PADX_L, pady=PADY, sticky='es')
         self.label_osc_ip.bind("<Enter>", (lambda event: self.show_tooltip("IP to send the OSC information to.")))
         self.label_osc_ip.bind("<Leave>", self.hide_tooltip)
@@ -197,7 +197,7 @@ class SettingsWindow:
         self.entry_osc_ip.bind("<Enter>", (lambda event: self.show_tooltip("IP to send the OSC information to.")))
         self.entry_osc_ip.bind("<Leave>", self.hide_tooltip)
 
-        self.label_osc_port = tk.Label(master=self.tkui, bg="#333333", fg="white", text='OSC Port', font=(self.FONT, 12))
+        self.label_osc_port = tk.Label(master=self.tkui, bg="#333333", fg="white", text='OSC Port *', font=(self.FONT, 12))
         self.label_osc_port.grid(row=2, column=0, padx=PADX_L, pady=PADY, sticky='es')
         self.label_osc_port.bind("<Enter>", (lambda event: self.show_tooltip("Port to send the OSC information to.")))
         self.label_osc_port.bind("<Leave>", self.hide_tooltip)
@@ -208,7 +208,7 @@ class SettingsWindow:
         self.entry_osc_port.bind("<Enter>", (lambda event: self.show_tooltip("Port to send the OSC information to.")))
         self.entry_osc_port.bind("<Leave>", self.hide_tooltip)
 
-        self.label_osc_server_port = tk.Label(master=self.tkui, bg="#333333", fg="white", text='OSC Server Port', font=(self.FONT, 12))
+        self.label_osc_server_port = tk.Label(master=self.tkui, bg="#333333", fg="white", text='OSC Server Port *', font=(self.FONT, 12))
         self.label_osc_server_port.grid(row=3, column=0, padx=PADX_L, pady=PADY, sticky='es')
         self.label_osc_server_port.bind("<Enter>", (lambda event: self.show_tooltip("Port to get the OSC information from.\nUsed to improve KAT sync with in-game avatar and autodetect sync parameter count used for the avatar.\nOnly used if KAT Sync Params is set to 'Auto Detect' and use KAT set to 'Yes'")))
         self.label_osc_server_port.bind("<Leave>", self.hide_tooltip)
@@ -219,7 +219,7 @@ class SettingsWindow:
         self.entry_osc_server_port.bind("<Enter>", (lambda event: self.show_tooltip("Port to get the OSC information from.\nUsed to improve KAT sync with in-game avatar and autodetect sync parameter count used for the avatar.\nOnly used if KAT Sync Params is set to 'Auto Detect' and use KAT set to 'Yes'")))
         self.entry_osc_server_port.bind("<Leave>", self.hide_tooltip)
 
-        self.label_model = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Model', font=(self.FONT, 12))
+        self.label_model = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Model *', font=(self.FONT, 12))
         self.label_model.grid(row=4, column=0, padx=PADX_L, pady=PADY, sticky='es')
         self.label_model.bind("<Enter>", (lambda event: self.show_tooltip("What model of whisper to use. \nI'd recommend not going over 'tiny,base,small'\n as it will significantly impact the transcription time.")))
         self.label_model.bind("<Leave>", self.hide_tooltip)
@@ -242,7 +242,7 @@ class SettingsWindow:
         self.opt_model.bind("<Enter>", (lambda event: self.show_tooltip("What model of whisper to use. \nI'd recommend not going over 'tiny,base,small'\n as it will significantly impact the transcription time.")))
         self.opt_model.bind("<Leave>", self.hide_tooltip)
 
-        self.label_language = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Language', font=(self.FONT, 12))
+        self.label_language = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Language *', font=(self.FONT, 12))
         self.label_language.grid(row=5, column=0, padx=PADX_L, pady=PADY, sticky='es')
         self.label_language.bind("<Enter>", (lambda event: self.show_tooltip("Language to use, 'english' will be faster then other languages. \nLeaving it empty will let the program decide what language you are speaking.")))
         self.label_language.bind("<Leave>", self.hide_tooltip)
@@ -255,7 +255,7 @@ class SettingsWindow:
         self.opt_language.bind("<Enter>", (lambda event: self.show_tooltip("Language to use, 'english' will be faster then other languages. \nLeaving it empty will let the program decide what language you are speaking.")))
         self.opt_language.bind("<Leave>", self.hide_tooltip)
 
-        self.label_translate = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Translate to English', font=(self.FONT, 12))
+        self.label_translate = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Translate to English *', font=(self.FONT, 12))
         self.label_translate.bind("<Enter>", (lambda event: self.show_tooltip("With dynamic_energy_threshold set to 'Yes', \nthe program will realtimely try to re-adjust the energy threshold\n to match the environment based on the ambient noise level at that time.\nI'd recommend setting the 'energy_threshold' value \nhigh when enabling this setting.")))
         self.label_translate.bind("<Leave>", self.hide_tooltip)
         self.label_translate.grid(row=6, column=0, padx=PADX_L, pady=PADY, sticky='es')
@@ -367,7 +367,7 @@ class SettingsWindow:
         self.button_settings_overlay.bind("<Enter>", (lambda event: self.show_tooltip("Edit Overlay Settings")))
         self.button_settings_overlay.bind("<Leave>", self.hide_tooltip)
 
-        self.label_obs_source = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Enable OBS Source', font=(self.FONT, 12))
+        self.label_obs_source = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Enable OBS Source *', font=(self.FONT, 12))
         self.label_obs_source.grid(row=2, column=4, padx=PADX_L, pady=PADY, sticky='es')
         self.label_obs_source.bind("<Enter>", (lambda event: self.show_tooltip("If you want to use the OBS Browser Source (Requires Restart)")))
         self.label_obs_source.bind("<Leave>", self.hide_tooltip)
@@ -519,6 +519,10 @@ class SettingsWindow:
         self.btn_save = tk.Button(self.tkui, text="Save")
         self.btn_save.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=54, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.btn_save.place(relx=0.253, rely=0.95, anchor="center")
+
+        self.restart_lbl = tk.Label(self.tkui, text="* When changed, the program will restart.")
+        self.restart_lbl.configure(bg="#333333", fg="#666666", font=(self.FONT, 10))
+        self.restart_lbl.place(relx=0.01, rely=0.89, anchor="w")
 
         self.language_changed()
         self.mode_changed()
@@ -685,7 +689,10 @@ class SettingsWindow:
 
     def on_closing(self):
         self.closed = True
-        self.tkui.destroy()
+        try:
+            self.tkui.destroy()
+        except tk.TclError:
+            pass
 
     def button_hotkey_pressed(self):
         self.button_hotkey.configure(text="ESC to cancel...", state="disabled", disabledforeground="white")
