@@ -214,8 +214,10 @@ def clear_chatbox():
         osc.clear_chatbox(config.mode == 0)
     if config.osc.use_kat and osc.isactive:
         osc.clear_kat()
+    if ovr.initialized and config.overlay.enabled:
+        ovr.set_overlay_text("")
+
     main_window.set_text_label("- No Text -")
-    ovr.set_overlay_text("")
 
 
 def populate_chatbox(text, cutoff: bool = False, is_textfield: bool = False):
@@ -250,7 +252,8 @@ def populate_chatbox(text, cutoff: bool = False, is_textfield: bool = False):
         text = text[:osc.textbox_charlimit]
 
     main_window.set_text_label(text)
-    ovr.set_overlay_text(text)
+    if ovr.initialized and config.overlay.enabled:
+        ovr.set_overlay_text(text)
 
     set_typing_indicator(False)
 

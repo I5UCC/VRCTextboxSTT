@@ -98,13 +98,13 @@ class OVRHandler(object):
         
         if not self.overlay_conf.enabled:
             return False
-
-        if text == "":
-            openvr.VROverlay().hideOverlay(self.overlay_handle)
-            return False
         
         try:
             self.check_init()
+
+            if text == "":
+                openvr.VROverlay().hideOverlay(self.overlay_handle)
+                return False
 
             openvr.VROverlay().showOverlay(self.overlay_handle)
             text = textwrap.fill(text, 70)
