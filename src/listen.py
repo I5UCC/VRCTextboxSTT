@@ -65,6 +65,7 @@ class ListenHandler(object):
             log.error(traceback.format_exc())
 
     def raw_to_np(self, raw_data:bytes) -> np.ndarray:
+        """Convert raw audio from signed 16-bit integer to signed 16-bit float and return as np array."""
         try:
             return np.frombuffer(raw_data, np.int16).flatten().astype(np.float32) / 32768.0
         except Exception:

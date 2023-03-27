@@ -80,6 +80,18 @@ With default settings, this program has following requirements:
 
 # How to use
 
+
+### Run from Releases
+- Download one of the [Releases](https://github.com/I5UCC/VRCTextboxSTT/releases/latest).
+- unpack the .7z file with a software of your choice.
+- Run TextboxSTT.exe
+
+### Run from source
+- clone this repository, for example with git `git clone https://github.com/I5UCC/VRCTextboxSTT.git`
+- Using python 3.10, install all of the dependencies from the requirements.txt file `python -m pip install -r requirements.txt`
+- run the program by running `python main.py` in the projects directory
+
+### Usage in VRChat
 - Activate OSC in VRChat: <br/><br/>
 ![EnableOSC](https://user-images.githubusercontent.com/43730681/172059335-db3fd6f9-86ae-4f6a-9542-2a74f47ff826.gif)
 - Run the program.
@@ -87,6 +99,7 @@ With default settings, this program has following requirements:
 - if you have a lot of background noise you should play around with the "energy_threshold" option in the configuration (or press the ⟳ button next to it), to get it working well.
 - Press A on the left Controller on index or X on Oculus or F1 on your Keyboard.
 - Holding any of those for 1.5s clears the chatbox or cancels the action.
+- If the program doesnt work as its supposed to, try the troubleshooting steps in the next section.
 
 ## OSC Troubleshoot
 
@@ -179,9 +192,10 @@ If it doesnt show up, manually register the ´app.vrmanifest´ file by double cl
 - ~~Demo Gif/Video (Stole from Frosty, thanks lol)~~
 - ~~Add a OBS browsersource~~
 - ~~Use [whisper.cpp](https://github.com/ggerganov/whisper.cpp)/[faster-whisper](https://github.com/guillaumekln/faster-whisper)for transcription, for better performance.~~
+- ~~Allow use of finetuned models.~~
 - Implement Text To Speech (Maybe [coqui-ai?](https://github.com/coqui-ai/TTS))
-- Allow use of finetuned models.
 - Allow translation into and from different languages.
+- Implement VAD - Voice Activation Detection.
 
 
 ## Donate
