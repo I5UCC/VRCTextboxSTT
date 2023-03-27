@@ -48,8 +48,8 @@ def process_cache(cache_path, latest_log):
         os.mkdir(cache_path)
     except FileExistsError:
         pass
-    except Exception as e:
-        log.fatal("Failed to create cache directory: " + str(e))
+    except Exception:
+        log.fatal("Failed to create cache directory: ")
         log.error(traceback.format_exc())
 
     try:
@@ -61,8 +61,8 @@ def process_cache(cache_path, latest_log):
 
         if os.path.isfile(latest_log):
             os.rename(latest_log, os.path.join(cache_path, datetime.now().strftime("%Y-%m-%d_%H-%M-%S.log")))
-    except Exception as e:
-        logging.error("Error processing old logs: %s" + str(e))
+    except Exception:
+        logging.error("Error processing old logs:")
         log.error(traceback.format_exc())
 
     open(latest_log, 'w').close()
@@ -136,6 +136,6 @@ def force_single_instance():
             if proc.name() == PROCNAME and proc.pid != _pid:
                 proc.kill()
                 log.info("killed: " + proc.pid)
-    except Exception as e:
-        log.error("Error while killing other instances: " + str(e))
+    except Exception:
+        log.error("Error while killing other instances: ")
         log.error(traceback.format_exc())

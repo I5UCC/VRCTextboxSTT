@@ -124,7 +124,8 @@ def modify_audio_files(audio_dict):
             _segment = _segment + _tmp_audio.gain
             _segment.export(get_absolute_path(f"cache/{_tmp_audio.file}", __file__), format="wav")
         except Exception:
-            log.error(f"Failed to modify audio file \"{_tmp_audio.file}\": {traceback.format_exc()}")
+            log.error(f"Failed to modify audio file \"{_tmp_audio.file}\": ")
+            log.error(traceback.format_exc())
 
 
 def play_sound(au: audio):
@@ -143,7 +144,8 @@ def play_sound(au: audio):
     try:
         winsound.PlaySound(_file, winsound.SND_FILENAME | winsound.SND_ASYNC)
     except Exception:
-        log.error(f"Failed to play sound \"{_file}\": {traceback.format_exc()}")
+        log.error(f"Failed to play sound \"{_file}\": ")
+        log.error(traceback.format_exc())
 
 
 def replace_emotes(text):
@@ -571,12 +573,13 @@ def settings_closing(reload=False):
             if config_ui_open:
                 config_ui.save()
                 config_ui.on_closing()
-        except Exception as e:
+        except Exception:
+            log.error("Error saving settings: ")
             log.error(traceback.format_exc())
-            log.error("Error saving settings: " + str(e))
         try:
             init()
-        except Exception as e:
+        except Exception:
+            log.error("Error reinitializing: ")
             log.error(traceback.format_exc())
             main_window.set_status_label("ERROR INITIALIZING, PLEASE CHECK YOUR SETTINGS,\nLOOK INTO out.log for more info on the error", "red")
     else:
@@ -649,8 +652,8 @@ def restart():
         sys.argv.append(str(coordinates[0]))
         sys.argv.append(str(coordinates[1]))
         print(sys.argv)
-    except Exception as e:
-        log.error("Error restarting: " + str(e))
+    except Exception:
+        log.error("Error restarting: ")
         log.error(traceback.format_exc())
     
     os.execl(executable, executable, *sys.argv)
@@ -679,6 +682,7 @@ if __name__ == "__main__":
     try:
         init()
     except Exception as e:
+        log.error("Error initializing: ")
         log.error(traceback.format_exc())
         main_window.set_status_label("ERROR INITIALIZING, PLEASE CHECK YOUR SETTINGS,\nLOOK INTO latest.log in cache/ for more info on the error", "red")
 

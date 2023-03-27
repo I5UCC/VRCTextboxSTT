@@ -54,7 +54,7 @@ class OVRHandler(object):
             log.error("Error initializing OVR: ")
             log.error(traceback.format_exc())
 
-    def check_init(self) -> bool:
+    def _check_init(self) -> bool:
         """Checks if OpenVR is initialized."""
         if not self.initialized:
             raise NotInitializedException("OpenVR not initialized")
@@ -63,7 +63,7 @@ class OVRHandler(object):
         """Sets the overlay position to the position relative to the given device."""
 
         try:
-            self.check_init()
+            self._check_init()
 
             tracked_device = openvr.k_unTrackedDeviceIndex_Hmd
 
@@ -100,7 +100,7 @@ class OVRHandler(object):
             return False
         
         try:
-            self.check_init()
+            self._check_init()
 
             if text == "":
                 openvr.VROverlay().hideOverlay(self.overlay_handle)
@@ -132,7 +132,7 @@ class OVRHandler(object):
         """Returns the state of the ovr action"""
 
         try:
-            self.check_init()
+            self._check_init()
 
             _event = openvr.VREvent_t()
             _has_events = True
@@ -154,7 +154,7 @@ class OVRHandler(object):
         """Destroys the overlay."""
 
         try:
-            self.check_init()
+            self._check_init()
 
             openvr.VROverlay().destroyOverlay(self.overlay_handle)
             return True
@@ -170,7 +170,7 @@ class OVRHandler(object):
 
         self.destroy_overlay()
         try:
-            self.check_init()
+            self._check_init()
             openvr.shutdown()
             return True
         except NotInitializedException:

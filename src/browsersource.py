@@ -23,6 +23,9 @@ class FlaskAppWrapper(object):
         self.app.add_url_rule(endpoint, endpoint_name, handler, methods=methods, *args, **kwargs)
     
     def start(self):
+        if self.running:
+            return True
+        
         try:
             self.flask_thread.start()
             self.running = True
