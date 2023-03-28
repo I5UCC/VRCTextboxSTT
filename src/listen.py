@@ -50,7 +50,12 @@ class ListenHandler(object):
                 log.error("Error in record callback data: ")
                 log.error(traceback.format_exc())
 
-        self.stop_listening = self.rec.listen_in_background(self.source, record_callback, phrase_time_limit=self.config.phrase_time_limit)
+        with self.source:
+            try:
+                self.stop_listening = self.rec.listen_in_background(self.source, record_callback, phrase_time_limit=self.config.phrase_time_limit)
+            except Exception:
+                log.error("Error starting background listener: ")
+                log.error(traceback.format_exc())
 
     def stop_listen_background(self) -> None:
         try:
@@ -91,4 +96,4 @@ class ListenHandler(object):
         except Exception:
             log.error("Error getting energy threshold: ")
             log.error(traceback.format_exc())
-            return 100
+            return 200

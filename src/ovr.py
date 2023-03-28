@@ -27,6 +27,8 @@ class OVRHandler(object):
         if self.initialized:
             self.shutdown()
 
+        self.initialized = False
+
         try:
             self.application = openvr.init(openvr.VRApplication_Background)
             self.action_path = get_absolute_path("bindings/textboxstt_actions.json", self._script_path)
@@ -92,7 +94,7 @@ class OVRHandler(object):
             log.error(traceback.format_exc())
             return False
 
-    def set_overlay_text(self, text: str) -> bool:
+    def set_overlay_text(self, text: str, retry = False) -> bool:
         """Sets the text of the overlay by wrapping it to 70 characters and drawing it to an image.
         Then converts the image to bytes and sets the overlay texture to it."""
         
@@ -123,6 +125,14 @@ class OVRHandler(object):
             return True
         except NotInitializedException:
             return False
+        except openvr.openvr.error_code.OverlayError_RequestFailed:
+            if not retry:
+                log.error("Request setting overlay text failed. Retrying...")
+                self.init()
+                return self.set_overlay_text(text, True)
+            else:
+                log.error("Request setting overlay text failed. x2")
+                return False
         except Exception:
             log.error("Error setting overlay text: ")
             log.error(traceback.format_exc())
