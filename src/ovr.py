@@ -30,7 +30,7 @@ class OVRHandler(object):
         self.initialized = False
 
         try:
-            self.application = openvr.init(openvr.VRApplication_Background)
+            self.application = openvr.init(openvr.VRApplication_Overlay)
             self.action_path = get_absolute_path("bindings/textboxstt_actions.json", self._script_path)
             self.appmanifest_path = get_absolute_path("app.vrmanifest", self._script_path)
             openvr.VRApplications().addApplicationManifest(self.appmanifest_path)

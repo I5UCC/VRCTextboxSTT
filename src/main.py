@@ -71,7 +71,7 @@ def init():
     # Initialize OpenVR
     if not ovr:
         ovr = OVRHandler(config.overlay, __file__)
-    else:
+    if OVRHandler.is_running():
         ovr.init()
     if ovr.initialized:
         main_window.set_status_label("INITIALZIED OVR", "green")
