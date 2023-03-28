@@ -50,16 +50,15 @@ class ListenHandler(object):
                 log.error("Error in record callback data: ")
                 log.error(traceback.format_exc())
 
-        with self.source:
-            try:
-                self.stop_listening = self.rec.listen_in_background(self.source, record_callback, phrase_time_limit=self.config.phrase_time_limit)
-            except Exception:
-                log.error("Error starting background listener: ")
-                log.error(traceback.format_exc())
+        try:
+            self.stop_listening = self.rec.listen_in_background(self.source, record_callback, phrase_time_limit=self.config.phrase_time_limit)
+        except Exception:
+            log.error("Error starting background listener: ")
+            log.error(traceback.format_exc())
 
     def stop_listen_background(self) -> None:
         try:
-            self.stop_listening(wait_for_stop=False)
+            self.stop_listening()
         except Exception:
             log.error("Error stopping listening: ")
             log.error(traceback.format_exc())

@@ -390,7 +390,6 @@ def process_loop():
     set_typing_indicator(False)
     main_window.set_button_enabled(True)
     listen.stop_listen_background()
-    sleep(0.2)
 
 
 def process_once():
