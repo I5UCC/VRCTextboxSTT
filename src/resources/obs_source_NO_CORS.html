@@ -7,17 +7,17 @@
     div {
         position: absolute;
         bottom: 0px;
-        font-family: '[FONT]', Arial, monospace;
-        color: [COLOR];
+        font-family: 'Cascadia Code', Arial, monospace;
+        color: white;
         text-shadow:
-            1px 1px 2px [SHADOW],
-            1px -1px 2px [SHADOW],
-            -1px 1px 2px [SHADOW],
-            -1px -1px 2px [SHADOW];
+            1px 1px 2px black,
+            1px -1px 2px black,
+            -1px 1px 2px black,
+            -1px -1px 2px black;
         font-size: 48px;
         font-weight: 700;
         width: 100%;
-        text-align: [ALIGN];
+        text-align: center;
     }
 </style>
 
@@ -35,11 +35,11 @@
             if (i < text.length) {
                 e_transcript.innerHTML += text.charAt(i);
                 i++;
-                setTimeout(typeWriter, [SPEED]);
+                setTimeout(typeWriter, 30);
             }
         }
         function getTranscript() {
-            fetch("http://127.0.0.1:[PORT]/transcript")
+            fetch("http://127.0.0.1:5000/transcript")
                 .then(function (response) {
                     return response.json();
                 })
@@ -49,7 +49,7 @@
                         current_text = data;
                         
                         if (finished) {
-                            last_text = ""
+							last_text = ""
                             text = current_text
                             e_transcript.innerHTML = "";
                         }
@@ -65,7 +65,7 @@
                     console.log('Fetch Error: ', err);
                 });
             
-            fetch("http://127.0.0.1:[PORT]/finished")
+            fetch("http://127.0.0.1:5000/finished")
                 .then(function (response) {
                     return response.json();
                 })
@@ -77,7 +77,7 @@
                 });
             window.scrollTo(0, document.body.scrollHeight);
         }
-        setInterval(getTranscript, [INTERVAL]);
+        setInterval(getTranscript, 200);
     </script>
 </body>
 </html>

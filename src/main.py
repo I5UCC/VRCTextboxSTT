@@ -87,7 +87,7 @@ def init():
     # Start Flask server
     if not browsersource:
         browsersource = OBSBrowserSource(config.obs, get_absolute_path('resources/obs_source.html', __file__))
-    elif config.obs.enabled and not browsersource.running:
+    if config.obs.enabled and not browsersource.running:
         if browsersource.start():
             main_window.set_status_label("INITIALIZED FLASK SERVER", "green")
             log.info(f"Flask server started on 127.0.0.1:{config.obs.port}")
@@ -198,6 +198,8 @@ def set_typing_indicator(state: bool, textfield: bool = False):
         osc.set_textbox_typing_indicator(state)
     if config.osc.use_kat and osc.isactive and not textfield:
         osc.set_kat_typing_indicator(state)
+    if config.obs.enabled:
+        browsersource.setFinished(state)
 
 
 def clear_chatbox():
@@ -314,6 +316,7 @@ def process_forever():
             populate_chatbox(_text, True)
         elif _last_sample != bytes() and time() - _time_last > config.listener.pause_threshold:
             log.info(_text)
+            set_typing_indicator(False)
             _last_sample = bytes()
 
         sleep(0.05)

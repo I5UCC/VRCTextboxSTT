@@ -202,6 +202,7 @@ class obs_config(object):
     color: str = "white"
     shadow_color: str = "black"
     align: str = "center"
+    speed: int = 30
 
 
 @dataclass_json

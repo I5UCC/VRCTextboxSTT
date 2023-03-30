@@ -75,7 +75,8 @@
         "font": "Cascadia Code",
         "color": "white",
         "shadow_color": "black",
-        "align": "center"
+        "align": "center",
+        "speed": 30
     },
     "wordreplacement": {
         "enabled": true,
