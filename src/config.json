@@ -1,6 +1,7 @@
 {
     "mode": 0,
     "hotkey": "f1",
+    "text_timeout": 0.0,
     "audio_feedback": {
         "enabled": true,
         "sound_clear": {

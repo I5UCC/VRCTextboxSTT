@@ -37,6 +37,8 @@ ovr: OVRHandler = None
 listen: ListenHandler = None
 transcriber: TranscribeHandler = None
 browsersource: OBSBrowserSource = None
+timeout_time: float = 0.0
+curr_text: str = ""
 curr_time: float = 0.0
 pressed: bool = False
 holding: bool = False
@@ -210,6 +212,7 @@ def clear_chatbox():
     global ovr
     global browsersource
     global transcriber
+    global curr_text
 
     if browsersource:
         browsersource.setText("")
@@ -221,6 +224,7 @@ def clear_chatbox():
     if ovr.initialized and config.overlay.enabled:
         ovr.set_overlay_text("")
 
+    curr_text = ""
     main_window.set_text_label("- No Text -")
 
 
@@ -232,6 +236,8 @@ def populate_chatbox(text, cutoff: bool = False, is_textfield: bool = False):
     global osc
     global ovr
     global browsersource
+    global timeout_time
+    global curr_text
 
     text = replace_words(text)
 
@@ -256,10 +262,12 @@ def populate_chatbox(text, cutoff: bool = False, is_textfield: bool = False):
         text = text[:osc.textbox_charlimit]
 
     main_window.set_text_label(text)
+    curr_text = text
     if ovr.initialized and config.overlay.enabled:
         ovr.set_overlay_text(text)
 
     set_typing_indicator(False)
+    timeout_time = time()
 
 
 def process_forever():
@@ -454,6 +462,16 @@ def get_trigger_state():
         return is_pressed(config.hotkey)
 
 
+def check_timeout():
+
+    global timeout_time
+    global curr_text
+
+    if curr_text != "" and config.text_timeout > 0 and time() - timeout_time > config.text_timeout:
+        clear_chatbox()
+        play_sound(config.audio_feedback.sound_clear)
+
+
 def handle_input():
     """Handles all input from the user"""
 
@@ -466,9 +484,13 @@ def handle_input():
     global config_ui_open
     global initialized
 
-    pressed = get_trigger_state()
+    if not initialized or config_ui_open:
+        return
 
-    if not initialized or thread_process.is_alive() or config_ui_open:
+    pressed = get_trigger_state()
+    check_timeout()
+
+    if thread_process.is_alive():
         return
 
     if not thread_process.is_alive() and config.mode == 2 and not config_ui_open:

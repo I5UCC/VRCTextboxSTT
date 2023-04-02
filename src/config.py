@@ -304,6 +304,7 @@ class emotes_config(object):
 class config_struct(object):
     mode: int = 0
     hotkey: str = "f1"
+    text_timeout: float = 0.0
     audio_feedback: audio_feedback_config = field(default_factory=audio_feedback_config)
     device: device_config = field(default_factory=device_config)
     osc: osc_config = field(default_factory=osc_config)

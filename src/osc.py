@@ -417,15 +417,15 @@ class OscHandler:
 
 	# Chatbox loop
 	def osc_chatbox_loop(self):
-		gui_text = self.textbox_target_text.replace("\n", " ")
-
-		if gui_text == self.last_chatbox_text:
+		if self.last_chatbox_text == "":
 			return
+		
+		_text = self.textbox_target_text.replace("\n", " ")
 
-		self.last_chatbox_text = gui_text
+		self.last_chatbox_text = _text
+		self.osc_chatbox_text = _text
 
-		self.osc_client.send_message(self.osc_chatbox_path, [gui_text, True, True if self.textbox_target_text == "" else False])
-		self.osc_chatbox_text = gui_text
+		self.osc_client.send_message(self.osc_chatbox_path, [_text, True, True if self.textbox_target_text == "" else False])
 
 	def set_kat_typing_indicator(self, state: bool):
 		self.osc_client.send_message(self.osc_parameter_listening, state)
