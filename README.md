@@ -196,7 +196,6 @@ If it doesnt show up, manually register the ´app.vrmanifest´ file by double cl
 - ~~Allow use of finetuned models.~~
 - Implement Text To Speech (Maybe [coqui-ai?](https://github.com/coqui-ai/TTS))
 - Allow translation into and from different languages.
-- Implement VAD - Voice Activation Detection.
 
 
 ## Donate
