@@ -248,24 +248,29 @@ class SettingsWindow:
         self.label_language.bind("<Leave>", self.hide_tooltip)
         self.value_language = tk.StringVar(self.tkui)
         self.value_language.set("Auto Detect" if not self.config.whisper.language else self.config.whisper.language)
-        self.value_language.trace("w", self.language_changed)
         self.opt_language = tk.OptionMenu(self.tkui, self.value_language, *self.languages)
         self.opt_language.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_language.grid(row=5, column=1, padx=PADX_R, pady=PADY, sticky='ws')
         self.opt_language.bind("<Enter>", (lambda event: self.show_tooltip("Language to use, 'english' will be faster then other languages. \nLeaving it empty will let the program decide what language you are speaking.")))
         self.opt_language.bind("<Leave>", self.hide_tooltip)
 
-        self.label_translate = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Translate to English *', font=(self.FONT, 12))
-        self.label_translate.bind("<Enter>", (lambda event: self.show_tooltip("With dynamic_energy_threshold set to 'Yes', \nthe program will realtimely try to re-adjust the energy threshold\n to match the environment based on the ambient noise level at that time.\nI'd recommend setting the 'energy_threshold' value \nhigh when enabling this setting.")))
+        self.label_translate = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Translate to *', font=(self.FONT, 12))
+        self.label_translate.bind("<Enter>", (lambda event: self.show_tooltip("Translate the transcription to another language.")))
         self.label_translate.bind("<Leave>", self.hide_tooltip)
         self.label_translate.grid(row=6, column=0, padx=PADX_L, pady=PADY, sticky='es')
         self.value_translate = tk.StringVar(self.tkui)
-        self.value_translate.set("ON" if bool(self.config.whisper.translate_to_english) else "OFF")
-        self.opt_translate = tk.OptionMenu(self.tkui, self.value_translate, *self.yn_options)
+        self.value_translate.set("OFF" if not self.config.translator.language else self.config.translator.language)
+        self.languages[0] = "OFF"
+        self.opt_translate = tk.OptionMenu(self.tkui, self.value_translate, *self.languages)
         self.opt_translate.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_translate.grid(row=6, column=1, padx=PADX_R, pady=PADY, sticky='ws')
-        self.opt_translate.bind("<Enter>", (lambda event: self.show_tooltip("With dynamic_energy_threshold set to 'Yes', \nthe program will realtimely try to re-adjust the energy threshold\n to match the environment based on the ambient noise level at that time.\nI'd recommend setting the 'energy_threshold' value \nhigh when enabling this setting.")))
+        self.opt_translate.bind("<Enter>", (lambda event: self.show_tooltip("Translate the transcription to another language.")))
         self.opt_translate.bind("<Leave>", self.hide_tooltip)
+        self.button_translate_settings = tk.Button(self.tkui, text=" ⚙ ", command=self.open_translate_window)
+        self.button_translate_settings.configure(bg="#333333", fg="white", height=1, highlightthickness=0, anchor="center", activebackground="#555555", activeforeground="white")
+        self.button_translate_settings.grid(row=6, column=2, padx=2, pady=7, sticky='ws')
+        self.button_translate_settings.bind("<Enter>", (lambda event: self.show_tooltip("Edit Device Settings")))
+        self.button_translate_settings.bind("<Leave>", self.hide_tooltip)
 
         self.label_hotkey = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Hotkey', font=(self.FONT, 12))
         self.label_hotkey.grid(row=7, column=0, padx=PADX_L, pady=PADY, sticky='es')
@@ -524,7 +529,6 @@ class SettingsWindow:
         self.restart_lbl.configure(bg="#333333", fg="#666666", font=(self.FONT, 10))
         self.restart_lbl.place(relx=0.01, rely=0.89, anchor="w")
 
-        self.language_changed()
         self.mode_changed()
         self.tkui.withdraw()
 
@@ -550,6 +554,9 @@ class SettingsWindow:
             _index = int(_device[1])
             _device = "cuda"
         _ = DeviceSettingsWindow(self.config, self.config_path, _device, _index, self.icon_path, self.get_coordinates)
+
+    def open_translate_window(self):
+        _ = TranslateSettingsWindow(self.config, self.config_path, self.icon_path, self.get_coordinates)
 
     def model_changed(self, *args):
         if self.value_model.get() == "custom":
@@ -579,12 +586,6 @@ class SettingsWindow:
             self.entry_pause_threshold.delete(0, tk.END)
             self.entry_pause_threshold.insert(0, 0.8)
 
-    def language_changed(self, *args):
-        if self.value_language.get() == "english":
-            self.opt_translate.configure(state="disabled")
-        else:
-            self.opt_translate.configure(state="normal")
-
     def get_sound_devices(self):
         res = ["Default"]
         p = pyaudio.PyAudio()
@@ -613,7 +614,7 @@ class SettingsWindow:
         self.config.osc.server_port = int(self.entry_osc_server_port.get())
         self.config.whisper.model = self.value_model.get() if self.value_model.get() != "custom" else self.entry_model.get()
         self.config.whisper.language = None if self.value_language.get() == "Auto Detect" else self.value_language.get()
-        self.config.whisper.translate_to_english = True if self.value_translate.get() == "ON" else False
+        self.config.translator.language = None if self.value_translate.get() == "OFF" else self.value_translate.get()
         self.config.hotkey = self.set_key
         _realtime = 0
         if self.value_mode.get() == "once_continuous":
@@ -1244,6 +1245,68 @@ class AudioSettingsWindow:
         self.config.audio_feedback.sound_timeout.enabled = self.value_timeout.get() == "ON"
         self.config.audio_feedback.sound_timeout.gain = self.scale_timeout.get()
         
+        json.dump(self.config.to_dict(), open(self.config_path, "w"), indent=4)
+        self.on_closing()
+
+    def on_closing(self):
+        self.tkui.destroy()
+
+class TranslateSettingsWindow:
+    def __init__(self, conf: config_struct, config_path, icon_path, get_coordinates):
+        self.config_path = config_path
+        self.config: config_struct = conf
+        self.FONT = "Cascadia Code"
+
+        self.tkui = tk.Tk()
+        coordinates = get_coordinates()
+        self.tkui.geometry(f"+{coordinates[0]}+{coordinates[1]}")
+        self.tkui.minsize(300, 120)
+        self.tkui.maxsize(300, 120)
+        self.tkui.resizable(False, False)
+        self.tkui.configure(bg="#333333")
+        self.tkui.title("TextboxSTT - Translation Device Settings")
+        self.tkui.iconbitmap(icon_path)
+
+        self.devices_list = []
+        self.value_device = tk.StringVar(self.tkui)
+
+        if torch.cuda.is_available():
+            for i in range(0, torch.cuda.device_count()):
+                self.devices_list.append((i, torch.cuda.get_device_name(i)))
+            if self.config.translator.device.type != "cpu":
+                _index = int(self.config.translator.device.index)
+                self.value_device.set(self.devices_list[_index])
+
+        if self.config.translator.device.type == "cpu" or not torch.cuda.is_available():
+            self.value_device.set("CPU")
+
+        self.devices_list.append("CPU")
+
+        self.label_device = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Device', font=(self.FONT, 12))
+        self.label_device.grid(row=0, column=0, padx=12, pady=5, sticky='es')
+        self.opt_device = tk.OptionMenu(self.tkui, self.value_device, *self.devices_list)
+        self.opt_device.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.opt_device.grid(row=0, column=1, padx=12, pady=5, sticky='ws')
+
+        self.model_list = ["small", "large"]
+        self.value_model = tk.StringVar(self.tkui)
+        self.value_model.set(self.config.translator.model)
+        self.label_model = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Model', font=(self.FONT, 12))
+        self.label_model.grid(row=1, column=0, padx=12, pady=5, sticky='es')
+        self.opt_model = tk.OptionMenu(self.tkui, self.value_model, *self.model_list)
+        self.opt_model.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.opt_model.grid(row=1, column=1, padx=12, pady=5, sticky='ws')
+
+        self.btn_save = tk.Button(self.tkui, text="Save", command=self.save)
+        self.btn_save.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=34, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.btn_save.place(relx=0.5, rely=0.85, anchor="center")
+
+        self.tkui.mainloop()
+
+    def save(self):
+        self.config.translator.device.type = "cuda" if torch.cuda.is_available() and self.value_device.get().lower() != "cpu" else "cpu"
+        self.config.translator.device.index = int(self.value_device.get()[1]) if torch.cuda.is_available() and self.value_device.get().lower() != "cpu" else 0
+        self.config.translator.model = self.value_model.get()
         json.dump(self.config.to_dict(), open(self.config_path, "w"), indent=4)
         self.on_closing()
 

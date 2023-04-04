@@ -20,13 +20,13 @@ from browsersource import OBSBrowserSource
 from ovr import OVRHandler
 from listen import ListenHandler
 from transcribe import TranscribeHandler
+from translate import TranslationHandler
 from config import config_struct, audio
 from pydub import AudioSegment
 from helper import loadfont, log
 from torch.cuda import is_available
 import winsound
 import copy
-
 
 CONFIG_PATH = get_absolute_path('config.json', __file__)
 
@@ -36,6 +36,7 @@ osc: OscHandler = None
 ovr: OVRHandler = None
 listen: ListenHandler = None
 transcriber: TranscribeHandler = None
+translator: TranslationHandler = None
 browsersource: OBSBrowserSource = None
 timeout_time: float = 0.0
 curr_text: str = ""
@@ -57,6 +58,7 @@ def init():
     global main_window
     global osc
     global transcriber
+    global translator
     global ovr
     global initialized
     global browsersource
@@ -82,7 +84,7 @@ def init():
     
     # Initialize OSC Handler
     if not osc:
-        osc = OscHandler(copy.copy(config.osc))
+        osc = OscHandler(copy.deepcopy(config.osc))
     elif osc.osc_ip != config.osc.ip or osc.osc_port != config.osc.client_port or osc.osc_server_port != config.osc.server_port:
         restart()
 
@@ -97,18 +99,28 @@ def init():
             main_window.set_status_label("COULDNT INITIALIZE FLASK SERVER, CONTINUING WITHOUT OBS SOURCE", "orange")
     elif not config.obs.enabled and browsersource.running:
         restart()
-    
+
+    # Temporarily output to text label for download progress.
+    OUT_FILE_LOGGER.set_ui_output(main_window.loading_status)
     main_window.set_status_label("LOADING WHISPER MODEL", "orange")
     if not transcriber:
-        # Temporarily output to text label for download progress.
-        OUT_FILE_LOGGER.set_ui_output(main_window.loading_status)
-        transcriber = TranscribeHandler(copy.copy(config.whisper), copy.copy(config.device), CACHE_PATH)
-        OUT_FILE_LOGGER.remove_ui_output()
+        transcriber = TranscribeHandler(copy.deepcopy(config.whisper), copy.deepcopy(config.device), CACHE_PATH, config.translator.language == "english")
     elif config.whisper != transcriber.whisper_config or config.device != transcriber.device_config:
         restart()
     main_window.set_status_label(f"LOADED \"{transcriber.whisper_model}\"", "orange")
-    main_window.set_text_label("- No Text -")
 
+    # Initialize TranslationHandler
+    if config.translator.language and config.translator.language != config.whisper.language and transcriber.task == "transcribe":
+        main_window.set_status_label("LOADING TRANSLATION MODEL", "orange")
+        if not translator:
+            translator = TranslationHandler(CACHE_PATH, config.whisper.language, copy.deepcopy(config.translator))
+        elif config.translator != translator.translator_config:
+            restart()
+    elif translator:
+        restart()
+    OUT_FILE_LOGGER.remove_ui_output()
+    
+    main_window.set_text_label("- No Text -")
     main_window.set_conf_label(config.osc.ip, config.osc.client_port, config.osc.server_port, ovr.initialized, transcriber.device_name, transcriber.whisper_model, transcriber.compute_type, config.device.cpu_threads, config.device.num_workers)
     main_window.set_status_label("INITIALIZED - WAITING FOR INPUT", "green")
     initialized = True
@@ -315,10 +327,14 @@ def process_forever():
                 data = listen.data_queue.get()
                 _last_sample += data
 
+            pre = time()
             _np_audio = listen.raw_to_np(_last_sample)
-
             _text = transcriber.transcribe(_np_audio)
-            main_window.set_time_label(transcriber.last_transciption_time)
+            if translator:
+                main_window.set_status_label("TRANSLATING", "orange")
+                play_sound(config.audio_feedback.sound_donelisten)
+                _text = translator.translate(_text)
+            main_window.set_time_label(time() - pre)
 
             _time_last = time()
             populate_chatbox(_text, True)
@@ -380,10 +396,14 @@ def process_loop():
                 data = listen.data_queue.get()
                 _last_sample += data
 
+            pre = time()
             _np_audio = listen.raw_to_np(_last_sample)
-
             _text = transcriber.transcribe(_np_audio)
-            main_window.set_time_label(transcriber.last_transciption_time)
+            if translator:
+                main_window.set_status_label("TRANSLATING", "orange")
+                play_sound(config.audio_feedback.sound_donelisten)
+                _text = translator.translate(_text)
+            main_window.set_time_label(time() - pre)
 
             _time_last = time()
             populate_chatbox(_text, True)
@@ -415,8 +435,8 @@ def process_once():
     set_typing_indicator(True)
     main_window.set_status_label("LISTENING", "#FF00FF")
     play_sound(config.audio_feedback.sound_listen)
-    _np_audio = listen.listen_once()
-    if _np_audio is None:
+    raw_audio = listen.listen_once()
+    if raw_audio is None:
         main_window.set_status_label("TIMEOUT - WAITING FOR INPUT", "orange")
         play_sound(config.audio_feedback.sound_timeout)
         set_typing_indicator(False)
@@ -426,8 +446,14 @@ def process_once():
         main_window.set_status_label("TRANSCRIBING", "orange")
 
         if not pressed:
+            pre = time()
+            _np_audio = listen.raw_to_np(raw_audio)
             _trans = transcriber.transcribe(_np_audio)
-            main_window.set_time_label(transcriber.last_transciption_time)
+            if translator:
+                play_sound(config.audio_feedback.sound_donelisten)
+                main_window.set_status_label("TRANSLATING", "orange")
+                _trans = translator.translate(_trans)
+            main_window.set_time_label(time() - pre)
             if pressed:
                 main_window.set_status_label("CANCELED - WAITING FOR INPUT", "orange")
                 play_sound(config.audio_feedback.sound_timeout)

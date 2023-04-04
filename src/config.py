@@ -147,6 +147,11 @@ class device_config(object):
     cpu_threads: int = 4
     num_workers: int = 1
 
+@dataclass_json
+@dataclass
+class device_config2(object):
+    type: str = "cpu"
+    index: int = 0
 
 @dataclass_json
 @dataclass
@@ -158,14 +163,18 @@ class osc_config(object):
     use_kat: bool = True
     use_both: bool = False
 
-
 @dataclass_json
 @dataclass
 class whisper_config(object):
     model: str = "base"
     language: str = "english"
-    translate_to_english: bool = False
 
+@dataclass_json
+@dataclass
+class translator_config(object):
+    model: str = "small"
+    language: Optional[str] = None
+    device: device_config2 = device_config2()
 
 @dataclass_json
 @dataclass
@@ -309,6 +318,7 @@ class config_struct(object):
     device: device_config = field(default_factory=device_config)
     osc: osc_config = field(default_factory=osc_config)
     whisper: whisper_config = field(default_factory=whisper_config)
+    translator: translator_config = field(default_factory=translator_config)
     listener: listener_config = field(default_factory=listener_config)
     overlay: overlay_config = field(default_factory=overlay_config)
     obs: obs_config = field(default_factory=obs_config)

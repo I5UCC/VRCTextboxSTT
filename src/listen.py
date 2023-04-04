@@ -36,7 +36,7 @@ class ListenHandler(object):
                 log.error(traceback.format_exc())
                 return None
 
-            return self.raw_to_np(_audio.get_raw_data())
+            return _audio.get_raw_data()
         
     def start_listen_background(self) -> None:
         """

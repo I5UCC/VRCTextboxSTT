@@ -9,13 +9,12 @@ from config import whisper_config, device_config, MODELS, LANGUAGE_TO_KEY
 import traceback
 
 class TranscribeHandler(object):
-    def __init__(self, config_whisper: whisper_config, config_device: device_config, cache_path) -> None:
+    def __init__(self, config_whisper: whisper_config, config_device: device_config, cache_path, translate) -> None:
         self.whisper_config: whisper_config = config_whisper
         self.device_config: device_config = config_device
         self.cache_path = cache_path
         self.whisper_model = self.whisper_config.model if "/" in self.whisper_config.model else MODELS[self.whisper_config.model]
         self.is_openai_model = True if "openai" in self.whisper_model else False
-        self.last_transciption_time = 0
         self.language = None
 
         if self.whisper_config.language:
@@ -24,7 +23,7 @@ class TranscribeHandler(object):
         if self.is_openai_model and "large" not in self.whisper_model and self.language == "en" and ".en" not in self.whisper_model:
             self.whisper_model = self.whisper_model + ".en"
 
-        self.task = "translate" if self.whisper_config.translate_to_english and self.language != "english" else "transcribe"
+        self.task = "translate" if translate and self.language != "english" and self.is_openai_model else "transcribe"
 
         if torch.cuda.is_available():
             self.device = self.device_config.type
@@ -53,19 +52,15 @@ class TranscribeHandler(object):
         """
 
         _text = ""
-        pre = time.time()
         try:
             segments, _ = self.model.transcribe(audio, beam_size=5, language=self.language, word_timestamps=False, without_timestamps=True, task=self.task)
             _text = "".join([segment.text for segment in segments])
         except Exception:
             log.error("Error transcribing: ")
             log.error(traceback.format_exc())
-            self.last_transciption_time = 0
             return None
 
-        _time_taken = time.time() - pre
-        self.last_transciption_time = _time_taken
-        log.info("Transcription ({:.4f}s) : ".format(_time_taken) + _text)
+        log.info("Transcription: " + _text)
 
         return _text
 

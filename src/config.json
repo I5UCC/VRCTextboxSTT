@@ -47,8 +47,15 @@
     },
     "whisper": {
         "model": "base",
-        "language": "english",
-        "translate_to_english": false
+        "language": "english"
+    },
+    "translator": {
+        "model": "small",
+        "language": "german",
+        "device": {
+            "type": "cpu",
+            "index": 0
+        }
     },
     "listener": {
         "microphone_index": null,
