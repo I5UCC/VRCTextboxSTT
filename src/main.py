@@ -1,12 +1,12 @@
 import sys
 from helper import LogToFile, get_absolute_path, force_single_instance
 
+force_single_instance()
 # Log to file before importing other modules
 CACHE_PATH = get_absolute_path('cache/', __file__)
 OUT_FILE_LOGGER = LogToFile(CACHE_PATH)
 sys.stdout = OUT_FILE_LOGGER
 sys.stderr = OUT_FILE_LOGGER
-force_single_instance()
 
 import traceback
 import os

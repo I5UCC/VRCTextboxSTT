@@ -2,6 +2,7 @@ import os
 import sys
 import logging
 import psutil
+import shutil
 from ctypes import windll, byref, create_unicode_buffer, create_string_buffer
 from ctranslate2 import get_supported_compute_types
 from datetime import datetime
@@ -60,7 +61,7 @@ def process_cache(cache_path, latest_log):
                 os.remove(log)
 
         if os.path.isfile(latest_log):
-            os.rename(latest_log, os.path.join(cache_path, datetime.now().strftime("%Y-%m-%d_%H-%M-%S.log")))
+            shutil.copy(latest_log, os.path.join(cache_path, datetime.now().strftime("%Y-%m-%d_%H-%M-%S.log")))
     except Exception:
         logging.error("Error processing old logs:")
         log.error(traceback.format_exc())
@@ -124,18 +125,14 @@ def force_single_instance():
     """Force single instance by killing other instances of the same Name."""
 
     try:
-
         _pid = os.getpid()
-        PROCNAME = psutil.Process(_pid).name()
-        log.info(f"Current process: {_pid}, {PROCNAME}")
+        _procname = psutil.Process(_pid).name()
 
-        if __debug__:
+        if "python" in _procname:
             return
-    
+
         for proc in psutil.process_iter():
-            if proc.name() == PROCNAME and proc.pid != _pid:
+            if proc.name() == _procname and proc.pid != _pid:
                 proc.kill()
-                log.info("killed: " + proc.pid)
     except Exception:
-        log.error("Error while killing other instances: ")
-        log.error(traceback.format_exc())
+        pass
