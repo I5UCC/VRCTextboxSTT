@@ -58,7 +58,6 @@ class OBSBrowserSource(object):
         self.app = FlaskAppWrapper(Flask(__name__), self.config.port)
         self.app.add_endpoint('/', 'flask_root', self.flask_root, methods=['GET'])
         self.app.add_endpoint('/transcript', 'flask_get_transcript', self.flask_get_transcript, methods=['GET'])
-        self.app.add_endpoint('/finished', 'flask_get_finished', self.flask_get_finished, methods=['GET'])
         self.running = False
 
     def flask_root(self):
@@ -78,10 +77,7 @@ class OBSBrowserSource(object):
         return render_template_string(_html)
     
     def flask_get_transcript(self):
-        return jsonify(self.text)
-    
-    def flask_get_finished(self):
-        return jsonify(self.finished)
+        return jsonify(self.text, self.finished)
     
     def start(self):
         self.running = True

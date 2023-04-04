@@ -44,6 +44,9 @@
                     return response.json();
                 })
                 .then(function (data) {
+                    finished = data[1]
+                    data = data[0]
+
                     if (data != current_text) {
                         last_text = current_text;
                         current_text = data;
@@ -60,17 +63,6 @@
                         i = 0;
                         typeWriter()
                     }
-                })
-                .catch(function (err) {
-                    console.log('Fetch Error: ', err);
-                });
-            
-            fetch("http://127.0.0.1:[PORT]/finished")
-                .then(function (response) {
-                    return response.json();
-                })
-                .then(function (data) {
-                    finished = data
                 })
                 .catch(function (err) {
                     console.log('Fetch Error: ', err);
