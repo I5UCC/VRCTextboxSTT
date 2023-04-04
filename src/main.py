@@ -552,6 +552,9 @@ def entrybox_enter_event(text):
 
     enter_pressed = True
     if text:
+        if translator:
+            play_sound(config.audio_feedback.sound_donelisten)
+            text = translator.translate(text)
         populate_chatbox(text, False, True)
         play_sound(config.audio_feedback.sound_finished)
         main_window.clear_textfield()
