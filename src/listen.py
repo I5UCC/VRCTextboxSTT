@@ -89,7 +89,7 @@ class ListenHandler(object):
             with self.source:
                 _last = self.rec.energy_threshold
                 self.rec.adjust_for_ambient_noise(self.source, 5)
-                _value = round(self.rec.energy_threshold) + 20
+                _value = round(self.rec.energy_threshold) + 100
                 self.rec.energy_threshold = _last
                 return _value
         except Exception:
