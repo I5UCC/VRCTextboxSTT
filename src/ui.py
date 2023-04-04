@@ -642,7 +642,7 @@ class SettingsWindow:
 
     def reset_to_default(self):
         _config = config_struct()
-        if _config.device.type == "cpu" or not torch.cuda.is_available():
+        if _config.whisper.device.type == "cpu" or not torch.cuda.is_available():
             self.value_device.set("CPU")
         else:
             self.value_device.set((0, torch.cuda.get_device_name(0)))
@@ -654,7 +654,7 @@ class SettingsWindow:
         self.entry_osc_server_port.insert(0, _config.osc.server_port)
         self.value_model.set(_config.whisper.model)
         self.value_language.set(_config.whisper.language)
-        self.value_translate.set("ON" if _config.whisper.translate_to_english else "OFF")
+        self.value_translate.set("OFF")
         self.button_hotkey.configure(text=_config.hotkey)
         self.set_key = _config.hotkey
         self.value_mode.set("once_continuous" if _config.mode == 1 else "realtime" if _config.mode == 2 else "once")
