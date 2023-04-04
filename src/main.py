@@ -39,7 +39,7 @@ transcriber: TranscribeHandler = None
 translator: TranslationHandler = None
 browsersource: OBSBrowserSource = None
 timeout_time: float = 0.0
-curr_text: str = ""
+finished: bool = False
 curr_time: float = 0.0
 pressed: bool = False
 holding: bool = False
@@ -123,13 +123,12 @@ def init():
     main_window.set_text_label("- No Text -")
     main_window.set_conf_label(config.osc.ip, config.osc.client_port, config.osc.server_port, ovr.initialized, transcriber.device_name, transcriber.whisper_model, transcriber.compute_type, config.whisper.device.cpu_threads, config.whisper.device.num_workers)
     main_window.set_status_label("INITIALIZED - WAITING FOR INPUT", "green")
-    initialized = True
     main_window.set_button_enabled(True)
+
+    initialized = True
 
 
 def modify_audio_files(audio_dict):
-    global config
-    
     del audio_dict["enabled"]
     for key in audio_dict:
         try:
@@ -206,6 +205,7 @@ def replace_words(text):
 def set_typing_indicator(state: bool, textfield: bool = False):
     """Sets the typing indicator for the Chatbox and KAT."""
 
+    global config
     global osc
 
     if config.osc.use_textbox and config.osc.use_both or config.osc.use_textbox and config.osc.use_kat and not osc.isactive or not config.osc.use_kat:
@@ -224,7 +224,6 @@ def clear_chatbox():
     global ovr
     global browsersource
     global transcriber
-    global curr_text
 
     if browsersource:
         browsersource.setText("")
@@ -236,7 +235,6 @@ def clear_chatbox():
     if ovr.initialized and config.overlay.enabled:
         ovr.set_overlay_text("")
 
-    curr_text = ""
     main_window.set_text_label("- No Text -")
 
 
@@ -249,7 +247,6 @@ def populate_chatbox(text, cutoff: bool = False, is_textfield: bool = False):
     global ovr
     global browsersource
     global timeout_time
-    global curr_text
 
     text = replace_words(text)
 
@@ -274,12 +271,10 @@ def populate_chatbox(text, cutoff: bool = False, is_textfield: bool = False):
         text = text[:osc.textbox_charlimit]
 
     main_window.set_text_label(text)
-    curr_text = text
     if ovr.initialized and config.overlay.enabled:
         ovr.set_overlay_text(text)
 
     set_typing_indicator(False)
-    timeout_time = time()
 
 
 def process_forever():
@@ -291,9 +286,12 @@ def process_forever():
     global config_ui_open
     global listen
     global transcriber
+    global finished
+    global timeout_time
 
     play_sound(config.audio_feedback.sound_listen)
 
+    finished = False
     _text = ""
     _time_last = None
     _last_sample = bytes()
@@ -345,10 +343,11 @@ def process_forever():
 
         sleep(0.05)
 
+    finished = True
+    timeout_time = time()
     set_typing_indicator(False)
     main_window.set_button_enabled(True)
     listen.stop_listen_background()
-    sleep(1)
 
 
 def process_loop():
@@ -360,7 +359,10 @@ def process_loop():
     global pressed
     global listen
     global transcriber
+    global finished
+    global timeout_time
 
+    finished = False
     _text = ""
     _time_last = None
     _last_sample = bytes()
@@ -418,6 +420,8 @@ def process_loop():
             break
         sleep(0.05)
 
+    finished = True
+    timeout_time = time()
     set_typing_indicator(False)
     main_window.set_button_enabled(True)
     listen.stop_listen_background()
@@ -430,7 +434,10 @@ def process_once():
     global main_window
     global pressed
     global listen
+    global finished
+    global timeout_time
 
+    finished = False
     main_window.set_button_enabled(False)
     set_typing_indicator(True)
     main_window.set_status_label("LISTENING", "#FF00FF")
@@ -468,6 +475,8 @@ def process_once():
             main_window.set_status_label("CANCELED - WAITING FOR INPUT", "orange")
             play_sound(config.audio_feedback.sound_timeout)
 
+    finished = True
+    timeout_time = time()
     set_typing_indicator(False)
     main_window.set_button_enabled(True)
 
@@ -491,11 +500,13 @@ def get_trigger_state():
 def check_timeout():
 
     global timeout_time
-    global curr_text
+    global finished
 
-    if curr_text != "" and config.text_timeout > 0 and time() - timeout_time > config.text_timeout:
+    if finished and config.text_timeout > 0 and timeout_time > 0 and time() - timeout_time > config.text_timeout:
         clear_chatbox()
         play_sound(config.audio_feedback.sound_timeout)
+        finished = False
+        timeout_time = 0.0
 
 
 def handle_input():
