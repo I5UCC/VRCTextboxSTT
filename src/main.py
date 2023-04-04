@@ -495,7 +495,7 @@ def check_timeout():
 
     if curr_text != "" and config.text_timeout > 0 and time() - timeout_time > config.text_timeout:
         clear_chatbox()
-        play_sound(config.audio_feedback.sound_clear)
+        play_sound(config.audio_feedback.sound_timeout)
 
 
 def handle_input():

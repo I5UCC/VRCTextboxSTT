@@ -13,6 +13,7 @@ pydub
 ctranslate2
 transformers
 dataclasses-json
+sentencepiece
 torch
 --extra-index-url https://download.pytorch.org/whl/cu118
 faster-whisper
