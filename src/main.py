@@ -104,8 +104,8 @@ def init():
     OUT_FILE_LOGGER.set_ui_output(main_window.loading_status)
     main_window.set_status_label("LOADING WHISPER MODEL", "orange")
     if not transcriber:
-        transcriber = TranscribeHandler(copy.deepcopy(config.whisper), copy.deepcopy(config.device), CACHE_PATH, config.translator.language == "english")
-    elif config.whisper != transcriber.whisper_config or config.device != transcriber.device_config:
+        transcriber = TranscribeHandler(copy.deepcopy(config.whisper), CACHE_PATH, config.translator.language == "english")
+    elif config.whisper != transcriber.whisper_config:
         restart()
     main_window.set_status_label(f"LOADED \"{transcriber.whisper_model}\"", "orange")
 
@@ -121,7 +121,7 @@ def init():
     OUT_FILE_LOGGER.remove_ui_output()
     
     main_window.set_text_label("- No Text -")
-    main_window.set_conf_label(config.osc.ip, config.osc.client_port, config.osc.server_port, ovr.initialized, transcriber.device_name, transcriber.whisper_model, transcriber.compute_type, config.device.cpu_threads, config.device.num_workers)
+    main_window.set_conf_label(config.osc.ip, config.osc.client_port, config.osc.server_port, ovr.initialized, transcriber.device_name, transcriber.whisper_model, transcriber.compute_type, config.whisper.device.cpu_threads, config.whisper.device.num_workers)
     main_window.set_status_label("INITIALIZED - WAITING FOR INPUT", "green")
     initialized = True
     main_window.set_button_enabled(True)
@@ -717,7 +717,8 @@ if __name__ == "__main__":
     config = config_struct.load(CONFIG_PATH)
 
     if not is_available():
-        config.device.type = "cpu"
+        config.whisper.device.type = "cpu"
+        config.translator.device.type = "cpu"
 
     x = None
     y = None

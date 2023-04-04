@@ -5,13 +5,13 @@ from helper import get_best_compute_type, log
 from faster_whisper import WhisperModel
 from ctranslate2.converters import TransformersConverter
 from shutil import rmtree
-from config import whisper_config, device_config, MODELS, LANGUAGE_TO_KEY
+from config import whisper_config, whisper_device_config, MODELS, LANGUAGE_TO_KEY
 import traceback
 
 class TranscribeHandler(object):
-    def __init__(self, config_whisper: whisper_config, config_device: device_config, cache_path, translate) -> None:
+    def __init__(self, config_whisper: whisper_config, cache_path, translate) -> None:
         self.whisper_config: whisper_config = config_whisper
-        self.device_config: device_config = config_device
+        self.device_config: whisper_device_config = config_whisper.device
         self.cache_path = cache_path
         self.whisper_model = self.whisper_config.model if "/" in self.whisper_config.model else MODELS[self.whisper_config.model]
         self.is_openai_model = True if "openai" in self.whisper_model else False

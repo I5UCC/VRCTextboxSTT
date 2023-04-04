@@ -30,13 +30,6 @@
             "gain": 0
         }
     },
-    "device": {
-        "type": "cuda",
-        "index": 0,
-        "compute_type": null,
-        "cpu_threads": 4,
-        "num_workers": 1
-    },
     "osc": {
         "ip": "127.0.0.1",
         "client_port": 9000,
@@ -47,11 +40,18 @@
     },
     "whisper": {
         "model": "base",
-        "language": "english"
+        "language": "english",
+        "device": {
+            "type": "cuda",
+            "index": 0,
+            "compute_type": null,
+            "cpu_threads": 4,
+            "num_workers": 1
+        }
     },
     "translator": {
         "model": "small",
-        "language": "german",
+        "language": null,
         "device": {
             "type": "cpu",
             "index": 0

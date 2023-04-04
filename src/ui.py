@@ -162,11 +162,11 @@ class SettingsWindow:
         if torch.cuda.is_available():
             for i in range(0, torch.cuda.device_count()):
                 self.devices_list.append((i, torch.cuda.get_device_name(i)))
-            if self.config.device.type != "cpu":
-                _index = int(self.config.device.index)
+            if self.config.whisper.device.type != "cpu":
+                _index = int(self.config.whisper.device.index)
                 self.value_device.set(self.devices_list[_index])
 
-        if self.config.device.type == "cpu" or not torch.cuda.is_available():
+        if self.config.whisper.device.type == "cpu" or not torch.cuda.is_available():
             self.value_device.set("CPU")
 
         self.devices_list.append("CPU")
@@ -607,8 +607,8 @@ class SettingsWindow:
         
 
     def save(self):
-        self.config.device.type = "cuda" if torch.cuda.is_available() and self.value_device.get().lower() != "cpu" else "cpu"
-        self.config.device.index = int(self.value_device.get()[1]) if torch.cuda.is_available() and self.value_device.get().lower() != "cpu" else 0
+        self.config.whisper.device.type = "cuda" if torch.cuda.is_available() and self.value_device.get().lower() != "cpu" else "cpu"
+        self.config.whisper.device.index = int(self.value_device.get()[1]) if torch.cuda.is_available() and self.value_device.get().lower() != "cpu" else 0
         self.config.osc.ip = self.entry_osc_ip.get()
         self.config.osc.client_port = int(self.entry_osc_port.get())
         self.config.osc.server_port = int(self.entry_osc_server_port.get())
@@ -1105,10 +1105,10 @@ class DeviceSettingsWindow:
         self.label_comptype.grid(row=0, column=0, padx=12, pady=5, sticky='es')
         self.options_comptype = list(get_supported_compute_types(device, device_index))
         self.value_comptype = tk.StringVar(self.tkui)
-        if self.config.device.compute_type is None:
+        if self.config.whisper.device.compute_type is None:
             self.value_comptype.set(get_best_compute_type(device, device_index))
         else:
-            self.value_comptype.set(self.config.device.compute_type)
+            self.value_comptype.set(self.config.whisper.device.compute_type)
         self.opt_comptype = tk.OptionMenu(self.tkui, self.value_comptype, *self.options_comptype)
         self.opt_comptype.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=18, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_comptype.grid(row=0, column=1, padx=12, pady=5, sticky='ws')
@@ -1116,14 +1116,14 @@ class DeviceSettingsWindow:
         self.label_cpu_threads = tk.Label(self.tkui, text="CPU Threads", bg="#333333", fg="white", font=(self.FONT, 12))
         self.label_cpu_threads.grid(row=1, column=0, padx=12, pady=5, sticky='ws')
         self.entry_cpu_threads = tk.Entry(self.tkui)
-        self.entry_cpu_threads.insert(0, self.config.device.cpu_threads)
+        self.entry_cpu_threads.insert(0, self.config.whisper.device.cpu_threads)
         self.entry_cpu_threads.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666")
         self.entry_cpu_threads.grid(row=1, column=1, padx=12, pady=5, sticky='ws')
 
         self.label_num_workers = tk.Label(self.tkui, text="Num Workers", bg="#333333", fg="white", font=(self.FONT, 12))
         self.label_num_workers.grid(row=2, column=0, padx=12, pady=5, sticky='ws')
         self.entry_num_workers = tk.Entry(self.tkui)
-        self.entry_num_workers.insert(0, self.config.device.num_workers)
+        self.entry_num_workers.insert(0, self.config.whisper.device.num_workers)
         self.entry_num_workers.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666")
         self.entry_num_workers.grid(row=2, column=1, padx=12, pady=5, sticky='ws')
 
@@ -1134,9 +1134,9 @@ class DeviceSettingsWindow:
         self.tkui.mainloop()
 
     def save(self):
-        self.config.device.compute_type = self.value_comptype.get()
-        self.config.device.cpu_threads = int(self.entry_cpu_threads.get())
-        self.config.device.num_workers = int(self.entry_num_workers.get())
+        self.config.whisper.device.compute_type = self.value_comptype.get()
+        self.config.whisper.device.cpu_threads = int(self.entry_cpu_threads.get())
+        self.config.whisper.device.num_workers = int(self.entry_num_workers.get())
 
         json.dump(self.config.to_dict(), open(self.config_path, "w"), indent=4)
         self.on_closing()

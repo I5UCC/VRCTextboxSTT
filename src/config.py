@@ -140,7 +140,7 @@ class audio_feedback_config(object):
 
 @dataclass_json
 @dataclass
-class device_config(object):
+class whisper_device_config(object):
     type: str = "cuda"
     index: int = 0
     compute_type: Optional[str] = None
@@ -149,7 +149,7 @@ class device_config(object):
 
 @dataclass_json
 @dataclass
-class device_config2(object):
+class translation_device_config(object):
     type: str = "cpu"
     index: int = 0
 
@@ -168,13 +168,14 @@ class osc_config(object):
 class whisper_config(object):
     model: str = "base"
     language: str = "english"
+    device: whisper_device_config = field(default_factory=whisper_device_config)
 
 @dataclass_json
 @dataclass
 class translator_config(object):
     model: str = "small"
     language: Optional[str] = None
-    device: device_config2 = device_config2()
+    device: translation_device_config = translation_device_config()
 
 @dataclass_json
 @dataclass
@@ -315,7 +316,6 @@ class config_struct(object):
     hotkey: str = "f1"
     text_timeout: float = 0.0
     audio_feedback: audio_feedback_config = field(default_factory=audio_feedback_config)
-    device: device_config = field(default_factory=device_config)
     osc: osc_config = field(default_factory=osc_config)
     whisper: whisper_config = field(default_factory=whisper_config)
     translator: translator_config = field(default_factory=translator_config)
