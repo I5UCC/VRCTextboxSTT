@@ -127,34 +127,6 @@ You can edit the emote settings by clicking the "Edit Emotes" button:
 
 ![image](https://user-images.githubusercontent.com/43730681/220127049-225f20b7-6153-4e93-8dc1-734f4414a935.png)
 
-## config.json
-
-| Option | Values | Default | Explanation |
-|:------:|:------:|:-------:|:-----------:|
-| "use_cpu" | true, false | false | Use CPU to transcribe, Always on if you downloaded the CPU version of this program. (Not editable on runtime) |
-| "IP" | Any IP-Adress | "127.0.0.1" | IP to send the OSC information to. |
-| "Port" | Any Port | 9000 | Port to send the OSC information to. |
-| "osc_server_port" | Any Port | 9001 | Port to get the OSC information from. Used to improve KAT sync with in-game avatar and autodetect sync parameter count used for the avatar." |
-| "model" | "tiny", "base", "small", "medium", "large" | base | What model of whisper to use. I'd recommend not going over "base" as it will significantly impact the performance |
-| "language" | "english", "german", "spanish", "" | english | Language to use, "english" will be faster then other languages. Leaving it empty "", will let the program decide what language you are speaking. |
-| "hotkey" | Any key supported by the [python keyboard library](https://github.com/boppreh/keyboard) | F1 | The key that is used to trigger listening. |
-| "mode" | 0, 1, 2 | 0 | Transcribe mode to use 0 = once, 1 = once_continuous, 2 = realtime
-| "dynamic_energy_threshold" | true, false | false | With dynamic_energy_threshold set to 'True', the program will continuously try to re-adjust the energy threshold to match the environment based on the ambient noise level at that time. I'd recommend setting the 'energy_threshold' value high when enabling this setting. |
-| "energy_threshold" | 0-3500 | 200 | Under 'ideal' conditions (such as in a quiet room), values between 0 and 100 are considered silent or ambient, and values 300 to about 3500 are considered speech. |
-| "pause_threshold" | 0.0- | 0.8 | Amount of seconds to wait when current energy is under the 'energy_threshold' |
-| "timeout_time" | 0.0- | 3.0 | Amount of time to wait for the user to speak before timeout |
-| "hold_time" | 0.0- | 1.5 | amount of time to hold the button to clear the Textbox |
-| "phrase_time_limit" | 0.0- | 2.0 | The maximum number of seconds that this will allow a phrase to continue before stopping and returning the part of the phrase processed before the time limit was reached |
-| "max_transcribe_time" | 0.0- | 0.0 | maximum amount of time for transcribing a message before transcribing gets cancelled. 0.0 is infinite |
-| "microphone_index" | null, 0-10 | null | Index of the microphone to use. null is the System Default mircophone. |
-| "enable_word_replacements" | true, false | true | Whether or not to enable word replacements. |
-| "word_replacements" | {"word1": "replacement1", "word2": "replacement2"} | {} | Array of banned words that are gonna get removed from the transcribed text. |
-| "use_textbox" | true, false | true | If you want to send your text to VRChats Textbox. |
-| "use_kat" | true, false | true | If you want to send your text to [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText). |
-| "use_both" | true, false | false | If you want to send your text to both options above, if both available and set to true. If not, the program will prefer sending to [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText) if it is available. |
-| "enable_emotes" | true, false | true | Whether or not to enable emotes. |
-| "emotes" | - | - | All up to 80 emote slots and their corresponding phrase. |
-
 There are five model sizes, four with English-only versions, offering speed and accuracy tradeoffs. Below are the names of the available models and their approximate memory requirements and relative speed. 
 
 |  Size  | Parameters | English-only model | Multilingual model | Required VRAM | Relative speed |
@@ -194,9 +166,8 @@ If it doesnt show up, manually register the ´app.vrmanifest´ file by double cl
 - ~~Add a OBS browsersource~~
 - ~~Use [whisper.cpp](https://github.com/ggerganov/whisper.cpp)/[faster-whisper](https://github.com/guillaumekln/faster-whisper)for transcription, for better performance.~~
 - ~~Allow use of finetuned models.~~
+- ~~Allow translation into and from different languages.~~
 - Implement Text To Speech (Maybe [coqui-ai?](https://github.com/coqui-ai/TTS) or [silero-tts](https://github.com/snakers4/silero-models#speech-to-text))
-- Allow translation into and from different languages.
-
 
 ## Donate
 
