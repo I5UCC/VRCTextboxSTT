@@ -32,20 +32,22 @@ This program is supposed to be entirely free (as in money), open source and inde
     - Support for up to 80 emotes!
     - Automatic Detection of KAT on an avatar. It will use KAT if available, otherwise fall back to VRChat Textbox.
 - ***Uses SteamVR binding system***, press to transcribe, hold to clear/cancel (A/X by default)
-- Optional ***Live Transcription***
 - ***Customizable***
   - You can bind the button to start transcription to any action that SteamVR allows you to set.
   - You can bind it to any key on your keyboard.
   - Many Timing settings for transcription delays and button presses.
+- Optional ***Live Transcription***
 - Optional ***Automatic launch*** with SteamVR.
 - ***Text to Text*** for quick typing.
 - Optional ***SteamVR Overlay*** for seeing your transcription without having to look at your own textbox in-game.
 - Optional ***OBS Browser Source***.
 - ***Simple REST-API.*** latest transcription bound to the "/transcript" endpoint. (Requires OBS Source to be turned on)
-- Optional ***Audio feedback*** for each step in the transcription.
+- ***Audio feedback*** for each step in the transcription.
 - ***Multi Language support***. whisper supports around [100 different languages](https://github.com/openai/whisper/blob/main/whisper/tokenizer.py#L10). Here, with a few [limitations](https://github.com/I5UCC/VRCTextboxSTT#limitations).
-- Translate any language to English
+- Translate into and from different languages. (Powered by [M2M100](https://huggingface.co/docs/transformers/model_doc/m2m_100))
+- Word Replacements and Emote Replacements with regex(regular expressions).
 - Free to use as of the [GPL-3.0 license](https://github.com/I5UCC/VRCTextboxSTT/blob/main/LICENSE)
+- Completely free of Subscription/Cloud Services, by running locally on your hardware.
 
 
 # Limitations
