@@ -107,7 +107,7 @@ LANGUAGE_TO_KEY = {
 
 KEY_TO_LANGUAGE = dict((v, k) for k, v in LANGUAGE_TO_KEY.items())
 
-MODELS = {
+WHISPER_MODELS = {
     'tiny': 'openai/whisper-tiny',
     'tiny.en': 'openai/whisper-tiny.en',
     'base': 'openai/whisper-base',
@@ -118,6 +118,11 @@ MODELS = {
     'medium.en': 'openai/whisper-medium.en',
     'large': 'openai/whisper-large',
     'large-v2': 'openai/whisper-large-v2',
+}
+
+TRANSLATE_MODELS = {
+    "small": "facebook/m2m100_418M",
+    "large": "facebook/m2m100_1.2B"
 }
 
 @dataclass_json
@@ -140,18 +145,12 @@ class audio_feedback_config(object):
 
 @dataclass_json
 @dataclass
-class whisper_device_config(object):
-    type: str = "cuda"
+class ct2_device_config(object):
+    type: str = "cpu"
     index: int = 0
     compute_type: Optional[str] = None
     cpu_threads: int = 4
     num_workers: int = 1
-
-@dataclass_json
-@dataclass
-class translation_device_config(object):
-    type: str = "cpu"
-    index: int = 0
 
 @dataclass_json
 @dataclass
@@ -168,14 +167,14 @@ class osc_config(object):
 class whisper_config(object):
     model: str = "base"
     language: str = "english"
-    device: whisper_device_config = field(default_factory=whisper_device_config)
+    device: ct2_device_config = field(default_factory=ct2_device_config)
 
 @dataclass_json
 @dataclass
 class translator_config(object):
     model: str = "small"
     language: Optional[str] = None
-    device: translation_device_config = translation_device_config()
+    device: ct2_device_config = field(default_factory=ct2_device_config)
 
 @dataclass_json
 @dataclass

@@ -8,7 +8,7 @@ import os
 import torch
 from helper import get_best_compute_type, get_absolute_path, log
 from ctranslate2 import get_supported_compute_types
-from config import config_struct, LANGUAGE_TO_KEY, MODELS
+from config import config_struct, LANGUAGE_TO_KEY, WHISPER_MODELS
 
 class MainWindow(object):
     def __init__(self, script_path, x=None, y=None):
@@ -227,7 +227,7 @@ class SettingsWindow:
         self.value_model.set(self.config.whisper.model)
         self.value_model.trace("w", self.model_changed)
         self.models = []
-        for key in MODELS:
+        for key in WHISPER_MODELS:
             if ".en" not in key:
                 self.models.append(key)
         self.models.append("custom")
@@ -1274,8 +1274,8 @@ class TranslateSettingsWindow:
         self.tkui = tk.Tk()
         coordinates = get_coordinates()
         self.tkui.geometry(f"+{coordinates[0]}+{coordinates[1]}")
-        self.tkui.minsize(300, 120)
-        self.tkui.maxsize(300, 120)
+        self.tkui.minsize(340, 240)
+        self.tkui.maxsize(340, 240)
         self.tkui.resizable(False, False)
         self.tkui.configure(bg="#333333")
         self.tkui.title("TextboxSTT - Translation Device Settings")
@@ -1299,7 +1299,7 @@ class TranslateSettingsWindow:
         self.label_device = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Device', font=(self.FONT, 12))
         self.label_device.grid(row=0, column=0, padx=12, pady=5, sticky='es')
         self.opt_device = tk.OptionMenu(self.tkui, self.value_device, *self.devices_list)
-        self.opt_device.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.opt_device.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=18, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_device.grid(row=0, column=1, padx=12, pady=5, sticky='ws')
 
         self.model_list = ["small", "large"]
@@ -1308,12 +1308,38 @@ class TranslateSettingsWindow:
         self.label_model = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Model', font=(self.FONT, 12))
         self.label_model.grid(row=1, column=0, padx=12, pady=5, sticky='es')
         self.opt_model = tk.OptionMenu(self.tkui, self.value_model, *self.model_list)
-        self.opt_model.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.opt_model.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=18, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_model.grid(row=1, column=1, padx=12, pady=5, sticky='ws')
 
+        self.label_comptype = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Compute Type', font=(self.FONT, 12))
+        self.label_comptype.grid(row=2, column=0, padx=12, pady=5, sticky='es')
+        self.options_comptype = list(get_supported_compute_types(self.config.translator.device.type, self.config.translator.device.index))
+        self.value_comptype = tk.StringVar(self.tkui)
+        if self.config.translator.device.compute_type is None:
+            self.value_comptype.set(get_best_compute_type(self.config.translator.device.type, self.config.translator.device.index))
+        else:
+            self.value_comptype.set(self.config.translator.device.compute_type)
+        self.opt_comptype = tk.OptionMenu(self.tkui, self.value_comptype, *self.options_comptype)
+        self.opt_comptype.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=18, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.opt_comptype.grid(row=2, column=1, padx=12, pady=5, sticky='ws')
+
+        self.label_cpu_threads = tk.Label(self.tkui, text="CPU Threads", bg="#333333", fg="white", font=(self.FONT, 12))
+        self.label_cpu_threads.grid(row=3, column=0, padx=12, pady=5, sticky='ws')
+        self.entry_cpu_threads = tk.Entry(self.tkui)
+        self.entry_cpu_threads.insert(0, self.config.translator.device.cpu_threads)
+        self.entry_cpu_threads.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666")
+        self.entry_cpu_threads.grid(row=3, column=1, padx=12, pady=5, sticky='ws')
+
+        self.label_num_workers = tk.Label(self.tkui, text="Num Workers", bg="#333333", fg="white", font=(self.FONT, 12))
+        self.label_num_workers.grid(row=4, column=0, padx=12, pady=5, sticky='ws')
+        self.entry_num_workers = tk.Entry(self.tkui)
+        self.entry_num_workers.insert(0, self.config.translator.device.num_workers)
+        self.entry_num_workers.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666")
+        self.entry_num_workers.grid(row=4, column=1, padx=12, pady=5, sticky='ws')
+
         self.btn_save = tk.Button(self.tkui, text="Save", command=self.save)
-        self.btn_save.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=34, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
-        self.btn_save.place(relx=0.5, rely=0.85, anchor="center")
+        self.btn_save.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=40, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.btn_save.place(relx=0.5, rely=0.9, anchor="center")
 
         self.tkui.mainloop()
 
@@ -1321,6 +1347,9 @@ class TranslateSettingsWindow:
         self.config.translator.device.type = "cuda" if torch.cuda.is_available() and self.value_device.get().lower() != "cpu" else "cpu"
         self.config.translator.device.index = int(self.value_device.get()[1]) if torch.cuda.is_available() and self.value_device.get().lower() != "cpu" else 0
         self.config.translator.model = self.value_model.get()
+        self.config.translator.device.compute_type = self.value_comptype.get()
+        self.config.translator.device.cpu_threads = int(self.entry_cpu_threads.get())
+        self.config.translator.device.num_workers = int(self.entry_num_workers.get())
         json.dump(self.config.to_dict(), open(self.config_path, "w"), indent=4)
         self.on_closing()
 

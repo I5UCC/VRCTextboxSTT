@@ -54,7 +54,10 @@
         "language": null,
         "device": {
             "type": "cpu",
-            "index": 0
+            "index": 0,
+            "compute_type": null,
+            "cpu_threads": 4,
+            "num_workers": 1
         }
     },
     "listener": {
