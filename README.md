@@ -41,7 +41,7 @@ This program is supposed to be entirely free (as in money), open source and inde
 - ***Text to Text*** for quick typing.
 - Optional ***SteamVR Overlay*** for seeing your transcription without having to look at your own textbox in-game.
 - Optional ***OBS Browser Source***.
-- ***Simple REST-API.*** latest transcription bound to the "/transcript" endpoint. (Requires OBS Source to be turned on)
+- ***Simple API.*** latest transcription bound to the "/transcript" endpoint. (Requires OBS Source to be turned on)
 - ***Audio feedback*** for each step in the transcription.
 - ***Multi Language support***. whisper supports around [100 different languages](https://github.com/openai/whisper/blob/main/whisper/tokenizer.py#L10). Here, with a few [limitations](https://github.com/I5UCC/VRCTextboxSTT#limitations).
 - Translate into and from different languages. (Powered by [M2M100](https://huggingface.co/docs/transformers/model_doc/m2m_100)) (In next release)
