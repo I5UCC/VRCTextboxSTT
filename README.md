@@ -168,8 +168,8 @@ If it doesnt show up, manually register the ´app.vrmanifest´ file by double cl
 - ~~Add a OBS browsersource~~
 - ~~Use [whisper.cpp](https://github.com/ggerganov/whisper.cpp)/[faster-whisper](https://github.com/guillaumekln/faster-whisper)for transcription, for better performance.~~
 - ~~Allow use of finetuned models.~~
-- ~~Allow translation into and from different languages.~~
-- Implement Text To Speech (Maybe [coqui-ai?](https://github.com/coqui-ai/TTS) or [silero-tts](https://github.com/snakers4/silero-models#speech-to-text))
+- Allow translation into and from different languages. M2M100 using ctranslate2 (Currently at work)
+- Implement Text To Speech [silero-tts](https://github.com/snakers4/silero-models#speech-to-text) (Currently at work)
 
 ## Donate
 
