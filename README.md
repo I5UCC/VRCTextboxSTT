@@ -44,7 +44,7 @@ This program is supposed to be entirely free (as in money), open source and inde
 - ***Simple REST-API.*** latest transcription bound to the "/transcript" endpoint. (Requires OBS Source to be turned on)
 - ***Audio feedback*** for each step in the transcription.
 - ***Multi Language support***. whisper supports around [100 different languages](https://github.com/openai/whisper/blob/main/whisper/tokenizer.py#L10). Here, with a few [limitations](https://github.com/I5UCC/VRCTextboxSTT#limitations).
-- Translate into and from different languages. (Powered by [M2M100](https://huggingface.co/docs/transformers/model_doc/m2m_100))
+- Translate into and from different languages. (Powered by [M2M100](https://huggingface.co/docs/transformers/model_doc/m2m_100)) (In next release)
 - Word Replacements and Emote Replacements with regex(regular expressions).
 - Free to use as of the [GPL-3.0 license](https://github.com/I5UCC/VRCTextboxSTT/blob/main/LICENSE)
 - Completely free of Subscription/Cloud Services, by running locally on your hardware.
