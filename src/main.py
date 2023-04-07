@@ -507,7 +507,7 @@ def check_timeout():
 
     if finished and config.text_timeout > 0 and timeout_time > 0 and time() - timeout_time > config.text_timeout:
         clear_chatbox()
-        play_sound(config.audio_feedback.sound_timeout)
+        play_sound(config.audio_feedback.sound_timeout_text)
         finished = False
         timeout_time = 0.0
 

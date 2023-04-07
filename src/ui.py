@@ -1170,8 +1170,8 @@ class AudioSettingsWindow:
         self.tkui = tk.Tk()
         coordinates = get_coordinates()
         self.tkui.geometry(f"+{coordinates[0]}+{coordinates[1]}")
-        self.tkui.minsize(340, 475)
-        self.tkui.maxsize(340, 475)
+        self.tkui.minsize(350, 570)
+        self.tkui.maxsize(350, 570)
         self.tkui.resizable(False, False)
         self.tkui.configure(bg="#333333")
         self.tkui.title("TextboxSTT - Audio Feedback Settings")
@@ -1242,6 +1242,19 @@ class AudioSettingsWindow:
         self.scale_timeout.grid(row=9, column=1, padx=12, pady=5, sticky='ws')
         self.scale_timeout.set(self.config.audio_feedback.sound_timeout.gain)
 
+        self.label_timeout_text = tk.Label(self.tkui, text="timeout_text", bg="#333333", fg="white", font=(self.FONT, 12))
+        self.label_timeout_text.grid(row=10, column=0, padx=12, pady=5, sticky='ws')
+        self.label_timeout_text_gain = tk.Label(self.tkui, text="gain (dB)", bg="#333333", fg="#888888", font=(self.FONT, 12))
+        self.label_timeout_text_gain.grid(row=11, column=0, padx=12, pady=5, sticky='e')
+        self.value_timeout_text = tk.StringVar(self.tkui)
+        self.value_timeout_text.set("ON" if self.config.audio_feedback.sound_timeout_text.enabled else "OFF")
+        self.opt_timeout_text = tk.OptionMenu(self.tkui, self.value_timeout_text, *self.yn_options)
+        self.opt_timeout_text.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.opt_timeout_text.grid(row=10, column=1, padx=12, pady=5, sticky='ws')
+        self.scale_timeout_text = tk.Scale(self.tkui, from_=-50, to=50, orient=tk.HORIZONTAL, bg="#333333", fg="white", highlightthickness=0, length=190)
+        self.scale_timeout_text.grid(row=11, column=1, padx=12, pady=5, sticky='ws')
+        self.scale_timeout_text.set(self.config.audio_feedback.sound_timeout_text.gain)
+
         self.btn_save = tk.Button(self.tkui, text="Save", command=self.save)
         self.btn_save.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=40, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.btn_save.place(relx=0.5, rely=0.958, anchor="center")
@@ -1259,6 +1272,8 @@ class AudioSettingsWindow:
         self.config.audio_feedback.sound_listen.gain = self.scale_listen.get()
         self.config.audio_feedback.sound_timeout.enabled = self.value_timeout.get() == "ON"
         self.config.audio_feedback.sound_timeout.gain = self.scale_timeout.get()
+        self.config.audio_feedback.sound_timeout_text.enabled = self.value_timeout_text.get() == "ON"
+        self.config.audio_feedback.sound_timeout_text.gain = self.scale_timeout_text.get()
         
         json.dump(self.config.to_dict(), open(self.config_path, "w"), indent=4)
         self.on_closing()

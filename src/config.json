@@ -1,7 +1,7 @@
 {
     "mode": 0,
     "hotkey": "f1",
-    "text_timeout": 0.0,
+    "text_timeout": 30.0,
     "audio_feedback": {
         "enabled": true,
         "sound_clear": {
@@ -27,6 +27,11 @@
         "sound_timeout": {
             "enabled": true,
             "file": "timeout.wav",
+            "gain": 0
+        },
+        "sound_timeout_text": {
+            "enabled": true,
+            "file": "timeout_text.wav",
             "gain": 0
         }
     },

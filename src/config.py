@@ -141,6 +141,7 @@ class audio_feedback_config(object):
     sound_finished: audio = audio(True, "finished.wav", 0)
     sound_listen: audio = audio(True, "listen.wav", 0)
     sound_timeout: audio = audio(True, "timeout.wav", 0)
+    sound_timeout_text: audio = audio(True, "timeout_text.wav", 0)
     
 
 @dataclass_json
