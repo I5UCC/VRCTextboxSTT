@@ -750,5 +750,5 @@ if __name__ == "__main__":
     main_window.btn_refresh.configure(command=lambda: reload(True))
     main_window.create_loop(7000, check_ovr)
     main_window.create_loop(50, handle_input)
-    main_window.tkui.after(10, reload)
+    main_window.tkui.after(100, reload)
     main_window.run_loop()

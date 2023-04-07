@@ -49,7 +49,6 @@ class OscHandler:
 		self.osc_chatbox_typing_path = "/chatbox/typing"
 		self.osc_parameter_listening = "/avatar/parameters/stt_listening"
 		self.last_chatbox_text: str = ""
-		self.osc_chatbox_text: str = ""
 		self.osc_text: str = ""
 		self.kat_target_text: str = ""
 		self.textbox_target_text: str = ""
@@ -417,14 +416,12 @@ class OscHandler:
 
 	# Chatbox loop
 	def osc_chatbox_loop(self):
-		if self.last_chatbox_text == "":
-			return
-		
 		_text = self.textbox_target_text.replace("\n", " ")
 
+		if self.last_chatbox_text == "" and _text == "":
+			return
+		
 		self.last_chatbox_text = _text
-		self.osc_chatbox_text = _text
-
 		self.osc_client.send_message(self.osc_chatbox_path, [_text, True, True if self.textbox_target_text == "" else False])
 
 	def set_kat_typing_indicator(self, state: bool):
