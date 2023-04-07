@@ -225,6 +225,7 @@ def clear_chatbox():
     global browsersource
     global transcriber
     global finished
+    global timeout_time
 
     if browsersource:
         browsersource.setText("")
@@ -237,6 +238,7 @@ def clear_chatbox():
         ovr.set_overlay_text("")
 
     finished = False
+    timeout_time = 0.0
 
     main_window.set_text_label("- No Text -")
 
