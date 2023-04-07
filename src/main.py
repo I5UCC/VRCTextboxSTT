@@ -224,6 +224,7 @@ def clear_chatbox():
     global ovr
     global browsersource
     global transcriber
+    global finished
 
     if browsersource:
         browsersource.setText("")
@@ -234,6 +235,8 @@ def clear_chatbox():
         osc.clear_kat()
     if ovr.initialized and config.overlay.enabled:
         ovr.set_overlay_text("")
+
+    finished = False
 
     main_window.set_text_label("- No Text -")
 
