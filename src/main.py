@@ -225,6 +225,7 @@ def clear_chatbox():
     global browsersource
     global transcriber
     global finished
+    global timeout_time
 
     if browsersource:
         browsersource.setText("")
@@ -237,6 +238,7 @@ def clear_chatbox():
         ovr.set_overlay_text("")
 
     finished = False
+    timeout_time = 0.0
 
     main_window.set_text_label("- No Text -")
 
@@ -340,7 +342,6 @@ def process_forever():
             _time_last = time()
             populate_chatbox(_text, True)
         elif _last_sample != bytes() and time() - _time_last > config.listener.pause_threshold:
-            log.info(_text)
             set_typing_indicator(False)
             _last_sample = bytes()
 
@@ -414,7 +415,6 @@ def process_loop():
             populate_chatbox(_text, True)
         elif _last_sample != bytes() and time() - _time_last > config.listener.pause_threshold:
             main_window.set_status_label("FINISHED - WAITING FOR INPUT", "blue")
-            log.info(_text)
             play_sound(config.audio_feedback.sound_finished)
             break
         elif _last_sample == bytes() and time() - _time_last > config.listener.timeout_time:
