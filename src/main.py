@@ -560,6 +560,8 @@ def entrybox_enter_event(text):
     global config
     global main_window
     global enter_pressed
+    global finished
+    global timeout_time
 
     enter_pressed = True
     if text:
@@ -573,6 +575,9 @@ def entrybox_enter_event(text):
         clear_chatbox()
         play_sound(config.audio_feedback.sound_clear)
 
+    finished = True
+    timeout_time = 0.0
+
 
 def textfield_keyrelease(text):
     """Handles the key release event for the textfield."""
@@ -580,6 +585,8 @@ def textfield_keyrelease(text):
     global config
     global osc
     global enter_pressed
+    global finished
+    global timeout_time
 
     if not enter_pressed:
         if len(text) > osc.textbox_charlimit:
@@ -593,6 +600,8 @@ def textfield_keyrelease(text):
             populate_chatbox(text, False, True)
 
     enter_pressed = False
+    finished = True
+    timeout_time = 0.0
 
 
 def main_window_closing():
