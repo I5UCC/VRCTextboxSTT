@@ -562,6 +562,8 @@ def entrybox_enter_event(text):
     global enter_pressed
     global finished
     global timeout_time
+    global finished
+    global timeout_time
 
     enter_pressed = True
     if text:
@@ -585,6 +587,8 @@ def textfield_keyrelease(text):
     global config
     global osc
     global enter_pressed
+    global finished
+    global timeout_time
     global finished
     global timeout_time
 
