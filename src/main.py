@@ -623,37 +623,6 @@ def main_window_closing():
         log.error(traceback.format_exc())
 
 
-def settings_closing(reload=False):
-    """Handles the closing of the settings menu. If save is True, saves the settings and restarts the program."""
-
-    global config
-    global osc
-    global config_ui
-    global config_ui_open
-    global browsersource
-
-    if reload:
-        try:
-            if config_ui_open:
-                config_ui.save()
-                config_ui.on_closing()
-        except Exception:
-            log.error("Error saving settings: ")
-            log.error(traceback.format_exc())
-        try:
-            init()
-        except Exception:
-            log.error("Error reinitializing: ")
-            log.error(traceback.format_exc())
-            main_window.set_status_label("ERROR INITIALIZING, PLEASE CHECK YOUR SETTINGS,\nLOOK INTO out.log for more info on the error", "red")
-    else:
-        config_ui.on_closing()
-        main_window.set_status_label("SETTINGS NOT SAVED - WAITING FOR INPUT", "#00008b")
-
-    main_window.set_button_enabled(True)
-    config_ui_open = False
-
-
 def open_settings():
     """Opens the settings menu"""
 
@@ -666,8 +635,8 @@ def open_settings():
     config_ui_open = True
     config_ui = SettingsWindow(config, CONFIG_PATH, __file__, main_window.get_coordinates)
     config_ui.button_refresh.configure(command=determine_energy_threshold)
-    config_ui.btn_save.configure(command=(lambda: settings_closing(True)))
-    config_ui.tkui.protocol("WM_DELETE_WINDOW", settings_closing)
+    config_ui.btn_save.configure(command=(lambda: reload(True)))
+    config_ui.tkui.protocol("WM_DELETE_WINDOW", reload)
     main_window.set_button_enabled(False)
     config_ui.open()
 
@@ -723,6 +692,37 @@ def restart():
     os.execl(executable, executable, *sys.argv)
 
 
+def reload(save=False):
+    """Handles the closing of the settings menu. If save is True, saves the settings and restarts the program."""
+
+    global config
+    global osc
+    global config_ui
+    global config_ui_open
+    global browsersource
+
+    if save and config_ui_open:
+        try:
+            config_ui.save()
+            config_ui.on_closing()
+        except Exception:
+            log.error("Error saving settings: ")
+            log.error(traceback.format_exc())
+    elif config_ui_open:
+        config_ui.on_closing()
+        main_window.set_status_label("SETTINGS NOT SAVED - WAITING FOR INPUT", "#00008b")
+    
+    try:
+        init()
+    except Exception:
+        log.error("Error reinitializing: ")
+        log.error(traceback.format_exc())
+        main_window.set_status_label("ERROR INITIALIZING, PLEASE CHECK YOUR SETTINGS,\nLOOK INTO cache/latest.log for more info on the error", "red")
+
+    main_window.set_button_enabled(True)
+    config_ui_open = False
+
+
 if __name__ == "__main__":
     if os.name == 'nt':
         loadfont(get_absolute_path("resources/CascadiaCode.ttf", __file__))
@@ -734,28 +734,21 @@ if __name__ == "__main__":
         config.whisper.device.type = "cpu"
         config.translator.device.type = "cpu"
 
-    x = None
-    y = None
     try:
         x = int(sys.argv[1])
         y = int(sys.argv[2])
     except Exception as e:
-        pass
+        x = None
+        y = None
 
     main_window = MainWindow(__file__, x, y)
-
-    try:
-        init()
-    except Exception as e:
-        log.error("Error initializing: ")
-        log.error(traceback.format_exc())
-        main_window.set_status_label("ERROR INITIALIZING, PLEASE CHECK YOUR SETTINGS,\nLOOK INTO latest.log in cache/ for more info on the error", "red")
 
     main_window.tkui.protocol("WM_DELETE_WINDOW", main_window_closing)
     main_window.textfield.bind("<Return>", (lambda event: entrybox_enter_event(main_window.textfield.get())))
     main_window.textfield.bind("<KeyRelease>", (lambda event: textfield_keyrelease(main_window.textfield.get())))
     main_window.btn_settings.configure(command=open_settings)
-    main_window.btn_refresh.configure(command=lambda: settings_closing(True))
+    main_window.btn_refresh.configure(command=lambda: reload(True))
     main_window.create_loop(7000, check_ovr)
     main_window.create_loop(50, handle_input)
+    main_window.tkui.after(10, reload)
     main_window.run_loop()

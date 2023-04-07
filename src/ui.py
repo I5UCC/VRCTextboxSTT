@@ -99,6 +99,7 @@ class MainWindow(object):
     def loading_status(self, s: str):
         try:
             self.set_text_label(f"Downloading Model:{s[s.rindex('|')+1:]}")
+            self.update()
         except Exception:
             pass
 
