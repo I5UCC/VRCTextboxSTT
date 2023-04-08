@@ -129,18 +129,6 @@ You can edit the emote settings by clicking the "Edit Emotes" button:
 
 ![image](https://user-images.githubusercontent.com/43730681/220127049-225f20b7-6153-4e93-8dc1-734f4414a935.png)
 
-There are five model sizes, four with English-only versions, offering speed and accuracy tradeoffs. Below are the names of the available models and their approximate memory requirements and relative speed. 
-
-|  Size  | Parameters | English-only model | Multilingual model | Required VRAM | Relative speed |
-|:------:|:----------:|:------------------:|:------------------:|:-------------:|:--------------:|
-|  tiny  |    39 M    |     `tiny.en`      |       `tiny`       |     ~1 GB     |      ~32x      |
-|  base  |    74 M    |     `base.en`      |       `base`       |     ~1 GB     |      ~16x      |
-| small  |   244 M    |     `small.en`     |      `small`       |     ~2 GB     |      ~6x       |
-| medium |   769 M    |    `medium.en`     |      `medium`      |     ~5 GB     |      ~2x       |
-| large  |   1550 M   |        N/A         |      `large`       |    ~10 GB     |       1x       |
-
-For English-only applications, the `.en` models tend to perform better, especially for the `tiny.en` and `base.en` models. OpenAI observed that the difference becomes less significant for the `small.en` and `medium.en` models.
-
 # Modifying SteamVR binding
 You can set the boolean "sttlisten" in the Binding UI of SteamVR. Anyone who has set up OpenVR-Advanced-Settings might be familiar with that.
 You can set it to any action that supports a boolean input. By default it is the left A button (X button on Oculus/Meta respectively).
