@@ -844,7 +844,7 @@ class ReplacementWindow:
         self.current_selection = None
         self.current_key = None
 
-        self.label_word = tk.Label(self.tkui, text="Word", bg="#333333", fg="white", font=(self.FONT, 12))
+        self.label_word = tk.Label(self.tkui, text="Expression", bg="#333333", fg="white", font=(self.FONT, 12))
         self.label_word.grid(row=0, column=1, padx=5, pady=5, sticky='ws')
         self.label_replace = tk.Label(self.tkui, text="Replacement", bg="#333333", fg="white", font=(self.FONT, 12))
         self.label_replace.grid(row=1, column=1, padx=5, pady=5, sticky='ws')
