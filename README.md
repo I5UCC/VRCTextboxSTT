@@ -31,6 +31,7 @@ This program is supposed to be entirely free (as in money), open source and inde
     - You can use [Frosty704's Billboard](https://github.com/Frosty704/Billboard) to add a speech bubble to your avatar.
     - Support for up to 80 emotes!
     - Automatic Detection of KAT on an avatar. It will use KAT if available, otherwise fall back to VRChat Textbox.
+- ***Fast and Efficient***. VRCTextboxSTT uses [ctranslate2](https://github.com/OpenNMT/CTranslate2) as the runtime for transcription and translation, which makes it incredibly efficient and fast.
 - ***Uses SteamVR binding system***, press to transcribe, hold to clear/cancel (A/X by default)
 - ***Customizable***
   - You can bind the button to start transcription to any action that SteamVR allows you to set.
@@ -167,11 +168,8 @@ You can always leave a Github Star 🟊 (It's free) or buy me a coffee:<br />
 
 # Credit
 - [OpenAI](https://github.com/openai) for their amazing work with anything really.
-- [guillaumekln/faster-whisper](https://github.com/guillaumekln/faster-whisper) for their really fast implementation of whisper.
-- [ValveSoftware/openvr](https://github.com/ValveSoftware/openvr)
-- [cmbruns/pyopenvr](https://github.com/cmbruns/pyopenvr)
-- [Uberi/speech_recognition](https://github.com/Uberi/speech_recognition)
-- [jleb/pyaudio](https://github.com/jleb/pyaudio)
-- [pytorch](https://github.com/pytorch/pytorch)
+- [guillaumekln/faster-whisper](https://github.com/guillaumekln/faster-whisper) and [ctranslate2](https://github.com/OpenNMT/CTranslate2), their work makes this project much more efficent and faster then it otherwise would be.
+- [ValveSoftware/openvr](https://github.com/ValveSoftware/openvr) and [cmbruns/pyopenvr](https://github.com/cmbruns/pyopenvr)
+- [Uberi/speech_recognition](https://github.com/Uberi/speech_recognition) and [jleb/pyaudio](https://github.com/jleb/pyaudio)
 - [killfrenzy96](https://github.com/killfrenzy96) for [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText) and [KatOSC](https://github.com/killfrenzy96/KatOscApp)
 - [Frosty704's Billboard](https://github.com/Frosty704/Billboard) for making this project more useful.
