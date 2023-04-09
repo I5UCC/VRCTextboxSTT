@@ -5,21 +5,22 @@
 from threading import Timer
 from pythonosc import udp_client, osc_server, dispatcher
 import math, asyncio, threading
-from config import osc_config
+from config import osc_config, config_struct
 from helper import log
 import traceback
 
 
 class OscHandler:
-	def __init__(self, config: osc_config):
-		self.config: osc_config = config
+	def __init__(self, conf: config_struct, config_osc: osc_config):
+		self.config: config_struct = conf
+		self.config_osc: osc_config = config_osc
 		self.isactive = False
 
 		self.osc_enable_server = True # Used to improve sync with in-game avatar and autodetect sync parameter count used for the avatar.
-		self.osc_server_ip = self.config.ip # OSC server IP to listen too
-		self.osc_server_port = self.config.server_port # OSC network port for recieving messages
-		self.osc_ip = self.config.ip # OSC server IP to send too
-		self.osc_port = self.config.client_port # OSC network port for sending messages
+		self.osc_server_ip = self.config_osc.ip # OSC server IP to listen too
+		self.osc_server_port = self.config_osc.server_port # OSC network port for recieving messages
+		self.osc_ip = self.config_osc.ip # OSC server IP to send too
+		self.osc_port = self.config_osc.client_port # OSC network port for sending messages
 
 		self.osc_delay: float = 0.25 # Delay between network updates in seconds. Setting this too low will cause issues.
 		self.osc_chatbox_delay: float = 1.25 # Delay between chatbox updates in seconds. Setting this too low will cause issues.
@@ -43,11 +44,15 @@ class OscHandler:
 		self.param_pointer: str = "KAT_Pointer"
 		self.param_sync: str = "KAT_CharSync"
 
+		
 		self.osc_parameter_prefix: str = "/avatar/parameters/"
+		self.use_kat_path: str = self.osc_parameter_prefix + "use_kat"
+		self.use_textbox_path: str = self.osc_parameter_prefix + "use_textbox"
+		self.use_both_path: str = self.osc_parameter_prefix + "use_both"
 		self.osc_avatar_change_path: str = "/avatar/change"
 		self.osc_chatbox_path: str = "/chatbox/input"
 		self.osc_chatbox_typing_path = "/chatbox/typing"
-		self.osc_parameter_listening = "/avatar/parameters/stt_listening"
+		self.osc_parameter_listening = self.osc_parameter_prefix + "stt_listening"
 		self.last_chatbox_text: str = ""
 		self.osc_text: str = ""
 		self.kat_target_text: str = ""
@@ -365,6 +370,9 @@ class OscHandler:
 				self.osc_dispatcher = dispatcher.Dispatcher()
 				self.osc_dispatcher.map(self.osc_parameter_prefix + self.param_sync + "*", self.osc_server_handler_char)
 				self.osc_dispatcher.map(self.osc_avatar_change_path + "*", self.osc_server_handler_avatar)
+				self.osc_dispatcher.map(self.use_kat_path, self.osc_server_handler_kat)
+				self.osc_dispatcher.map(self.use_textbox_path, self.osc_server_handler_textbox)
+				self.osc_dispatcher.map(self.use_both_path, self.osc_server_handler_both)
 
 				self.osc_server = osc_server.ThreadingOSCUDPServer((self.osc_server_ip, self.osc_server_port), self.osc_dispatcher, asyncio.get_event_loop())
 				threading.Thread(target = self.osc_server_serve, daemon = True).start()
@@ -439,6 +447,9 @@ class OscHandler:
 			if self.osc_server_test_step > 0:
 				# Keep text cleared during test
 				self.osc_client.send_message(self.osc_parameter_prefix + self.param_pointer, self.pointer_clear)
+				self.osc_client.send_message(self.use_kat_path, self.config.osc.use_kat)
+				self.osc_client.send_message(self.use_textbox_path, self.config.osc.use_textbox)
+				self.osc_client.send_message(self.use_both_path, self.config.osc.use_both)
 
 				if self.osc_server_test_step == 1:
 					# Reset sync parameters count
@@ -549,6 +560,18 @@ class OscHandler:
 	def osc_server_handler_avatar(self, address: tuple[str, int], value: str, *args: list[dispatcher.Any]):
 		self.osc_server_test_step = 1
 		self.isactive = False
+	
+	def osc_server_handler_kat(self, address: tuple[str, int], value: str, *args: list[dispatcher.Any]):
+		if self.osc_server_test_step == 0:
+			self.config.osc.use_kat = bool(value)
+
+	def osc_server_handler_textbox(self, address: tuple[str, int], value: str, *args: list[dispatcher.Any]):
+		if self.osc_server_test_step == 0:
+			self.config.osc.use_textbox = bool(value)
+	
+	def osc_server_handler_both(self, address: tuple[str, int], value: str, *args: list[dispatcher.Any]):
+		if self.osc_server_test_step == 0:
+			self.config.osc.use_both = bool(value)
 
 
 	# Updates the characters within a pointer

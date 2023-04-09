@@ -84,7 +84,7 @@ def init():
     
     # Initialize OSC Handler
     if not osc:
-        osc = OscHandler(copy.deepcopy(config.osc))
+        osc = OscHandler(config, copy.deepcopy(config.osc))
     elif osc.osc_ip != config.osc.ip or osc.osc_port != config.osc.client_port or osc.osc_server_port != config.osc.server_port:
         restart()
 
