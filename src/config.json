@@ -45,6 +45,7 @@
     },
     "whisper": {
         "model": "base",
+        "custom_models": [],
         "language": "english",
         "device": {
             "type": "cuda",
