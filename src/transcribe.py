@@ -73,6 +73,9 @@ class TranscribeHandler(object):
         :return: The path to the ctranslate2 model.
         """
         try:
+            if "guillaumekln" in model_name:
+                model_name = model_name.split("-")[-1].lower()
+                model_name = WHISPER_MODELS[model_name]
             model_split = model_name.split('/')
             _model_path = f"{self.cache_path}{model_split[0]}-{model_split[1]}-ct2-{quantization}"
             _converter = TransformersConverter(model_name, copy_files=["tokenizer.json"] if download_tokenizer else None)
