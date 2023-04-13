@@ -13,7 +13,12 @@ class TranscribeHandler(object):
         self.whisper_config: whisper_config = config_whisper
         self.device_config: ct2_device_config = config_whisper.device
         self.cache_path = cache_path
-        self.whisper_model = self.whisper_config.model if "/" in self.whisper_config.model else WHISPER_MODELS[self.whisper_config.model]
+        try:
+            self.whisper_model = self.whisper_config.model if "/" in self.whisper_config.model else WHISPER_MODELS[self.whisper_config.model]
+        except KeyError:
+            log.error(f"Model {self.whisper_config.model} not found!")
+            self.whisper_config.custom_models.remove(self.whisper_config.model)
+            raise
         self.is_openai_model = True if "openai" in self.whisper_model else False
         self.language = None
 
