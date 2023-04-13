@@ -635,7 +635,6 @@ class SettingsWindow:
         self.config.osc.ip = self.entry_osc_ip.get()
         self.config.osc.client_port = int(self.entry_osc_port.get())
         self.config.osc.server_port = int(self.entry_osc_server_port.get())
-        print(self.config.whisper.custom_models)
         if self.value_model.get() == "custom" and self.entry_model.get() not in self.config.whisper.custom_models:
             self.config.whisper.custom_models.append(self.entry_model.get())
         self.config.whisper.model = self.value_model.get() if self.value_model.get() != "custom" else self.entry_model.get()
