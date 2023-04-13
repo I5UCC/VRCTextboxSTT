@@ -231,6 +231,8 @@ class SettingsWindow:
         for key in WHISPER_MODELS:
             if ".en" not in key:
                 self.models.append(key)
+        if self.config.whisper.custom_models:
+            self.models = self.models + self.config.whisper.custom_models
         self.models.append("custom")
         self.entry_model = tk.Entry(self.tkui)
         self.entry_model.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23)
@@ -574,8 +576,17 @@ class SettingsWindow:
         if self.value_model.get() == "custom":
             self.opt_model.grid_forget()
             self.entry_model.grid(row=4, column=1, padx=0, pady=4, sticky='ws')
+        elif self.value_model.get() in self.config.whisper.custom_models:
+            self.opt_model.grid_forget()
+            self.entry_model.grid(row=4, column=1, padx=0, pady=4, sticky='ws')
+            self.entry_model.delete(0, tk.END)
+            self.entry_model.insert(0, self.value_model.get())
             
     def entry_model_enter_event(self, text):
+        if self.value_model.get() in self.config.whisper.custom_models:
+            self.config.whisper.custom_models.remove(self.value_model.get())
+            if text != "":
+                self.config.whisper.custom_models.append(text)
         if text == "":
             self.entry_model.delete(0, tk.END)
             self.entry_model.grid_forget()
@@ -624,6 +635,9 @@ class SettingsWindow:
         self.config.osc.ip = self.entry_osc_ip.get()
         self.config.osc.client_port = int(self.entry_osc_port.get())
         self.config.osc.server_port = int(self.entry_osc_server_port.get())
+        print(self.config.whisper.custom_models)
+        if self.value_model.get() == "custom" and self.entry_model.get() not in self.config.whisper.custom_models:
+            self.config.whisper.custom_models.append(self.entry_model.get())
         self.config.whisper.model = self.value_model.get() if self.value_model.get() != "custom" else self.entry_model.get()
         self.config.whisper.language = None if self.value_language.get() == "Auto Detect" else self.value_language.get()
         self.config.translator.language = None if self.value_translate.get() == "OFF" else self.value_translate.get()

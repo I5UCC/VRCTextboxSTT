@@ -167,6 +167,7 @@ class osc_config(object):
 @dataclass
 class whisper_config(object):
     model: str = "base"
+    custom_models: Optional[list[str]] = field(default_factory=list)
     language: str = "english"
     device: ct2_device_config = field(default_factory=ct2_device_config)
 
