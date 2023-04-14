@@ -21,10 +21,11 @@ from ovr import OVRHandler
 from listen import ListenHandler
 from transcribe import TranscribeHandler
 from translate import TranslationHandler
-from config import config_struct, audio
+from config import config_struct, audio, LANGUAGE_TO_KEY
 from pydub import AudioSegment
 from helper import loadfont, log
 from torch.cuda import is_available
+from autocorrect import Speller
 import winsound
 import copy
 
@@ -38,6 +39,7 @@ listen: ListenHandler = None
 transcriber: TranscribeHandler = None
 translator: TranslationHandler = None
 browsersource: OBSBrowserSource = None
+autocorrect: Speller = None
 timeout_time: float = 0.0
 finished: bool = False
 curr_time: float = 0.0
@@ -63,8 +65,14 @@ def init():
     global initialized
     global browsersource
     global listen
+    global autocorrect
 
     modify_audio_files(config.audio_feedback.__dict__.copy())
+
+    if config.autocorrect.language and config.autocorrect.language in LANGUAGE_TO_KEY:
+        autocorrect = Speller(LANGUAGE_TO_KEY[config.autocorrect.language])
+    elif not config.autocorrect.language and autocorrect:
+        del autocorrect
 
     # Initialize ListenHandler
     if not listen:
@@ -570,6 +578,13 @@ def entrybox_enter_event(text):
 
     enter_pressed = True
     if text:
+        if autocorrect:
+            corrected_text = autocorrect(text)
+            if corrected_text != text:
+                main_window.textfield.delete(0, len(text))
+                main_window.textfield.insert(0, corrected_text)
+                text = corrected_text
+
         if translator:
             play_sound(config.audio_feedback.sound_donelisten)
             text = translator.translate(text)
@@ -584,7 +599,7 @@ def entrybox_enter_event(text):
     timeout_time = time()
 
 
-def textfield_keyrelease(text):
+def textfield_keyrelease(text, last_char):
     """Handles the key release event for the textfield."""
 
     global config
@@ -594,6 +609,14 @@ def textfield_keyrelease(text):
     global timeout_time
     global finished
     global timeout_time
+    global autocorrect
+
+    if autocorrect and last_char in [" ", ",", ".", "!", "?", ";", ":"]:
+        corrected_text = autocorrect(text)
+        if corrected_text != text:
+            main_window.textfield.delete(0, len(text))
+            main_window.textfield.insert(0, corrected_text)
+            text = corrected_text
 
     if not enter_pressed:
         if len(text) > osc.textbox_charlimit:
@@ -761,7 +784,7 @@ if __name__ == "__main__":
 
     main_window.tkui.protocol("WM_DELETE_WINDOW", main_window_closing)
     main_window.textfield.bind("<Return>", (lambda event: entrybox_enter_event(main_window.textfield.get())))
-    main_window.textfield.bind("<KeyRelease>", (lambda event: textfield_keyrelease(main_window.textfield.get())))
+    main_window.textfield.bind("<KeyRelease>", (lambda event: textfield_keyrelease(main_window.textfield.get(), event.char)))
     main_window.btn_settings.configure(command=open_settings)
     main_window.btn_refresh.configure(command=lambda: reload(True))
     main_window.create_loop(7000, check_ovr)

@@ -95,6 +95,9 @@
         "align": "center",
         "speed": 30
     },
+    "autocorrect": {
+        "language": null
+    },
     "wordreplacement": {
         "enabled": true,
         "list": {}
