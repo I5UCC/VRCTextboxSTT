@@ -188,6 +188,7 @@ class listener_config(object):
     timeout_time: float = 3.0
     hold_time: float = 1.5
     phrase_time_limit: float = 2.0
+    max_kbytes: int = 1024
 
 
 @dataclass_json
