@@ -337,9 +337,6 @@ def process_forever():
             while not listen.data_queue.empty():
                 data = listen.data_queue.get()
                 _last_sample += data
-            
-            if len(_last_sample) > listen.max_bytes:
-                _last_sample = _last_sample[-listen.max_bytes:]
 
             pre = time()
             _np_audio = listen.raw_to_np(_last_sample)
@@ -412,9 +409,6 @@ def process_loop():
             while not listen.data_queue.empty():
                 data = listen.data_queue.get()
                 _last_sample += data
-            
-            if len(_last_sample) > listen.max_bytes:
-                _last_sample = _last_sample[-listen.max_bytes:]
 
             pre = time()
             _np_audio = listen.raw_to_np(_last_sample)

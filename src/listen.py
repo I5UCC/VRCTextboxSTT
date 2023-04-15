@@ -15,11 +15,11 @@ class ListenHandler(object):
 
     def set_config(self, config: listener_config):
         self.config = config
+
         self.rec.dynamic_energy_threshold = bool(self.config.dynamic_energy_threshold)
         self.rec.energy_threshold = self.config.energy_threshold
         self.rec.pause_threshold = self.config.pause_threshold
         self.source.device_index = int(self.config.microphone_index) if self.config.microphone_index else None
-        self.max_bytes = self.config.max_kbytes * 1000
 
     def listen_once(self) -> np.ndarray:
         """
