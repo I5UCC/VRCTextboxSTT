@@ -319,7 +319,8 @@ def process_forever():
 
     _time_last = time()
     while True:
-        if config_ui_open:
+        if config_ui_open or config.mode != 2:
+            main_window.set_status_label("CANCELED - WAITING FOR INPUT", "orange")
             break
 
         if pressed:

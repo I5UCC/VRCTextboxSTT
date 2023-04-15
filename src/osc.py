@@ -452,6 +452,7 @@ class OscHandler:
 				self.osc_client.send_message(self.osc_use_kat_path, self.config.osc.use_kat)
 				self.osc_client.send_message(self.osc_use_textbox_path, self.config.osc.use_textbox)
 				self.osc_client.send_message(self.osc_use_both_path, self.config.osc.use_both)
+				self.osc_client.send_message(self.osc_stt_mode_path, self.config.mode)
 
 				if self.osc_server_test_step == 1:
 					# Reset sync parameters count
@@ -578,6 +579,11 @@ class OscHandler:
 	def osc_server_handler_stt_mode(self, address: tuple[str, int], value: str, *args: list[dispatcher.Any]):
 		if self.osc_server_test_step == 0:
 			self.config.mode = int(value)
+			if self.config.mode != 0:
+				if self.config.listener.pause_threshold < 3.0:
+					self.config.listener.pause_threshold = 3.0
+				if self.config.listener.timeout_time < 5.0:
+					self.config.listener.timeout_time = 5.0
 
 	# Updates the characters within a pointer
 	def osc_update_pointer(self, pointer_index: int, gui_text: str, osc_chars: list[int]):
