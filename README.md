@@ -54,8 +54,7 @@ This program is supposed to be entirely free (as in money), open source and inde
 # Limitations
 
 - Limited character availability
-  - VRChats Textbox currently only supports ASCII characters, no support for Japanese, Korean etc. characters. <br>
-    Limited to showing 144 characters at a time.
+  - VRChats Textbox is limited to showing 144 characters at a time.
   - KillFrenzyAvatarText does support ASCII characters and a certain set of Japanese hiragana. <br>
     Limited to showing 128 characters at a time.
 - Visibility
