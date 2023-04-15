@@ -308,6 +308,8 @@ def process_forever():
     _text = ""
     _time_last = None
     _last_sample = bytes()
+    last_text = ""
+    append = False
 
     main_window.set_button_enabled(True)
     set_typing_indicator(True)
@@ -341,17 +343,27 @@ def process_forever():
             pre = time()
             _np_audio = listen.raw_to_np(_last_sample)
             _text = transcriber.transcribe(_np_audio)
+            first_run = False
+            if append:
+                _text = last_text + _text
             if translator:
                 main_window.set_status_label("TRANSLATING", "orange")
                 play_sound(config.audio_feedback.sound_donelisten)
                 _text = translator.translate(_text)
-            main_window.set_time_label(time() - pre)
+            time_taken = time() - pre
+            main_window.set_time_label(time_taken)
 
             _time_last = time()
             populate_chatbox(_text, True)
+
+            if _text and time_taken > config.whisper.max_transciption_time and _text[-1] in [".", "!", "?"] and not first_run:
+                last_text = _text + " "
+                append = True
+                _last_sample = bytes()
         elif _last_sample != bytes() and time() - _time_last > config.listener.pause_threshold:
             set_typing_indicator(False)
             _last_sample = bytes()
+            append = False
 
         sleep(0.05)
 
@@ -378,6 +390,8 @@ def process_loop():
     _text = ""
     _time_last = None
     _last_sample = bytes()
+    last_text = ""
+    append = False
 
     main_window.set_button_enabled(False)
     set_typing_indicator(True)
@@ -413,14 +427,23 @@ def process_loop():
             pre = time()
             _np_audio = listen.raw_to_np(_last_sample)
             _text = transcriber.transcribe(_np_audio)
+            if append:
+                _text = last_text + _text
             if translator:
                 main_window.set_status_label("TRANSLATING", "orange")
                 play_sound(config.audio_feedback.sound_donelisten)
                 _text = translator.translate(_text)
-            main_window.set_time_label(time() - pre)
+            time_taken = time() - pre
+            main_window.set_time_label(time_taken)
 
             _time_last = time()
             populate_chatbox(_text, True)
+            first_run = False
+
+            if _text and time_taken > config.whisper.max_transciption_time and _text[-1] in [".", "!", "?"] and not first_run:
+                last_text = _text + " "
+                append = True
+                _last_sample = bytes()
         elif _last_sample != bytes() and time() - _time_last > config.listener.pause_threshold:
             main_window.set_status_label("FINISHED - WAITING FOR INPUT", "blue")
             play_sound(config.audio_feedback.sound_finished)

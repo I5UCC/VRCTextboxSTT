@@ -169,6 +169,7 @@ class whisper_config(object):
     model: str = "base"
     custom_models: Optional[list[str]] = field(default_factory=list)
     language: str = "english"
+    max_transciption_time: float = 2.0
     device: ct2_device_config = field(default_factory=ct2_device_config)
 
 @dataclass_json
