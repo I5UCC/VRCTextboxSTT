@@ -112,8 +112,8 @@ def init():
     OUT_FILE_LOGGER.set_ui_output(main_window.loading_status)
     main_window.set_status_label("LOADING WHISPER MODEL", "orange")
     if not transcriber:
-        transcriber = TranscribeHandler(copy.deepcopy(config.whisper), CACHE_PATH, config.translator.language == "english")
-    elif config.whisper != transcriber.whisper_config:
+        transcriber = TranscribeHandler(copy.deepcopy(config.whisper), config.vad, CACHE_PATH, config.translator.language == "english")
+    elif config.whisper != transcriber.config_whisper:
         restart()
     main_window.set_status_label(f"LOADED \"{transcriber.whisper_model}\"", "orange")
 

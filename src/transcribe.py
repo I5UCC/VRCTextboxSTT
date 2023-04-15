@@ -5,20 +5,21 @@ from helper import get_best_compute_type, log
 from faster_whisper import WhisperModel
 from ctranslate2.converters import TransformersConverter
 from shutil import rmtree
-from config import whisper_config, ct2_device_config, WHISPER_MODELS, LANGUAGE_TO_KEY
+from config import whisper_config, vad_config, ct2_device_config, WHISPER_MODELS, LANGUAGE_TO_KEY
 import traceback
 
 class TranscribeHandler(object):
-    def __init__(self, config_whisper: whisper_config, cache_path, translate) -> None:
-        self.whisper_config: whisper_config = config_whisper
+    def __init__(self, config_whisper: whisper_config, config_vad: vad_config, cache_path, translate) -> None:
+        self.config_whisper: whisper_config = config_whisper
+        self.config_vad: vad_config = config_vad
         self.device_config: ct2_device_config = config_whisper.device
         self.cache_path = cache_path
-        self.whisper_model = self.whisper_config.model if "/" in self.whisper_config.model else WHISPER_MODELS[self.whisper_config.model]
+        self.whisper_model = self.config_whisper.model if "/" in self.config_whisper.model else WHISPER_MODELS[self.config_whisper.model]
         self.is_openai_model = True if "openai" in self.whisper_model else False
         self.language = None
 
-        if self.whisper_config.language:
-            self.language = LANGUAGE_TO_KEY[self.whisper_config.language]
+        if self.config_whisper.language:
+            self.language = LANGUAGE_TO_KEY[self.config_whisper.language]
 
         if self.is_openai_model and "large" not in self.whisper_model and self.language == "en" and ".en" not in self.whisper_model:
             self.whisper_model = self.whisper_model + ".en"
@@ -53,7 +54,7 @@ class TranscribeHandler(object):
 
         _text = ""
         try:
-            segments, _ = self.model.transcribe(audio, beam_size=5, language=self.language, word_timestamps=False, without_timestamps=True, task=self.task)
+            segments, _ = self.model.transcribe(audio, beam_size=5, language=self.language, word_timestamps=False, without_timestamps=True, task=self.task, vad_filter=self.config_vad.enabled, vad_parameters=self.config_vad.parameters.__dict__)
             _text = "".join([segment.text for segment in segments])
         except Exception:
             log.error("Error transcribing: ")

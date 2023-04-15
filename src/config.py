@@ -172,6 +172,22 @@ class whisper_config(object):
     max_transciption_time: float = 2.0
     device: ct2_device_config = field(default_factory=ct2_device_config)
 
+
+@dataclass_json
+@dataclass
+class vad_params(object):
+    threshold: float = 0.5
+    min_speech_duration_ms: int = 250
+    min_silence_duration_ms: int = 100
+
+
+@dataclass_json
+@dataclass
+class vad_config(object):
+    enabled: bool = True
+    parameters: vad_params = field(default_factory=vad_params)
+
+
 @dataclass_json
 @dataclass
 class translator_config(object):
@@ -188,7 +204,7 @@ class listener_config(object):
     pause_threshold: float = 0.8
     timeout_time: float = 3.0
     hold_time: float = 1.5
-    phrase_time_limit: float = 2.0
+    phrase_time_limit: float = 1.0
 
 
 @dataclass_json
@@ -322,10 +338,11 @@ class emotes_config(object):
 class config_struct(object):
     mode: int = 0
     hotkey: str = "f1"
-    text_timeout: float = 0.0
+    text_timeout: float = 30.0
     audio_feedback: audio_feedback_config = field(default_factory=audio_feedback_config)
     osc: osc_config = field(default_factory=osc_config)
     whisper: whisper_config = field(default_factory=whisper_config)
+    vad: vad_config = field(default_factory=vad_config)
     translator: translator_config = field(default_factory=translator_config)
     listener: listener_config = field(default_factory=listener_config)
     overlay: overlay_config = field(default_factory=overlay_config)

@@ -56,6 +56,14 @@
             "num_workers": 1
         }
     },
+    "vad": {
+        "enabled": true,
+        "parameters": {
+            "threshold": 0.5,
+            "min_speech_duration_ms": 250,
+            "min_silence_duration_ms": 100
+        }
+    },
     "translator": {
         "model": "small",
         "language": null,
