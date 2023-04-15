@@ -46,9 +46,10 @@ class OscHandler:
 
 		
 		self.osc_parameter_prefix: str = "/avatar/parameters/"
-		self.use_kat_path: str = self.osc_parameter_prefix + "use_kat"
-		self.use_textbox_path: str = self.osc_parameter_prefix + "use_textbox"
-		self.use_both_path: str = self.osc_parameter_prefix + "use_both"
+		self.osc_use_kat_path: str = self.osc_parameter_prefix + "use_kat"
+		self.osc_use_textbox_path: str = self.osc_parameter_prefix + "use_textbox"
+		self.osc_use_both_path: str = self.osc_parameter_prefix + "use_both"
+		self.osc_stt_mode_path: str = self.osc_parameter_prefix + "stt_mode"
 		self.osc_avatar_change_path: str = "/avatar/change"
 		self.osc_chatbox_path: str = "/chatbox/input"
 		self.osc_chatbox_typing_path = "/chatbox/typing"
@@ -370,9 +371,10 @@ class OscHandler:
 				self.osc_dispatcher = dispatcher.Dispatcher()
 				self.osc_dispatcher.map(self.osc_parameter_prefix + self.param_sync + "*", self.osc_server_handler_char)
 				self.osc_dispatcher.map(self.osc_avatar_change_path + "*", self.osc_server_handler_avatar)
-				self.osc_dispatcher.map(self.use_kat_path, self.osc_server_handler_kat)
-				self.osc_dispatcher.map(self.use_textbox_path, self.osc_server_handler_textbox)
-				self.osc_dispatcher.map(self.use_both_path, self.osc_server_handler_both)
+				self.osc_dispatcher.map(self.osc_use_kat_path, self.osc_server_handler_kat)
+				self.osc_dispatcher.map(self.osc_use_textbox_path, self.osc_server_handler_textbox)
+				self.osc_dispatcher.map(self.osc_use_both_path, self.osc_server_handler_both)
+				self.osc_dispatcher.map(self.osc_stt_mode_path, self.osc_server_handler_stt_mode)
 
 				self.osc_server = osc_server.ThreadingOSCUDPServer((self.osc_server_ip, self.osc_server_port), self.osc_dispatcher, asyncio.get_event_loop())
 				threading.Thread(target = self.osc_server_serve, daemon = True).start()
@@ -447,9 +449,9 @@ class OscHandler:
 			if self.osc_server_test_step > 0:
 				# Keep text cleared during test
 				self.osc_client.send_message(self.osc_parameter_prefix + self.param_pointer, self.pointer_clear)
-				self.osc_client.send_message(self.use_kat_path, self.config.osc.use_kat)
-				self.osc_client.send_message(self.use_textbox_path, self.config.osc.use_textbox)
-				self.osc_client.send_message(self.use_both_path, self.config.osc.use_both)
+				self.osc_client.send_message(self.osc_use_kat_path, self.config.osc.use_kat)
+				self.osc_client.send_message(self.osc_use_textbox_path, self.config.osc.use_textbox)
+				self.osc_client.send_message(self.osc_use_both_path, self.config.osc.use_both)
 
 				if self.osc_server_test_step == 1:
 					# Reset sync parameters count
@@ -573,6 +575,9 @@ class OscHandler:
 		if self.osc_server_test_step == 0:
 			self.config.osc.use_both = bool(value)
 
+	def osc_server_handler_stt_mode(self, address: tuple[str, int], value: str, *args: list[dispatcher.Any]):
+		if self.osc_server_test_step == 0:
+			self.config.mode = int(value)
 
 	# Updates the characters within a pointer
 	def osc_update_pointer(self, pointer_index: int, gui_text: str, osc_chars: list[int]):
