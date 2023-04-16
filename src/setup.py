@@ -91,5 +91,5 @@ setup(
     version=version,
     description="TextboxSTT",
     options={"build_exe": build_exe_options},
-    executables=[Executable("TextboxSTT.py", target_name="TextboxSTT.exe", base=base, icon="resources/icon.ico"), Executable("OBSWSTT.py", target_name="OBS_only.exe", base=None)],
+    executables=[Executable("TextboxSTT.py", target_name="TextboxSTT.exe", base=base, icon="resources/icon.ico"), Executable("OBSWSTT.py", target_name="obs_only.exe", base=None)],
 )

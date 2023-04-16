@@ -63,10 +63,14 @@ def main():
     print("Press {} to toggle listening.".format(toggle_hotkey))
     print("Press Ctrl+C to exit, or close the console window.")
     print("----------------------------------------------------------")
+    print("device:\t\t\t{}".format(config.whisper.device.__dict__))
     print("phrase_timeout:\t\t{}".format(phrase_timeout))
     print("clear_timeout:\t\t{}".format(clear_timeout))
     print("max_transciption_time:\t{}".format(max_transciption_time))
     print("energy_threshold:\t{}".format(energy_threshold))
+    print("vad:\t\t\t{}".format(config.vad.enabled))
+    print()
+    print(transcriber.device_name, transcriber.whisper_model, transcriber.compute_type)
 
     listen.start_listen_background()
 
