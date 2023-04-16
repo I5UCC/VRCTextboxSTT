@@ -23,7 +23,7 @@ from transcribe import TranscribeHandler
 from translate import TranslationHandler
 from config import config_struct, audio, LANGUAGE_TO_KEY
 from pydub import AudioSegment
-from helper import loadfont, log
+from helper import replace_words, replace_emotes, loadfont, log
 from torch.cuda import is_available
 from autocorrect import Speller
 import winsound
@@ -169,47 +169,6 @@ def play_sound(au: audio):
         log.error(traceback.format_exc())
 
 
-def replace_emotes(text):
-    """Replaces emotes in the text with the configured emotes."""
-
-    global config
-
-    if not text:
-        return None
-
-    if config.emotes.list is None:
-        return text
-
-    for i in range(len(config.emotes.list)):
-        word = config.emotes.list[str(i)]
-        if word == "":
-            continue
-        tmp = re.compile(word, re.IGNORECASE)
-        text = tmp.sub(osc.emote_keys[i], text)
-
-    return text
-
-
-def replace_words(text):
-    """Replaces words in the text with the configured replacements."""
-
-    global config
-
-    if not text:
-        return None
-
-    text = text.strip()
-    if not config.wordreplacement.enabled or config.wordreplacement.list == dict():
-        return text
-
-    for key, value in config.wordreplacement.list.items():
-        tmp = re.compile(key, re.IGNORECASE)
-        text = tmp.sub(value, text)
-
-    text = re.sub(' +', ' ', text)
-    return text
-
-
 def set_typing_indicator(state: bool, textfield: bool = False):
     """Sets the typing indicator for the Chatbox and KAT."""
 
@@ -261,7 +220,8 @@ def populate_chatbox(text, cutoff: bool = False, is_textfield: bool = False):
     global browsersource
     global timeout_time
 
-    text = replace_words(text)
+    if config.wordreplacement.enabled:
+        text = replace_words(text, config.wordreplacement.list)
 
     if not text:
         return
@@ -275,7 +235,7 @@ def populate_chatbox(text, cutoff: bool = False, is_textfield: bool = False):
     if config.osc.use_kat and osc.isactive:
         _kat_text = text
         if config.emotes.enabled:
-            _kat_text = replace_emotes(_kat_text)
+            _kat_text = replace_emotes(_kat_text, config.emotes.list, osc.emote_keys)
         osc.set_kat_text(_kat_text, cutoff)
 
     if cutoff:

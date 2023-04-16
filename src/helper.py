@@ -8,6 +8,7 @@ from ctranslate2 import get_supported_compute_types
 from datetime import datetime
 from glob import glob
 import traceback
+import re
 
 log = logging.getLogger('TextboxSTT')
 
@@ -136,3 +137,42 @@ def force_single_instance():
                 proc.kill()
     except Exception:
         pass
+
+
+def replace_emotes(text, emote_list, emote_keys):
+    """Replaces emotes in the text with the configured emotes."""
+
+    if not text:
+        return None
+
+    if emote_list is None:
+        return text
+
+    for i in range(len(emote_list)):
+        word = emote_list[str(i)]
+        if word == "":
+            continue
+        tmp = re.compile(word, re.IGNORECASE)
+        text = tmp.sub(emote_keys[i], text)
+
+    return text
+
+
+def replace_words(text: str, replacement_dict: dict):
+    """Replaces words in the text with the configured replacements."""
+
+    if not text:
+        return text
+
+    text = text.strip()
+
+    if replacement_dict == dict():
+        return text
+
+    for key, value in replacement_dict.items():
+        tmp = re.compile(key, re.IGNORECASE)
+        text = tmp.sub(value, text)
+
+    text = re.sub(' +', ' ', text)
+
+    return text
