@@ -19,6 +19,8 @@ def main():
         config.listener.pause_threshold = 3.0
     if config.listener.timeout_time < 5.0:
         config.listener.timeout_time = 5.0
+    if config.text_timeout < config.listener.timeout_time:
+        config.text_timeout = config.listener.timeout_time * 2
 
     listen = ListenHandler(config.listener)
     transcriber = TranscribeHandler(config.whisper, config.vad, CACHE_PATH, config.translator.language == "english")

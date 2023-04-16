@@ -57,7 +57,7 @@
         }
     },
     "vad": {
-        "enabled": true,
+        "enabled": false,
         "parameters": {
             "threshold": 0.5,
             "min_speech_duration_ms": 250,

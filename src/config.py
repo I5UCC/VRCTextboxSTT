@@ -184,7 +184,7 @@ class vad_params(object):
 @dataclass_json
 @dataclass
 class vad_config(object):
-    enabled: bool = True
+    enabled: bool = False
     parameters: vad_params = field(default_factory=vad_params)
 
 
