@@ -92,7 +92,7 @@ With default settings, this program has following requirements:
 ### Run from source
 - clone this repository, for example with git `git clone https://github.com/I5UCC/VRCTextboxSTT.git`
 - Using python 3.10, install all of the dependencies from the requirements.txt file `python -m pip install -r requirements.txt`
-- run the program by running `python main.py` in the projects directory
+- run the program by running `python TextboxSTT.py` in the projects directory
 
 ### Usage in VRChat
 - Activate OSC in VRChat: <br/><br/>
