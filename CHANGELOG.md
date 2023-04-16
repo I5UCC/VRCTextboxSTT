@@ -54,3 +54,20 @@ https://user-images.githubusercontent.com/43730681/227533337-82a076dc-e16a-4f31-
 - lots of refactoring and additional error logging.
 - updated to faster-whisper 0.3.0
 - some smaller bugfixes
+
+### v1.0.0 Changelog
+- Enforcing Single Instance by closing other instances of the program.
+- Switched from pyinstaller to cx_freeze for distributing (again).
+    - Files are much more organized and clearer.
+- ***Switched from [openai/whisper](https://github.com/openai/whisper) to [guillaumekln/faster-whisper](https://github.com/guillaumekln/faster-whisper) !***
+    - This implementation is up to ***4 times faster*** than [openai/whisper](https://github.com/openai/whisper) for the same accuracy while using less memory. ([Benchmarks](https://github.com/guillaumekln/faster-whisper#benchmark))
+- Added additional device settings for transcription
+    - "compute_type"
+    - "cpu_threads"
+    - "num_workers"
+- Added Audio feedback toggle
+- Some OBS source fixes.
+- Delete cache after downloading model.
+- logging transcribe times.
+- You should now be able to take config.json files in between versions. Missing entries are added. Unused entries are removed.
+- create config if it doesnt exist.
