@@ -1154,8 +1154,8 @@ class DeviceSettingsWindow:
         self.tkui = tk.Tk()
         coordinates = get_coordinates()
         self.tkui.geometry(f"+{coordinates[0]}+{coordinates[1]}")
-        self.tkui.minsize(350, 150)
-        self.tkui.maxsize(350, 150)
+        self.tkui.minsize(430, 190)
+        self.tkui.maxsize(430, 190)
         self.tkui.resizable(False, False)
         self.tkui.configure(bg="#333333")
         self.tkui.title("TextboxSTT - Device Settings")
@@ -1190,8 +1190,15 @@ class DeviceSettingsWindow:
         self.entry_num_workers.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666")
         self.entry_num_workers.grid(row=2, column=1, padx=12, pady=5, sticky='ws')
 
+        self.label_max_transciption_time = tk.Label(self.tkui, text="Max Transciption Time", bg="#333333", fg="white", font=(self.FONT, 12))
+        self.label_max_transciption_time.grid(row=3, column=0, padx=12, pady=5, sticky='ws')
+        self.entry_max_transciption_time = tk.Entry(self.tkui)
+        self.entry_max_transciption_time.insert(0, self.config.whisper.max_transciption_time)
+        self.entry_max_transciption_time.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666")
+        self.entry_max_transciption_time.grid(row=3, column=1, padx=12, pady=5, sticky='ws')
+
         self.btn_save = tk.Button(self.tkui, text="Save", command=self.save)
-        self.btn_save.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=41, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.btn_save.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=49, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.btn_save.place(relx=0.5, rely=0.88, anchor="center")
 
         self.tkui.mainloop()
@@ -1200,6 +1207,7 @@ class DeviceSettingsWindow:
         self.config.whisper.device.compute_type = self.value_comptype.get()
         self.config.whisper.device.cpu_threads = int(self.entry_cpu_threads.get())
         self.config.whisper.device.num_workers = int(self.entry_num_workers.get())
+        self.config.whisper.max_transciption_time = float(self.entry_max_transciption_time.get())
 
         json.dump(self.config.to_dict(), open(self.config_path, "w"), indent=4)
         self.on_closing()
