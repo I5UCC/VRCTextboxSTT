@@ -103,9 +103,9 @@ class MainWindow(object):
         except Exception:
             pass
 
-    def set_conf_label(self, ip, port, server_port, ovr_initialized, device, model, compute_type, cpu_threads, num_workers):
+    def set_conf_label(self, ip, port, server_port, ovr_initialized, device, model, compute_type, cpu_threads, num_workers, vad):
         _cpu_str = f", CPU Threads: {cpu_threads}" if device.lower() == "cpu" else ""
-        self.conf_lbl.configure(justify="left", text=f"OSC: {ip}#{port}:{server_port}, OVR: {'Connected' if ovr_initialized else 'Disconnected'}, Device: {device}{_cpu_str}\nModel: {model}, Compute Type: {compute_type}, Workers: {num_workers}")
+        self.conf_lbl.configure(justify="left", text=f"OSC: {ip}#{port}:{server_port}, OVR: {'Connected' if ovr_initialized else 'Disconnected'}, Device: {device}{_cpu_str}\nModel: {model}, Compute Type: {compute_type}, Workers: {num_workers}, VAD: {vad}")
         self.update()
 
     def set_time_label(self, time):
