@@ -459,18 +459,21 @@ def process_once():
             if pressed:
                 main_window.set_status_label("CANCELED - WAITING FOR INPUT", "orange")
                 play_sound(config.audio_feedback.sound_timeout)
+                finished = False
             elif _trans:
                 main_window.set_status_label("FINISHED - WAITING FOR INPUT", "blue")
                 populate_chatbox(_trans)
                 play_sound(config.audio_feedback.sound_finished)
+                finished = True
             else:
                 main_window.set_status_label("ERROR TRANSCRIBING - WAITING FOR INPUT", "red")
                 play_sound(config.audio_feedback.sound_timeout)
+                finished = False
         else:
             main_window.set_status_label("CANCELED - WAITING FOR INPUT", "orange")
             play_sound(config.audio_feedback.sound_timeout)
+            finished = False
 
-    finished = True
     timeout_time = time()
     set_typing_indicator(False)
     main_window.set_button_enabled(True)
