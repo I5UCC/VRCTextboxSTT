@@ -428,7 +428,7 @@ class OscHandler:
 	def osc_chatbox_loop(self):
 		_text = self.textbox_target_text.replace("\n", " ")
 
-		if self.last_chatbox_text == "" and _text == "":
+		if self.last_chatbox_text == _text:
 			return
 		
 		self.last_chatbox_text = _text
