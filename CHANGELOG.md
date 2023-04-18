@@ -1,3 +1,7 @@
+### v1.3.1 Changelog
+
+Fixes running into Rate limit issues when in mode "once". This fixes the issue of certain transcriptions not appearing in the Textbox.
+
 ### v1.3.0 Changelog
 - Control some TextboxSTT parameters over OSC in VRChat. Following parameters can be controlled:
     - "use_kat" (boolean)
