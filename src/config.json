@@ -109,7 +109,13 @@
     },
     "wordreplacement": {
         "enabled": true,
-        "list": {}
+        "list": {
+            "(asterisk(\\.|!|\\?|,)|asterisk)": "*",
+            "(question mark(\\.|!|\\?|,)|question mark)": "?",
+            "(exclamation mark(\\.|!|\\?|,)|exclamation mark|exclamation point(\\.|!|\\?|,)|exclamation point)": "!",
+            "(comma(\\.|!|\\?|,)|comma)": ",",
+            "(dot(\\.|!|\\?|,)|dot)": "."
+        }
     },
     "emotes": {
         "enabled": true,
