@@ -118,16 +118,16 @@ If you have problems with this program, try this to fix it:<br><br>
 # Configuration
 
 You can either Edit this configuration manually by editing the ***config.json*** file, or you can change those settings in the Program itself by clicking "Settings" in the bottom right: <br>
-You can hover over any of the options to get a brief explanation on what that option does.
-![image](https://user-images.githubusercontent.com/43730681/221786297-441951e0-771a-45e2-aaea-ea8d29c9ba52.png)
+You can hover over any of the options to get a brief explanation on what that option does. <br>
+![image](https://user-images.githubusercontent.com/43730681/232797308-5d2b38e4-dd00-4366-bd7b-e5fb3374edc0.png)
 
 You can edit Word replacements by clicking the "Edit Word Replacements" button:
 
-![image](https://user-images.githubusercontent.com/43730681/220126862-c398ffe6-8114-43de-ac76-6854f5e32217.png)
+![image](https://user-images.githubusercontent.com/43730681/232797509-a01754c0-3890-4699-a1e6-ca577426d000.png)
 
 You can edit the emote settings by clicking the "Edit Emotes" button:
 
-![image](https://user-images.githubusercontent.com/43730681/220127049-225f20b7-6153-4e93-8dc1-734f4414a935.png)
+![image](https://user-images.githubusercontent.com/43730681/232797590-fbc99083-6c4d-4c46-8c10-89de5679ca10.png)
 
 # Modifying SteamVR binding
 You can set the boolean "sttlisten" in the Binding UI of SteamVR. Anyone who has set up OpenVR-Advanced-Settings might be familiar with that.
