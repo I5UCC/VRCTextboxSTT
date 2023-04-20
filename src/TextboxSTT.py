@@ -1,16 +1,22 @@
 import sys
+sys.path.append(__file__[:__file__.rfind("\\")])
 from helper import LogToFile, get_absolute_path, force_single_instance
 
 force_single_instance()
 # Log to file before importing other modules
-CACHE_PATH = get_absolute_path('cache/', __file__)
+DEBUG = len(sys.argv) <= 3
+if DEBUG:
+    CACHE_PATH = get_absolute_path('cache/', __file__)
+    CONFIG_PATH = get_absolute_path('config.json', __file__)
+else:
+    CACHE_PATH = get_absolute_path('../cache/', __file__)
+    CONFIG_PATH = get_absolute_path('../config.json', __file__)
 OUT_FILE_LOGGER = LogToFile(CACHE_PATH)
 sys.stdout = OUT_FILE_LOGGER
 sys.stderr = OUT_FILE_LOGGER
 
 import traceback
 import os
-import re
 from threading import Thread
 from time import time, sleep
 from keyboard import is_pressed
@@ -28,8 +34,7 @@ from torch.cuda import is_available
 from autocorrect import Speller
 import winsound
 import copy
-
-CONFIG_PATH = get_absolute_path('config.json', __file__)
+import subprocess
 
 main_window: MainWindow = None
 config: config_struct = None
@@ -143,7 +148,7 @@ def modify_audio_files(audio_dict):
             _tmp_audio: audio = audio_dict[key]
             _segment = AudioSegment.from_wav(get_absolute_path(f"resources/{_tmp_audio.file}", __file__))
             _segment = _segment + _tmp_audio.gain
-            _segment.export(get_absolute_path(f"cache/{_tmp_audio.file}", __file__), format="wav")
+            _segment.export(get_absolute_path(f"{CACHE_PATH}{_tmp_audio.file}", __file__), format="wav")
         except Exception:
             log.error(f"Failed to modify audio file \"{_tmp_audio.file}\": ")
             log.error(traceback.format_exc())
@@ -157,7 +162,7 @@ def play_sound(au: audio):
     if not config.audio_feedback.enabled:
         return
 
-    _file = get_absolute_path(f"cache/{au.file}", __file__)
+    _file = get_absolute_path(f"{CACHE_PATH}{au.file}", __file__)
     if not os.path.isfile(_file):
         log.info(f"Sound file \"{_file}\" does not exist.")
         return
@@ -647,6 +652,7 @@ def main_window_closing():
         browsersource.stop()
     except Exception:
         log.error(traceback.format_exc())
+    sys.exit()
 
 
 def open_settings():
@@ -706,16 +712,23 @@ def restart():
     try:
         coordinates = main_window.get_coordinates()
         tmp = sys.argv[0]
+        tmp2 = sys.argv[3]
         sys.argv.clear()
         sys.argv.append(tmp)
         sys.argv.append(str(coordinates[0]))
         sys.argv.append(str(coordinates[1]))
+        sys.argv.append(tmp2)
         print(sys.argv)
     except Exception:
         log.error("Error restarting: ")
         log.error(traceback.format_exc())
     
-    os.execl(executable, executable, *sys.argv)
+    log.error(executable)
+    log.error(sys.argv)
+
+    subprocess.call([executable, *sys.argv])
+    main_window_closing()
+    #os.execl(executable, *sys.argv)
 
 
 def reload(save=False):

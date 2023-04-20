@@ -4,7 +4,7 @@
 		{
 			"app_key": "i5ucc.textboxstt",
 			"launch_type": "binary",
-			"binary_path_windows": "./TextboxSTT.exe",
+			"binary_path_windows": "../TextboxSTT.exe",
 			"is_dashboard_overlay": true,
 			"action_manifest_path": "./bindings/textboxstt_actions.json",
 

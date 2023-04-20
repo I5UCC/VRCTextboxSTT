@@ -1,3 +1,6 @@
+import sys
+sys.path.append(__file__[:__file__.rfind("\\")])
+DEBUG = len(sys.argv) == 1
 from time import sleep, time
 from listen import ListenHandler
 from transcribe import TranscribeHandler
@@ -8,12 +11,15 @@ import keyboard
 from config import config_struct
 import os
 
-
 def main():
     global enabled, listen
-
-    CACHE_PATH = get_absolute_path('cache/', __file__)
-    CONFIG_PATH = get_absolute_path('config.json', __file__)
+    
+    if DEBUG:
+        CACHE_PATH = get_absolute_path('cache/', __file__)
+        CONFIG_PATH = get_absolute_path('config.json', __file__)
+    else:
+        CACHE_PATH = get_absolute_path('../cache/', __file__)
+        CONFIG_PATH = get_absolute_path('../config.json', __file__)
     config: config_struct = config_struct.load(CONFIG_PATH)
 
     if config.listener.pause_threshold < 3.0:
