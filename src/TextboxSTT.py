@@ -1,6 +1,8 @@
 import sys
 sys.path.append(__file__[:__file__.rfind("\\")])
 from helper import LogToFile, get_absolute_path, force_single_instance
+import os
+import shutil
 
 force_single_instance()
 # Log to file before importing other modules
@@ -16,7 +18,6 @@ sys.stdout = OUT_FILE_LOGGER
 sys.stderr = OUT_FILE_LOGGER
 
 import traceback
-import os
 from threading import Thread
 from time import time, sleep
 from keyboard import is_pressed
@@ -28,6 +29,7 @@ from listen import ListenHandler
 from transcribe import TranscribeHandler
 from translate import TranslationHandler
 from config import config_struct, audio, LANGUAGE_TO_KEY
+from updater import Update_Handler
 from pydub import AudioSegment
 from helper import replace_words, replace_emotes, loadfont, log
 from torch.cuda import is_available
@@ -38,6 +40,7 @@ import subprocess
 
 main_window: MainWindow = None
 config: config_struct = None
+updater: Update_Handler = None
 osc: OscHandler = None
 ovr: OVRHandler = None
 listen: ListenHandler = None
@@ -71,6 +74,7 @@ def init():
     global browsersource
     global listen
     global autocorrect
+    global updater
 
     modify_audio_files(config.audio_feedback.__dict__.copy())
 
@@ -137,6 +141,13 @@ def init():
     main_window.set_conf_label(config.osc.ip, config.osc.client_port, config.osc.server_port, ovr.initialized, transcriber.device_name, transcriber.whisper_model, transcriber.compute_type, config.whisper.device.cpu_threads, config.whisper.device.num_workers, config.vad.enabled)
     main_window.set_status_label("INITIALIZED - WAITING FOR INPUT", "green")
     main_window.set_button_enabled(True)
+
+    updater = Update_Handler(os.path.abspath(sys.path[-1] + "\\..\\"), __file__)
+    log.info(main_window.version)
+    update_available, latest_tag = updater.check_for_updates(main_window.version)
+    if update_available:
+        main_window.show_update_button(f"Update Available! ({latest_tag})")
+        main_window.btn_update.configure(command=update)
 
     initialized = True
 
@@ -668,6 +679,7 @@ def open_settings():
     config_ui = SettingsWindow(config, CONFIG_PATH, __file__, main_window.get_coordinates)
     config_ui.button_refresh.configure(command=determine_energy_threshold)
     config_ui.btn_save.configure(command=(lambda: reload(True)))
+    config_ui.button_force_update.configure(command=update)
     config_ui.tkui.protocol("WM_DELETE_WINDOW", reload)
     main_window.set_button_enabled(False)
     config_ui.open()
@@ -700,35 +712,54 @@ def check_ovr():
     main_window.set_conf_label(config.osc.ip, config.osc.client_port, config.osc.server_port, ovr.initialized, transcriber.device_name, transcriber.whisper_model, transcriber.compute_type, config.device.cpu_threads, config.device.num_workers)
 
 
+def update():
+    global updater
+    global main_window
+    global config_ui_open
+    global config_ui
+
+    if config_ui_open:
+        config_ui.on_closing()
+
+    def update_done():
+        main_window.btn_update.destroy()
+        log.name = "TextboxSTT"
+        restart()
+    log.name = "Updater"
+
+    try:
+        main_window.btn_update
+    except AttributeError:
+        main_window.show_update_button("Updating...")
+
+    main_window.btn_update.configure(text="Updating..." , state="disabled")
+    updater.update(update_done)
+
+
 def restart():
     """Restarts the program."""
 
     global main_window
     global config_ui
 
-    
     executable = sys.executable
     log.info("Restarting...")
     try:
         coordinates = main_window.get_coordinates()
-        tmp = sys.argv[0]
-        tmp2 = sys.argv[3]
+        tmp = copy.deepcopy(sys.argv)
         sys.argv.clear()
-        sys.argv.append(tmp)
+        sys.argv.append(tmp[0])
         sys.argv.append(str(coordinates[0]))
         sys.argv.append(str(coordinates[1]))
-        sys.argv.append(tmp2)
-        print(sys.argv)
+        sys.argv.append(tmp[3])
     except Exception:
         log.error("Error restarting: ")
         log.error(traceback.format_exc())
-    
-    log.error(executable)
-    log.error(sys.argv)
 
-    subprocess.call([executable, *sys.argv])
+    log.info("Restarting with: " + executable + " " + " ".join(sys.argv))
+
+    subprocess.Popen([executable, *sys.argv])
     main_window_closing()
-    #os.execl(executable, *sys.argv)
 
 
 def reload(save=False):

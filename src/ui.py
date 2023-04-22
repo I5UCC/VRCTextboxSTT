@@ -13,15 +13,15 @@ from config import config_struct, LANGUAGE_TO_KEY, WHISPER_MODELS
 class MainWindow(object):
     def __init__(self, script_path, x=None, y=None):
 
-        version = "RELEASE"
+        self.version = "RELEASE"
         try:
-            version = open(get_absolute_path("VERSION", script_path)).readline().rstrip()
+            self.version = open(get_absolute_path("VERSION", script_path)).readline().rstrip()
         except Exception:
             pass
 
         self.icon_path = get_absolute_path("resources/icon.ico", script_path)
 
-        log.info(f"VRCTextboxSTT {version} by I5UCC")
+        log.info(f"VRCTextboxSTT {self.version} by I5UCC")
 
         self.FONT = "Cascadia Code"
 
@@ -50,7 +50,7 @@ class MainWindow(object):
         self.time_lbl.configure(bg="#333333", fg="#666666", font=(self.FONT, 10))
         self.time_lbl.place(relx=0.99, rely=0.78, anchor="e")
 
-        self.ver_lbl = tk.Label(self.tkui, text=f"VRCTextboxSTT {version} by I5UCC")
+        self.ver_lbl = tk.Label(self.tkui, text=f"VRCTextboxSTT {self.version} by I5UCC")
         self.ver_lbl.configure(bg="#333333", fg="#666666", font=(self.FONT, 10))
         self.ver_lbl.place(relx=0.99, rely=0.05, anchor="e")
 
@@ -73,7 +73,13 @@ class MainWindow(object):
         self.textfield = tk.Entry(self.tkui)
         self.textfield.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=25, highlightthickness=0, insertbackground="#666666")
         self.textfield.place(relx=0.5, rely=0.845, anchor="center", width=792, height=25)
+
         self.update()
+
+    def show_update_button(self, text):
+        self.btn_update = tk.Button(self.tkui, text=text)
+        self.btn_update.configure(bg="#333333", fg="white", font=(self.FONT, 10), anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.btn_update.place(relx=0.99, rely=0.14, anchor="e")
 
     def run_loop(self):
         self.tkui.mainloop()
@@ -554,20 +560,26 @@ class SettingsWindow:
         self.button_emotes.bind("<Leave>", self.hide_tooltip)
 
         self.button_reset_config = tk.Button(self.tkui, text="Reset Settings", command=self.reset_to_default)
-        self.button_reset_config.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, width=27, anchor="center", activebackground="#555555", activeforeground="white")
-        self.button_reset_config.place(relx=0.62, rely=0.95, anchor="center")
+        self.button_reset_config.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, width=20, anchor="center", activebackground="#555555", activeforeground="white")
+        self.button_reset_config.place(relx=0.52, rely=0.95, anchor="center")
         self.button_reset_config.bind("<Enter>", (lambda event: self.show_tooltip("Resets the config to default values.")))
         self.button_reset_config.bind("<Leave>", self.hide_tooltip)
 
-        self.button_reset_config = tk.Button(self.tkui, text="Reset OSC config", command=self.reset_osc_config)
-        self.button_reset_config.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, width=27, anchor="center", activebackground="#555555", activeforeground="white")
-        self.button_reset_config.place(relx=0.868, rely=0.95, anchor="center")
-        self.button_reset_config.bind("<Enter>", (lambda event: self.show_tooltip("Resets OSC config by deleting the all the usr_ folders in %APPDATA%\\..\\LocalLow\\VRChat\\VRChat\\OSC")))
-        self.button_reset_config.bind("<Leave>", self.hide_tooltip)
+        self.button_osc_reset_config = tk.Button(self.tkui, text="Reset OSC config", command=self.reset_osc_config)
+        self.button_osc_reset_config.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, width=20, anchor="center", activebackground="#555555", activeforeground="white")
+        self.button_osc_reset_config.place(relx=0.71, rely=0.95, anchor="center")
+        self.button_osc_reset_config.bind("<Enter>", (lambda event: self.show_tooltip("Resets OSC config by deleting the all the usr_ folders in %APPDATA%\\..\\LocalLow\\VRChat\\VRChat\\OSC")))
+        self.button_osc_reset_config.bind("<Leave>", self.hide_tooltip)
+
+        self.button_force_update = tk.Button(self.tkui, text="Force Update", command=self.reset_osc_config)
+        self.button_force_update.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, width=20, anchor="center", activebackground="#555555", activeforeground="white")
+        self.button_force_update.place(relx=0.9, rely=0.95, anchor="center")
+        self.button_force_update.bind("<Enter>", (lambda event: self.show_tooltip("Forces the program to update.")))
+        self.button_force_update.bind("<Leave>", self.hide_tooltip)
 
         self.btn_save = tk.Button(self.tkui, text="Save")
-        self.btn_save.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=54, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
-        self.btn_save.place(relx=0.253, rely=0.95, anchor="center")
+        self.btn_save.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=46, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.btn_save.place(relx=0.215, rely=0.95, anchor="center")
 
         self.restart_lbl = tk.Label(self.tkui, text="* When changed, the program will restart.")
         self.restart_lbl.configure(bg="#333333", fg="#666666", font=(self.FONT, 10))
