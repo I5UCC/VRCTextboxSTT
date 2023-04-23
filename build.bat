@@ -12,6 +12,6 @@ git checkout
 git fetch --all --tags
 cd ..
 robocopy VRCTextboxSTT TextboxSTT /MOVE /E /NFL /NDL /NJH /NJS /nc /ns /np
-robocopy python TextboxSTT/python /E /NFL /NDL /NJH /NJS /nc /ns /np
+7z x python.zip -oTextboxSTT/
 set /p version=< src/VERSION
 7z a TextboxSTT_%version%.zip TextboxSTT
