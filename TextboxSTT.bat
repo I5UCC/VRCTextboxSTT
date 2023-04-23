@@ -12,10 +12,10 @@ if NOT exist python\INSTALLED (
 	if /I "%CPU%" EQU "Y" (
 		echo "" > python\CPU
 		echo installing CPU only Packages
-		python\python.exe -m pip install -U -r .\src\requirements.cpu.txt
+		python\python.exe -m pip install -U -r .\src\requirements.cpu.txt --no-warn-script-location
 	) else (
 		echo installing all Packages
-		python\python.exe -m pip install -U -r .\src\requirements.txt
+		python\python.exe -m pip install -U -r .\src\requirements.txt --no-warn-script-location
 	)
 	echo Clear Cache
 	python\python.exe -m pip cache purge
