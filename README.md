@@ -159,6 +159,7 @@ If it doesnt show up, manually register the ´app.vrmanifest´ file by double cl
 - ~~Allow translation into and from different languages. M2M100 using ctranslate2~~
 - remove the need for building the program, enable OTA updates. (Currently in work)
 - Implement Text To Speech [silero-tts](https://github.com/snakers4/silero-models#text-to-speech) (Currently in work)
+- Documentation of features in wiki
 
 ## Donate
 
