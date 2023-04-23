@@ -1,7 +1,9 @@
 @echo off
 
+TITLE TextboxSTT Launcher
+
 cd %~dp0
-echo -------------------TextboxSTT launcher-------------------
+
 if NOT exist python\INSTALLED echo NOT INSTALLED YET, STARTING INSTALLER
 
 if NOT exist python\INSTALLED set /p CPU=Install CPU only? [y/N]: 
