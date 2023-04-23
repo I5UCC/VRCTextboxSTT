@@ -110,11 +110,12 @@
     "wordreplacement": {
         "enabled": true,
         "list": {
-            "(asterisk(\\.|!|\\?|,)|asterisk)": "*",
-            "(question mark(\\.|!|\\?|,)|question mark)": "?",
-            "(exclamation mark(\\.|!|\\?|,)|exclamation mark|exclamation point(\\.|!|\\?|,)|exclamation point)": "!",
-            "(comma(\\.|!|\\?|,)|comma)": ",",
-            "(dot(\\.|!|\\?|,)|dot)": "."
+            "(?<!\\w)dot(?!\\w)|dot(\\.|!|\\?|,)": ".",
+            "(?<!\\w)asterisk(?!\\w)|asterisk(\\.|!|\\?|,)": "*",
+            "(?<!\\w)exclamation mark(?!\\w)|exclamation mark(\\.|!|\\?|,)": "!",
+            "(?<!\\w)exclamation point(?!\\w)|exclamation point(\\.|!|\\?|,)": "!",
+            "(?<!\\w)question mark(?!\\w)|question mark(\\.|!|\\?|,)": "?",
+            "(?<!\\w)comma(?!\\w)|comma(\\.|!|\\?|,)": ","
         }
     },
     "emotes": {
