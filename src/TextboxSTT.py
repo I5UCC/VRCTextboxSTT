@@ -722,7 +722,6 @@ def update():
         config_ui.on_closing()
 
     def update_done():
-        main_window.btn_update.destroy()
         log.name = "TextboxSTT"
         restart()
     log.name = "Updater"

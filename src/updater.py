@@ -28,10 +28,12 @@ class Update_Handler(object):
         return update_available, latest_tag
     
     def fetch_tags(self):
-        git.Git(self.repo_path).execute("git fetch --all --tags")
+        res = git.Git(self.repo_path).execute("git fetch --all --tags")
+        log.debug(res)
     
     def pull(self):
-        git.Git(self.repo_path).execute("git pull --rebase --autostash")
+        res = git.Git(self.repo_path).execute("git pull --rebase --autostash")
+        log.debug(res)
 
     def update(self, callback):
         
