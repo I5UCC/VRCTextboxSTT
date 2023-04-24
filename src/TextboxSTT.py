@@ -1,8 +1,6 @@
 import sys
 sys.path.append(__file__[:__file__.rfind("\\")])
 from helper import LogToFile, get_absolute_path, force_single_instance
-import os
-import shutil
 
 force_single_instance()
 # Log to file before importing other modules
@@ -20,7 +18,7 @@ sys.stderr = OUT_FILE_LOGGER
 import traceback
 from threading import Thread
 from time import time, sleep
-from keyboard import is_pressed
+from keyboard import is_pressed, all_modifiers
 from ui import MainWindow, SettingsWindow
 from osc import OscHandler
 from browsersource import OBSBrowserSource
@@ -37,6 +35,7 @@ from autocorrect import Speller
 import winsound
 import copy
 import subprocess
+import os
 
 main_window: MainWindow = None
 config: config_struct = None
@@ -507,8 +506,20 @@ def get_trigger_state():
 
     if ovr.initialized and ovr.get_ovraction_bstate():
         return True
+
+    hotkey_pressed = is_pressed(config.hotkey)
+    if hotkey_pressed and "+" not in config.hotkey:
+        modifier_pressed = False
+        for modifier in all_modifiers:
+            try:
+                if is_pressed(modifier):
+                    modifier_pressed = True
+                    break
+            except ValueError:
+                pass
+        return is_pressed(config.hotkey) and not modifier_pressed
     else:
-        return is_pressed(config.hotkey)
+        return hotkey_pressed
 
 
 def check_timeout():

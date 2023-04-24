@@ -773,7 +773,7 @@ class SettingsWindow:
     def button_hotkey_pressed(self):
         self.button_hotkey.configure(text="ESC to cancel...", state="disabled", disabledforeground="white")
         self.update()
-        key = keyboard.read_key()
+        key = keyboard.read_hotkey()
         if key != "esc":
             self.set_key = key
         self.button_hotkey.configure(text=self.set_key, state="normal")
