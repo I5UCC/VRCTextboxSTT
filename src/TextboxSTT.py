@@ -1,14 +1,14 @@
 import sys
 sys.path.append(__file__[:__file__.rfind("\\")])
+DEBUG = len(sys.argv) <= 3
+
 from helper import LogToFile, get_absolute_path, force_single_instance
 
-force_single_instance()
-# Log to file before importing other modules
-DEBUG = len(sys.argv) <= 3
 if DEBUG:
     CACHE_PATH = get_absolute_path('cache/', __file__)
     CONFIG_PATH = get_absolute_path('config.json', __file__)
 else:
+    force_single_instance()
     CACHE_PATH = get_absolute_path('../cache/', __file__)
     CONFIG_PATH = get_absolute_path('../config.json', __file__)
 OUT_FILE_LOGGER = LogToFile(CACHE_PATH)

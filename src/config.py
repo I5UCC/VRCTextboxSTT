@@ -153,6 +153,7 @@ class ct2_device_config(object):
     cpu_threads: int = 4
     num_workers: int = 1
 
+
 @dataclass_json
 @dataclass
 class osc_config(object):
@@ -163,6 +164,7 @@ class osc_config(object):
     use_kat: bool = True
     use_both: bool = False
 
+
 @dataclass_json
 @dataclass
 class whisper_config(object):
@@ -170,7 +172,7 @@ class whisper_config(object):
     custom_models: Optional[list[str]] = field(default_factory=list)
     language: str = "english"
     max_transciption_time: float = 2.0
-    device: ct2_device_config = field(default_factory=ct2_device_config)
+    device: ct2_device_config = field(default_factory=lambda: ct2_device_config(type="cuda", index=0, compute_type=None, cpu_threads=4, num_workers=1))
 
 
 @dataclass_json
@@ -194,6 +196,7 @@ class translator_config(object):
     model: str = "small"
     language: Optional[str] = None
     device: ct2_device_config = field(default_factory=ct2_device_config)
+
 
 @dataclass_json
 @dataclass
@@ -244,6 +247,7 @@ class autocorrect_config(object):
 class wordreplacement_config(object):
     enabled: bool = True
     list: dict = field(default_factory=dict)
+
 
 @dataclass_json
 @dataclass

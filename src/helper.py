@@ -129,9 +129,6 @@ def force_single_instance():
         _pid = os.getpid()
         _procname = psutil.Process(_pid).name()
 
-        if "python" in _procname:
-            return
-
         for proc in psutil.process_iter():
             if proc.name() == _procname and proc.pid != _pid:
                 proc.kill()
