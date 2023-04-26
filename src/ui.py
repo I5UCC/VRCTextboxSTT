@@ -138,7 +138,8 @@ class MainWindow(object):
 
 
 class SettingsWindow:
-    def __init__(self, conf: config_struct, config_path, script_path, get_coodinates):
+    def __init__(self, conf: config_struct, config_path, script_path, get_coodinates, restart_func):
+        self.restart_func = restart_func
         self.languages = ["Auto Detect"] + list(LANGUAGE_TO_KEY.keys())
         self.icon_path = get_absolute_path("resources/icon.ico", script_path)
         
@@ -559,10 +560,10 @@ class SettingsWindow:
         self.button_emotes.bind("<Enter>", (lambda event: self.show_tooltip("Edit the emotes you want to use on KAT")))
         self.button_emotes.bind("<Leave>", self.hide_tooltip)
 
-        self.button_reset_config = tk.Button(self.tkui, text="Reset Settings", command=self.reset_to_default)
+        self.button_reset_config = tk.Button(self.tkui, text="Reset Settings*", command=self.reset_to_default)
         self.button_reset_config.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, width=20, anchor="center", activebackground="#555555", activeforeground="white")
         self.button_reset_config.place(relx=0.52, rely=0.95, anchor="center")
-        self.button_reset_config.bind("<Enter>", (lambda event: self.show_tooltip("Resets the config to default values.")))
+        self.button_reset_config.bind("<Enter>", (lambda event: self.show_tooltip("Resets the config to default values. (Does not clear wordreplacement- and emote lists)")))
         self.button_reset_config.bind("<Leave>", self.hide_tooltip)
 
         self.button_osc_reset_config = tk.Button(self.tkui, text="Reset OSC config", command=self.reset_osc_config)
@@ -571,7 +572,7 @@ class SettingsWindow:
         self.button_osc_reset_config.bind("<Enter>", (lambda event: self.show_tooltip("Resets OSC config by deleting the all the usr_ folders in %APPDATA%\\..\\LocalLow\\VRChat\\VRChat\\OSC")))
         self.button_osc_reset_config.bind("<Leave>", self.hide_tooltip)
 
-        self.button_force_update = tk.Button(self.tkui, text="Force Update", command=self.reset_osc_config)
+        self.button_force_update = tk.Button(self.tkui, text="Force Update*", command=self.reset_osc_config)
         self.button_force_update.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, width=20, anchor="center", activebackground="#555555", activeforeground="white")
         self.button_force_update.place(relx=0.9, rely=0.95, anchor="center")
         self.button_force_update.bind("<Enter>", (lambda event: self.show_tooltip("Forces the program to update.")))
@@ -714,45 +715,10 @@ class SettingsWindow:
 
     def reset_to_default(self):
         _config = config_struct()
-        if not torch.cuda.is_available():
-            self.value_device.set("CPU")
-        else:
-            self.value_device.set((0, torch.cuda.get_device_name(0)))
-        self.entry_osc_ip.delete(0, tk.END)
-        self.entry_osc_ip.insert(0, _config.osc.ip)
-        self.entry_osc_port.delete(0, tk.END)
-        self.entry_osc_port.insert(0, _config.osc.client_port)
-        self.entry_osc_server_port.delete(0, tk.END)
-        self.entry_osc_server_port.insert(0, _config.osc.server_port)
-        self.value_model.set(_config.whisper.model)
-        self.value_language.set(_config.whisper.language)
-        self.value_translate.set("OFF")
-        self.button_hotkey.configure(text=_config.hotkey)
-        self.set_key = _config.hotkey
-        self.value_mode.set("once_continuous" if _config.mode == 1 else "realtime" if _config.mode == 2 else "once")
-        self.value_det.set("ON" if _config.listener.dynamic_energy_threshold else "OFF")
-        self.entry_energy_threshold.delete(0, tk.END)
-        self.entry_energy_threshold.insert(0, _config.listener.energy_threshold)
-        self.entry_pause_threshold.delete(0, tk.END)
-        self.entry_pause_threshold.insert(0, _config.listener.pause_threshold)
-        self.entry_text_timeout_time.delete(0, tk.END)
-        self.entry_text_timeout_time.insert(0, _config.text_timeout)
-        self.entry_timeout_time.delete(0, tk.END)
-        self.entry_timeout_time.insert(0, _config.listener.timeout_time)
-        self.entry_hold_time.delete(0, tk.END)
-        self.entry_hold_time.insert(0, _config.listener.hold_time)
-        self.entry_phrase_time_limit.delete(0, tk.END)
-        self.entry_phrase_time_limit.insert(0, _config.listener.phrase_time_limit)
-        self.value_use_textbox.set("ON" if _config.osc.use_textbox else "OFF")
-        self.value_use_kat.set("ON" if _config.osc.use_kat else "OFF")
-        self.value_use_both.set("ON" if _config.osc.use_both else "OFF")
-        self.value_audio_feedback.set("ON" if _config.audio_feedback else "OFF")
-        self.value_emotes.set("ON" if _config.emotes.enabled else "OFF")
-        self.value_enable_overlay.set("ON" if _config.overlay.enabled else "OFF")
-        self.value_word_replacements.set("ON" if _config.wordreplacement.enabled else "OFF")
-        self.value_obs_source.set("ON" if _config.obs.enabled else "OFF")
-        self.value_vad.set("ON" if _config.vad.enabled else "OFF")
-        self.value_mic.set("Default")
+        _config.wordreplacement.list = self.config.wordreplacement.list
+        _config.emotes.list = self.config.emotes.list
+        json.dump(_config.to_dict(), open(self.config_path, "w"), indent=4)
+        self.restart_func()
 
     def update(self):
         self.tkui.update()
