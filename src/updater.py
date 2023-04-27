@@ -15,7 +15,7 @@ class Update_Handler(object):
 
     def get_latest_tag(self):
         try:
-            self.fetch_tags()
+            self.fetch()
             tags = sorted(self.repo.tags, key=lambda t: t.commit.committed_datetime)
             latest_tag = tags[-1]
             return str(latest_tag)
@@ -36,7 +36,7 @@ class Update_Handler(object):
 
         return update_available, latest_tag
     
-    def fetch_tags(self):
+    def fetch(self):
         try:
             res = git.Git(self.repo_path).execute("git fetch --all --tags")
             log.debug(res)
@@ -45,7 +45,8 @@ class Update_Handler(object):
 
     def pull(self):
         try:
-            res = git.Git(self.repo_path).execute("git pull --rebase --autostash")
+            self.fetch()
+            res = git.Git(self.repo_path).execute("git reset --hard")
             log.debug(res)
         except Exception:
             log.debug(traceback.format_exc())
