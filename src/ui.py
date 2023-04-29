@@ -9,6 +9,7 @@ import torch
 from helper import get_best_compute_type, get_absolute_path, log
 from ctranslate2 import get_supported_compute_types
 from config import config_struct, LANGUAGE_TO_KEY, WHISPER_MODELS
+from multiprocessing import cpu_count
 
 class MainWindow(object):
     def __init__(self, script_path, x=None, y=None):
@@ -1183,7 +1184,9 @@ class DeviceSettingsWindow:
 
     def save(self):
         self.config.whisper.device.compute_type = self.value_comptype.get()
-        self.config.whisper.device.cpu_threads = int(self.entry_cpu_threads.get())
+        num_threads = int(self.entry_cpu_threads.get())
+        max_cpu_threads = cpu_count()
+        self.config.whisper.device.cpu_threads = num_threads if num_threads <= max_cpu_threads else max_cpu_threads
         self.config.whisper.device.num_workers = int(self.entry_num_workers.get())
         self.config.whisper.max_transciption_time = float(self.entry_max_transciption_time.get())
 
