@@ -123,7 +123,7 @@ You can hover over any of the options to get a brief explanation on what that op
 
 You can edit Word replacements by clicking the "Edit Word Replacements" button:
 
-![image](https://user-images.githubusercontent.com/43730681/232797509-a01754c0-3890-4699-a1e6-ca577426d000.png)
+![image](https://user-images.githubusercontent.com/43730681/235309167-190135e9-024e-4bc2-a673-ce92db5e7833.png)
 
 You can edit the emote settings by clicking the "Edit Emotes" button:
 
