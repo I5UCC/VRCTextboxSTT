@@ -48,6 +48,8 @@ class Update_Handler(object):
             self.fetch()
             res = git.Git(self.repo_path).execute("git reset --hard")
             log.debug(res)
+            res = git.Git(self.repo_path).execute("git pull")
+            log.debug(res)
         except Exception:
             log.debug(traceback.format_exc())
 
