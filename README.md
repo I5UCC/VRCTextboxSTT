@@ -147,17 +147,17 @@ After setting the option to ON it will launch the program on SteamVR startup.
 If it doesnt show up, manually register the ´app.vrmanifest´ file by double clicking it and running it with SteamVR.
 
 # Backlog
-- ~~Add a quick entry box for quick messaging.~~
-- ~~Create a Settings UI for easy config editing.~~
-- ~~Enable Integration with [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText).~~
-- ~~Transcribe continuously until the user stops talking.~~
-- ~~Add an emote feature~~
-- ~~Demo Gif/Video (Stole from Frosty, thanks lol)~~
-- ~~Add a OBS browsersource~~
-- ~~Use [whisper.cpp](https://github.com/ggerganov/whisper.cpp)/[faster-whisper](https://github.com/guillaumekln/faster-whisper) for transcription, for better performance.~~
-- ~~Allow use of finetuned models.~~
-- ~~Allow translation into and from different languages. M2M100 using ctranslate2~~
-- remove the need for building the program, enable OTA updates. (Currently in work)
+- ~~Add a quick entry box for quick messaging.~~ Done.
+- ~~Create a Settings UI for easy config editing.~~ Done.
+- ~~Enable Integration with [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText).~~ Done.
+- ~~Transcribe continuously until the user stops talking.~~ Done.
+- ~~Add an emote feature~~ Done.
+- ~~Demo Gif/Video (Stole from Frosty, thanks lol)~~ Done.
+- ~~Add a OBS browsersource~~ Done.
+- ~~Use [whisper.cpp](https://github.com/ggerganov/whisper.cpp)/[faster-whisper](https://github.com/guillaumekln/faster-whisper) for transcription, for better performance.~~ Done.
+- ~~Allow use of finetuned models.~~ Done.
+- ~~Allow translation into and from different languages. M2M100 using ctranslate2~~ Done.
+- ~~remove the need for building the program, enable OTA updates.~~ Done.
 - Implement Text To Speech [silero-tts](https://github.com/snakers4/silero-models#text-to-speech) (Currently in work)
 - Documentation of features in wiki
 
