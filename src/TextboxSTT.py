@@ -36,6 +36,7 @@ import winsound
 import copy
 import subprocess
 import os
+import numpy as np
 
 main_window: MainWindow = None
 config: config_struct = None
@@ -121,6 +122,7 @@ def init():
     main_window.set_status_label("LOADING WHISPER MODEL", "orange")
     if not transcriber:
         transcriber = TranscribeHandler(copy.deepcopy(config.whisper), config.vad, CACHE_PATH, config.translator.language == "english")
+        transcriber.transcribe(np.zeros(100000, dtype=np.float32))
     elif config.whisper != transcriber.config_whisper:
         restart()
     main_window.set_status_label(f"LOADED \"{transcriber.whisper_model}\"", "orange")
@@ -319,6 +321,7 @@ def process_forever():
             pre = time()
             _np_audio = listen.raw_to_np(_last_sample)
             _text = transcriber.transcribe(_np_audio)
+            log.info("Transcription: " + _text)
             first_run = False
             if append:
                 _text = last_text + _text
@@ -403,6 +406,7 @@ def process_loop():
             pre = time()
             _np_audio = listen.raw_to_np(_last_sample)
             _text = transcriber.transcribe(_np_audio)
+            log.info("Transcription: " + _text)
             if append:
                 _text = last_text + _text
             if translator:
@@ -465,19 +469,20 @@ def process_once():
         if not pressed:
             pre = time()
             _np_audio = listen.raw_to_np(raw_audio)
-            _trans = transcriber.transcribe(_np_audio)
+            _text = transcriber.transcribe(_np_audio)
+            log.info("Transcription: " + _text)
             if translator:
                 play_sound(config.audio_feedback.sound_donelisten)
                 main_window.set_status_label("TRANSLATING", "orange")
-                _trans = translator.translate(_trans)
+                _text = translator.translate(_text)
             main_window.set_time_label(time() - pre)
             if pressed:
                 main_window.set_status_label("CANCELED - WAITING FOR INPUT", "orange")
                 play_sound(config.audio_feedback.sound_timeout)
                 finished = False
-            elif _trans:
+            elif _text:
                 main_window.set_status_label("FINISHED - WAITING FOR INPUT", "blue")
-                populate_chatbox(_trans)
+                populate_chatbox(_text)
                 play_sound(config.audio_feedback.sound_finished)
                 finished = True
             else:

@@ -10,6 +10,7 @@ from helper import get_absolute_path, replace_words
 import keyboard
 from config import config_struct
 import os
+import numpy as np
 
 def main():
     global enabled, listen
@@ -31,6 +32,7 @@ def main():
 
     listen = ListenHandler(config.listener)
     transcriber = TranscribeHandler(config.whisper, config.vad, CACHE_PATH, config.translator.language == "english")
+    transcriber.transcribe(np.zeros(100000, dtype=np.float32))
     translator: TranslationHandler = None
     if config.translator.language and config.translator.language != config.whisper.language and transcriber.task == "transcribe":
         translator = TranslationHandler(CACHE_PATH, config.whisper.language, config.translator)

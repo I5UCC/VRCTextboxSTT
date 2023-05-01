@@ -1,6 +1,5 @@
 import os
 import torch
-import time
 from helper import get_best_compute_type, log
 from faster_whisper import WhisperModel
 from ctranslate2.converters import TransformersConverter
@@ -60,8 +59,6 @@ class TranscribeHandler(object):
             log.error("Error transcribing: ")
             log.error(traceback.format_exc())
             return None
-
-        log.info("Transcription: " + _text)
 
         return _text
 
