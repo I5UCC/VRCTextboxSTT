@@ -1,3 +1,13 @@
+### v1.4.0 Changelog (This includes the Beta Changelog)
+- Preloading the whisper model on startup, this should remove the increased latency on the first transcription.
+- No redownloading of the program needed anymore! Download once, install once. You will get notified about new updates in TextboxSTT. 
+- TextboxSTT now comes with a portable python instance, that means required dependencies are now installed when needed.
+- Added default word replacements for things like *, !, ?, .
+- The "Reset Settings" button now resets all settings and restarts the program. (Word Replacements and Emotes are kept)
+- The ⟳ button now restarts the program completely instead of reloading.
+- The hotkey used by TextboxSTT now ignores input whenever you hold a modifier (CTRL, SHIFT etc.)
+- You can now record a whole hotkey instead of just one key.
+
 ### v1.3.1 Changelog
 
 Fixes running into Rate limit issues when in mode "once". This fixes the issue of certain transcriptions not appearing in the Textbox.
