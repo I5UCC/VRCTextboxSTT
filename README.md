@@ -14,6 +14,7 @@ This program is supposed to be entirely free (as in money), open source and inde
 - [Limitations](https://github.com/I5UCC/VRCTextboxSTT#limitations)
 - [Requirements](https://github.com/I5UCC/VRCTextboxSTT#requirements)
 - [Demo](https://github.com/I5UCC/VRCTextboxSTT#demo)
+- [Installing and Updating TextboxSTT](https://github.com/I5UCC/VRCTextboxSTT#installing-and-updating-textboxstt)
 - [How to use](https://github.com/I5UCC/VRCTextboxSTT#how-to-use)
 - [OSC Troubleshoot](https://github.com/I5UCC/VRCTextboxSTT#osc-troubleshoot)
 - [Configuration](https://github.com/I5UCC/VRCTextboxSTT#configuration)
@@ -81,18 +82,19 @@ With default settings, this program has following requirements:
 [Frosty704](https://github.com/Frosty704) using VRCTextboxSTT and [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText) with their [Billboard](https://github.com/Frosty704/Billboard) project. More to that on their repository. <br>
 ![](https://user-images.githubusercontent.com/36753686/223066845-2eddf954-c953-4dd4-816c-e0fbb5684ec0.gif)
 
+# Installing and Updating TextboxSTT
+
+Install the [Visual C++ Redistributables](https://github.com/abbodi1406/vcredist/releases/download/v0.71.0/VisualCppRedist_AIO_x86_x64.exe)
+
+After first launch, the TextboxSTT Launcher will tell you that the program is not yet installed and asks you if you want to only install the CPU dependencies: <br>
+![234649759-d70f5fb6-ef71-49c6-b84b-91e6530bb2e3](https://user-images.githubusercontent.com/43730681/235293653-f51b616d-ff45-4ffa-9599-7176c2ee70c8.png) <br>
+After selecting an option (y = yes, n = no), ***No by default and recommended***, TextboxSTT will start installing all the dependencies needed. ***This only has to be done once***, after it will update dependencies whenever an update is available.
+After the installation is done, TextboxSTT will start like normal.
+To know whether an update is available, a button in the top right of the program will appear, informing you of a new update: <br>
+![Updater](https://user-images.githubusercontent.com/43730681/234651576-fc79209d-1ba1-43a5-8fdd-b27816bc48ac.png) <br>
+After clicking this button, the program will be updated and leads to a restart of the program. This process generally doesnt take much time.
+
 # How to use
-
-
-### Run from Releases
-- Download one of the [Releases](https://github.com/I5UCC/VRCTextboxSTT/releases/latest).
-- unpack the .7z file with a software of your choice.
-- Run TextboxSTT.exe
-
-### Run from source
-- clone this repository, for example with git `git clone https://github.com/I5UCC/VRCTextboxSTT.git`
-- Using python 3.10, install all of the dependencies from the requirements.txt file `python -m pip install -r requirements.txt`
-- run the program by running `python TextboxSTT.py` in the projects directory
 
 ### Usage in VRChat
 - Activate OSC in VRChat: <br/><br/>
