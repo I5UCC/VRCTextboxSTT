@@ -20,6 +20,9 @@ if NOT exist python\INSTALLED (
 	echo Clear Cache
 	python\python.exe -m pip cache purge
 	echo "" > python\INSTALLED
+	echo.
+	echo TextboxSTT installed.
+	timeout 10
 )
 
 if NOT exist config.json (
