@@ -143,12 +143,13 @@ def init():
     main_window.set_status_label("INITIALIZED - WAITING FOR INPUT", "green")
     main_window.set_button_enabled(True)
 
-    updater = Update_Handler(get_absolute_path("../git/bin/git.exe", __file__), os.path.abspath(sys.path[-1] + "\\..\\"), __file__)
-    log.info(main_window.version)
-    update_available, latest_tag = updater.check_for_updates(main_window.version)
-    if update_available:
-        main_window.show_update_button(f"Update Available! ({latest_tag})")
-        main_window.btn_update.configure(command=update)
+    if not updater:
+        updater = Update_Handler(get_absolute_path("../git/bin/git.exe", __file__), os.path.abspath(sys.path[-1] + "\\..\\"), __file__)
+        log.info(main_window.version)
+        update_available, latest_tag = updater.check_for_updates(main_window.version)
+        if update_available:
+            main_window.show_update_button(f"Update Available! ({latest_tag})")
+            main_window.btn_update.configure(command=update)
 
     initialized = True
 
