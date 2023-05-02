@@ -52,7 +52,7 @@ class Update_Handler(object):
             self.fetch()
             result = run([self.git_path, "reset", "--hard"], cwd=self.repo_path, stdout=PIPE, stderr=STDOUT)
             log.debug(result.stdout.decode('utf-8'))
-            result = run([self.git_path, "reset", "pull"], cwd=self.repo_path, stdout=PIPE, stderr=STDOUT)
+            result = run([self.git_path, "pull"], cwd=self.repo_path, stdout=PIPE, stderr=STDOUT)
             log.debug(result.stdout.decode('utf-8'))
         except Exception:
             log.debug(traceback.format_exc())
