@@ -1,3 +1,7 @@
+### v1.4.1 Changelog
+- removes the requirements of git being installed by using a portable instance.
+    - If the portable instance doesnt exist, the locally installed version is used.
+
 ### v1.4.0 Changelog (This includes the Beta Changelog)
 - Preloading the whisper model on startup, this should remove the increased latency on the first transcription.
 - No redownloading of the program needed anymore! Download once, install once. You will get notified about new updates in TextboxSTT. 
