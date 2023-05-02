@@ -8,3 +8,5 @@ cache/
 out.log
 src/test*.py
 python/
+git/
+*.zip
