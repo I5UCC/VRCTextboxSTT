@@ -204,8 +204,8 @@ class listener_config(object):
     microphone_index: Optional[int] = None
     dynamic_energy_threshold: bool = False
     energy_threshold: float = 200
-    pause_threshold: float = 0.8
-    timeout_time: float = 3.0
+    pause_threshold: float = 3.0
+    timeout_time: float = 5.0
     hold_time: float = 1.5
     phrase_time_limit: float = 1.0
 
@@ -213,7 +213,7 @@ class listener_config(object):
 @dataclass_json
 @dataclass
 class overlay_config(object):
-    enabled: bool = False
+    enabled: bool = True
     pos_x: float = 0.0
     pos_y: float = -0.4
     size: float = 1.0
@@ -340,7 +340,7 @@ class emotes_config(object):
 @dataclass_json
 @dataclass
 class config_struct(object):
-    mode: int = 0
+    mode: int = 1
     hotkey: str = "f1"
     text_timeout: float = 30.0
     audio_feedback: audio_feedback_config = field(default_factory=audio_feedback_config)

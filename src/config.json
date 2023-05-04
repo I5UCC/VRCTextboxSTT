@@ -1,5 +1,5 @@
 {
-    "mode": 0,
+    "mode": 1,
     "hotkey": "f1",
     "text_timeout": 30.0,
     "audio_feedback": {
@@ -79,13 +79,13 @@
         "microphone_index": null,
         "dynamic_energy_threshold": false,
         "energy_threshold": 200,
-        "pause_threshold": 0.8,
-        "timeout_time": 3.0,
+        "pause_threshold": 3.0,
+        "timeout_time": 5.0,
         "hold_time": 1.5,
         "phrase_time_limit": 1.0
     },
     "overlay": {
-        "enabled": false,
+        "enabled": true,
         "pos_x": 0.0,
         "pos_y": -0.4,
         "size": 1.0,
