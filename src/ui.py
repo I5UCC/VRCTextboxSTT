@@ -711,6 +711,7 @@ class SettingsWindow:
         self.config.wordreplacement.enabled = True if self.value_word_replacements.get() == "ON" else False
         self.config.obs.enabled = True if self.value_obs_source.get() == "ON" else False
         self.config.autocorrect.language = self.value_autocorrect.get() if self.value_autocorrect.get() != "OFF" else None
+        self.config.vad.enabled = True if self.value_vad.get() == "ON" else False
 
         json.dump(self.config.to_dict(), open(self.config_path, "w"), indent=4)
 
