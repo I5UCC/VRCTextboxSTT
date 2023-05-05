@@ -18,7 +18,8 @@ class NotInitializedException(Exception):
 
 
 class OVRHandler(object):
-    def __init__(self, config_overlay: overlay_config, script_path) -> None:
+    def __init__(self, config_overlay: overlay_config, script_path, debug = False) -> None:
+        self.debug = debug
         self.overlay_conf: overlay_config = config_overlay
         self._script_path = script_path
         self.initialized = False
@@ -33,7 +34,8 @@ class OVRHandler(object):
             self.application = openvr.init(openvr.VRApplication_Overlay)
             self.action_path = get_absolute_path("bindings/textboxstt_actions.json", self._script_path)
             self.appmanifest_path = get_absolute_path("app.vrmanifest", self._script_path)
-            openvr.VRApplications().addApplicationManifest(self.appmanifest_path)
+            if not self.debug:
+                openvr.VRApplications().addApplicationManifest(self.appmanifest_path)
             openvr.VRInput().setActionManifestPath(self.action_path)
             self.action_set_handle = openvr.VRInput().getActionSetHandle(ACTIONSETHANDLE)
             self.button_action_handle = openvr.VRInput().getActionHandle(STTLISTENHANDLE)

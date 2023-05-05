@@ -91,7 +91,7 @@ def init():
 
     # Initialize OpenVR
     if not ovr:
-        ovr = OVRHandler(config.overlay, __file__)
+        ovr = OVRHandler(config.overlay, __file__, DEBUG)
     if OVRHandler.is_running():
         ovr.init()
     if ovr.initialized:
