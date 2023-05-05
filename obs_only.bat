@@ -6,10 +6,10 @@ cd %~dp0
 
 if NOT exist python\INSTALLED echo NOT INSTALLED YET, STARTING INSTALLER
 
-if NOT exist python\INSTALLED set /p CPU=Install CPU only? [y/N]: 
+if NOT exist python\INSTALLED CHOICE /T 10 /C YN /D N /n /m "Install CPU only? (Timeout 10s) [y/N]:"
 
 if NOT exist python\INSTALLED (
-	if /I "%CPU%" EQU "Y" (
+	if /I %ERRORLEVEL% EQU 1 (
 		echo "" > python\CPU
 		echo installing CPU only Packages
 		python\python.exe -m pip install -U -r .\src\requirements.cpu.txt --no-warn-script-location
@@ -29,8 +29,6 @@ if NOT exist config.json (
 	powershell -c "copy src\config.json config.json"
 )
 
-echo Starting TextboxSTT obs_only %version% ...
+echo Starting TextboxSTT obs_only...
 cd src
 start ..\python\obs_only.exe .\OBSWSTT.py _ _ _
-
-
