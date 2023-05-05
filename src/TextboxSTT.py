@@ -749,7 +749,7 @@ def update():
         main_window.show_update_button("Updating...")
 
     main_window.btn_update.configure(text="Updating..." , state="disabled")
-    updater.update(update_done)
+    updater.update(update_done, main_window.set_text_label)
 
 
 def restart():

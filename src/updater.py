@@ -60,24 +60,35 @@ class Update_Handler(object):
         except Exception:
             log.debug(traceback.format_exc())
 
-    def update(self, callback):
+    def update(self, callback, ui_output):
         
         def run_in_thread(callback):
+            ui_output("Updating... 0%")
             self.pull()
             requirements_file = "requirements.txt"
             if os.path.isfile(get_absolute_path("../python/CPU", self.script_path)):
                 requirements_file = "requirements.cpu.txt"
+            ui_output("Updating... 10%")
 
             process = Popen([sys.executable, "-m", "pip", "install", "-U", "-r", get_absolute_path(requirements_file, self.script_path), "--no-warn-script-location"], cwd=self.repo_path, stdout=PIPE, stderr=STDOUT, startupinfo=self.startupinfo)
+            ui_output("Updating... 25%")
+            i = 20
             with process.stdout:
                 for line in iter(process.stdout.readline, b''):
                     log.debug(str(line)[2:-5])
+                    per = int((i/70)*100)
+                    if per > 99:
+                        per = 99
+                    ui_output(f"Updating... {str(per)}%")
+                    i += 1
             process.wait()
+            ui_output("Updating... 99%")
             process = Popen([sys.executable, "-m", "pip", "cache", "purge"], cwd=self.repo_path, stdout=PIPE, stderr=STDOUT, startupinfo=self.startupinfo)
             with process.stdout:
                 for line in iter(process.stdout.readline, b''):
                     log.debug(str(line)[2:-5])
             process.wait()
+            ui_output("Updating... 100%")
             callback()
 
         thread = threading.Thread(target=run_in_thread, args=(callback,))
