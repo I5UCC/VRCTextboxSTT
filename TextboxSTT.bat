@@ -6,10 +6,10 @@ cd %~dp0
 
 if NOT exist python\INSTALLED echo NOT INSTALLED YET, STARTING INSTALLER
 
-if NOT exist python\INSTALLED CHOICE /T 10 /C YN /D N /n /m "Install CPU only? (Timeout 10s) [y/N]:"
+if NOT exist python\INSTALLED set /p CPU=Install CPU only? [y/N]: 
 
 if NOT exist python\INSTALLED (
-	if /I %ERRORLEVEL% EQU 1 (
+	if /I "%CPU%" EQU "Y" (
 		echo "" > python\CPU
 		echo installing CPU only Packages
 		python\python.exe -m pip install -U -r .\src\requirements.cpu.txt --no-warn-script-location
@@ -29,6 +29,8 @@ if NOT exist config.json (
 	powershell -c "copy src\config.json config.json"
 )
 
-echo Starting TextboxSTT...
+echo Starting TextboxSTT %version% ...
 cd src
 start ..\python\TextboxSTT.exe .\TextboxSTT.py _ _ _
+
+
