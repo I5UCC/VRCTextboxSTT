@@ -10,3 +10,5 @@ src/test*.py
 python/
 git/
 *.zip
+obj/
+bin/

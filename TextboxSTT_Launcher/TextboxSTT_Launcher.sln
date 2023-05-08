@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32804.467
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TextboxSTT_Launcher", "TextboxSTT_Launcher\TextboxSTT_Launcher.csproj", "{9C7BF6DB-8435-4DD5-93AB-E5419643CD0F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "obs_only_Launcher", "obs_only_Launcher\obs_only_Launcher.csproj", "{BC16E16B-392F-49A4-B3C3-142694A097E9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9C7BF6DB-8435-4DD5-93AB-E5419643CD0F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C7BF6DB-8435-4DD5-93AB-E5419643CD0F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C7BF6DB-8435-4DD5-93AB-E5419643CD0F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C7BF6DB-8435-4DD5-93AB-E5419643CD0F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BC16E16B-392F-49A4-B3C3-142694A097E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC16E16B-392F-49A4-B3C3-142694A097E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC16E16B-392F-49A4-B3C3-142694A097E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC16E16B-392F-49A4-B3C3-142694A097E9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E43E20E9-759F-4847-93E8-6C1AAF8F9A6F}
+	EndGlobalSection
+EndGlobal

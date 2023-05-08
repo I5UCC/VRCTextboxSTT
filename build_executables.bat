@@ -4,7 +4,14 @@ cd %~dp0
 del /f .\TextboxSTT.exe
 del /f .\obs_only.exe
 
-Bat_To_Exe_Converter.exe /bat .\TextboxSTT.bat /exe .\TextboxSTT.exe /icon .\src\resources\icon.ico /x64 /copyright I5UCC
-Bat_To_Exe_Converter.exe /bat .\obs_only.bat /exe .\obs_only.exe /icon .\src\resources\icon.ico /x64 /copyright I5UCC
+cd TextboxSTT_Launcher\TextboxSTT_Launcher
+dotnet publish -r win-x64
+cd ../..
+powershell -c "copy TextboxSTT_Launcher\TextboxSTT_Launcher\bin\Debug\net4.8\win-x64\publish\TextboxSTT_Launcher.exe ./TextboxSTT.exe"
 
-timeout 10
+cd TextboxSTT_Launcher\obs_only_Launcher
+dotnet publish -r win-x64
+cd ../..
+powershell -c "copy TextboxSTT_Launcher\obs_only_Launcher\bin\Debug\net4.8\win-x64\publish\obs_only_Launcher.exe ./obs_only.exe"
+
+timeout 3
