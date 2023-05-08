@@ -1,14 +1,10 @@
 build/
 dist/
-TextboxSTT/
-*.7z
 .*/
 __pycache__/
 cache/
-out.log
-src/test*.py
+test*.py
 python/
 git/
-*.zip
 obj/
 bin/
