@@ -16,6 +16,8 @@ namespace obs_only_Launcher
             bool first_install = false;
             ProcessStartInfo pInfo = new ProcessStartInfo();
 
+            Console.Title = "TextboxSTT Launcher";
+
             if (!File.Exists(installed_file))
             {
                 try
