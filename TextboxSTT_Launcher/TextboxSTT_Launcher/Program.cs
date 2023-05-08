@@ -52,7 +52,7 @@ namespace TextboxSTT_Launcher
                 {
                     Console.WriteLine("INSTALLATION FAILED:");
                     Console.WriteLine(ex.Message);
-                    Console.ReadLine();
+                    Console.ReadKey();
                 }
             }
 
@@ -63,7 +63,8 @@ namespace TextboxSTT_Launcher
 
             if (first_install)
             {
-                Console.Write("Installation Finished. Press Enter to continue...");
+                Console.Write("Installation Finished. Press any key to continue...");
+                Console.ReadKey();
             }
 
             pInfo.WorkingDirectory = currpath + "\\src";
