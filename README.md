@@ -84,7 +84,11 @@ With default settings, this program has following requirements:
 
 # Installing and Updating TextboxSTT
 
-Install the [Visual C++ Redistributables](https://github.com/abbodi1406/vcredist/releases/download/v0.71.0/VisualCppRedist_AIO_x86_x64.exe)
+Install the [Visual C++ Redistributables](https://github.com/abbodi1406/vcredist/releases/download/v0.72.0/VisualCppRedist_AIO_x86_x64.exe)
+
+Download and unpack the [latest release of TextboxSTT](https://github.com/I5UCC/VRCTextboxSTT/releases/latest)
+  
+Launch TextboxSTT.exe
 
 After first launch, the TextboxSTT Launcher will tell you that the program is not yet installed and asks you if you want to only install the CPU dependencies: <br>
 ![234649759-d70f5fb6-ef71-49c6-b84b-91e6530bb2e3](https://user-images.githubusercontent.com/43730681/235293653-f51b616d-ff45-4ffa-9599-7176c2ee70c8.png) <br>
