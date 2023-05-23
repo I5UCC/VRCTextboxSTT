@@ -26,18 +26,21 @@ This program is supposed to be entirely free (as in money), open source and inde
 
 # Features
 
-- Sending transcription to either 
-  - VRChats Ingame Textbox allowing for use with any avatar 
+- Sending transcription to either:
+  - VRChats Ingame Textbox allowing for use with any avatar.
   - [KillFrenzyAvatarText (KAT)](https://github.com/killfrenzy96/KillFrenzyAvatarText) that needs to be integrated to an avatar. 
     - You can use [Frosty704's Billboard](https://github.com/Frosty704/Billboard) to add a speech bubble to your avatar.
     - Support for up to 80 emotes!
-    - Automatic Detection of KAT on an avatar. It will use KAT if available, otherwise fall back to VRChat Textbox.
+  - Automatic Detection of KAT on an avatar. It will use KAT if available, otherwise fall back to VRChat Textbox.
 - ***Fast and Efficient***. VRCTextboxSTT uses [ctranslate2](https://github.com/OpenNMT/CTranslate2) as the runtime for transcription and translation, which makes it incredibly efficient and fast.
-- ***Uses SteamVR binding system***, press to transcribe, hold to clear/cancel (A/X by default)
+- ***Uses Steam Input***, press to transcribe, hold to clear/cancel (A/X by default). Also works on desktop with the "F1" Key by default.
 - ***Customizable***
   - You can bind the button to start transcription to any action that SteamVR allows you to set.
   - You can bind it to any key on your keyboard.
   - Many Timing settings for transcription delays and button presses.
+  - Mutliple different Transcription modes to choose from.
+  - You can change all of the Audio feedback sounds to a sound of your liking.
+- Ability to to use fine tuned models from [Huggingface](https://huggingface.co/models?sort=downloads&search=whisper)
 - Optional ***Live Transcription***
 - Optional ***Automatic launch*** with SteamVR.
 - ***Text to Text*** for quick typing.
@@ -45,12 +48,13 @@ This program is supposed to be entirely free (as in money), open source and inde
 - Optional ***OBS Browser Source***.
 - ***Simple API.*** latest transcription bound to the "/transcript" endpoint. (Requires OBS Source to be turned on)
 - ***Audio feedback*** for each step in the transcription.
-- ***Multi Language support***. whisper supports around [100 different languages](https://github.com/openai/whisper/blob/main/whisper/tokenizer.py#L10). Here, with a few [limitations](https://github.com/I5UCC/VRCTextboxSTT#limitations).
-- Translate into and from different languages. (Powered by [M2M100](https://huggingface.co/docs/transformers/model_doc/m2m_100))
-- Word Replacements and Emote Replacements with regex(regular expressions).
+  - Volume for each of the feedbacks can be modified over the Settings menu.
+  
+- ***Multi Language support***. whisper supports around [100 different languages](https://github.com/openai/whisper/blob/main/whisper/tokenizer.py#L10). 
+  - Translate into and from those different languages. (Powered by [M2M100](https://huggingface.co/docs/transformers/model_doc/m2m_100))
+- Word Replacements and Emote Replacements with [Regular Expressions](https://en.wikipedia.org/wiki/Regular_expression).
 - Free to use as of the [GPL-3.0 license](https://github.com/I5UCC/VRCTextboxSTT/blob/main/LICENSE)
 - Completely free of Subscription/Cloud Services, by running locally on your hardware.
-
 
 # Limitations
 
