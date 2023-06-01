@@ -10,11 +10,11 @@ waitress
 flask
 kthread
 pydub
-ctranslate2
-transformers
 dataclasses-json
 sentencepiece
 autocorrect
-torch==2.0.0
+transformers==4.29.2
+ctranslate2==3.14.0
+torch==2.0.1
 --extra-index-url https://download.pytorch.org/whl/cu118
-faster-whisper
+faster-whisper==0.6.0
