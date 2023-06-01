@@ -1,42 +1,51 @@
-import sys
-sys.path.append(__file__[:__file__.rfind("\\")])
-DEBUG = len(sys.argv) <= 3
-
-from helper import LogToFile, get_absolute_path, force_single_instance
-
-if DEBUG:
-    CACHE_PATH = get_absolute_path('cache/', __file__)
-    CONFIG_PATH = get_absolute_path('config.json', __file__)
-else:
-    force_single_instance()
-    CACHE_PATH = get_absolute_path('../cache/', __file__)
-    CONFIG_PATH = get_absolute_path('../config.json', __file__)
-OUT_FILE_LOGGER = LogToFile(CACHE_PATH)
-sys.stdout = OUT_FILE_LOGGER
-sys.stderr = OUT_FILE_LOGGER
-
-import traceback
-from threading import Thread
-from time import time, sleep
-from keyboard import is_pressed, all_modifiers
-from ui import MainWindow, SettingsWindow
-from osc import OscHandler
-from browsersource import OBSBrowserSource
-from ovr import OVRHandler
-from listen import ListenHandler
-from transcribe import TranscribeHandler
-from translate import TranslationHandler
-from config import config_struct, audio, LANGUAGE_TO_KEY
-from updater import Update_Handler
-from pydub import AudioSegment
-from helper import replace_words, replace_emotes, loadfont, log
-from torch.cuda import is_available
-from autocorrect import Speller
-import winsound
-import copy
-import subprocess
-import os
-import numpy as np
+try:
+    import sys
+    import os
+    sys.path.append(os.path.dirname(__file__))
+    DEBUG = len(sys.argv) <= 3
+    from helper import LogToFile, get_absolute_path, force_single_instance
+    if DEBUG:
+        CACHE_PATH = get_absolute_path('cache/', __file__)
+        CONFIG_PATH = get_absolute_path('config.json', __file__)
+    else:
+        force_single_instance()
+        CACHE_PATH = get_absolute_path('../cache/', __file__)
+        CONFIG_PATH = get_absolute_path('../config.json', __file__)
+    OUT_FILE_LOGGER = LogToFile(CACHE_PATH)
+    sys.stdout = OUT_FILE_LOGGER
+    sys.stderr = OUT_FILE_LOGGER
+    
+    import traceback
+    from threading import Thread
+    from time import time, sleep
+    from keyboard import is_pressed, all_modifiers
+    from ui import MainWindow, SettingsWindow
+    from osc import OscHandler
+    from browsersource import OBSBrowserSource
+    from ovr import OVRHandler
+    from listen import ListenHandler
+    from transcribe import TranscribeHandler
+    from translate import TranslationHandler
+    from config import config_struct, audio, LANGUAGE_TO_KEY
+    from updater import Update_Handler
+    from pydub import AudioSegment
+    from helper import replace_words, replace_emotes, loadfont, log
+    from torch.cuda import is_available
+    from autocorrect import Speller
+    import winsound
+    import copy
+    import subprocess
+    import numpy as np
+except FileNotFoundError as e:
+    import ctypes
+    ctypes.windll.user32.MessageBoxW(0, f"Couldn't Import some dependencies, you might be missing C++ Redistributables needed for this program.\n\n Please try to reinstall the C++ Redistributables, link in the Requirements of the repository.\n\n{e}", "TextboxSTT - Dependency Error", 0)
+    sys.exit(1)
+except Exception as e:
+    import ctypes
+    import traceback
+    ctypes.windll.user32.MessageBoxW(0, "Unexpected Error while importing dependencies.\n\n Please report the following Traceback to the repository or Discord.", "TextboxSTT - Unexpected Error", 0)
+    ctypes.windll.user32.MessageBoxW(0, traceback.format_exc(), "TextboxSTT - Unexpected Error", 0)
+    sys.exit(1)
 
 main_window: MainWindow = None
 config: config_struct = None
