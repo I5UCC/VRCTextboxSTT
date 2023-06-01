@@ -99,11 +99,11 @@ Depending on settings changed in the program those requirements can change expon
 - Launch TextboxSTT.exe
 
 - After first launch, the TextboxSTT Launcher will tell you that the program is not yet installed and asks you if you want to only install the CPU dependencies: <br>
-![234649759-d70f5fb6-ef71-49c6-b84b-91e6530bb2e3](https://user-images.githubusercontent.com/43730681/235293653-f51b616d-ff45-4ffa-9599-7176c2ee70c8.png)
+![234649759-d70f5fb6-ef71-49c6-b84b-91e6530bb2e3](https://user-images.githubusercontent.com/43730681/235293653-f51b616d-ff45-4ffa-9599-7176c2ee70c8.png) <br>
 After selecting an option (y = yes, n = no), ***No by default and recommended***, TextboxSTT will start installing all the dependencies needed. ***This only has to be done once***, after it will update dependencies whenever an update is available.
 After the installation is done, TextboxSTT will start like normal. The first Startup might take a bit longer then usual.
 To know whether an update is available, a button in the top right of the program will appear, informing you of a new update: <br>
-![Updater](https://user-images.githubusercontent.com/43730681/234651576-fc79209d-1ba1-43a5-8fdd-b27816bc48ac.png)
+![Updater](https://user-images.githubusercontent.com/43730681/234651576-fc79209d-1ba1-43a5-8fdd-b27816bc48ac.png) <br>
 After clicking this button, the program will be updated and leads to a restart of the program. This process generally doesnt take much time.
 
 # How to use
