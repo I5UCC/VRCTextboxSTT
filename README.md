@@ -72,7 +72,7 @@ This program is supposed to be entirely free (as in money), open source and inde
 With default settings, this program has following requirements:
 
 - [.NET 4.8.1](https://dotnet.microsoft.com/en-us/download/dotnet-framework/thank-you/net481-web-installer) (***Should*** be preinstalled on Windows 10 and up)
-- [Visual C++ Redistributables](https://aka.ms/vs/17/release/vc_redist.x64.exe)
+- [Visual C++ 2015-2022 Redistributable (x64)](https://aka.ms/vs/17/release/vc_redist.x64.exe)
 - SteamVR (IF ran in VR, no Oculus/Meta support as of now.)
 - Inference on GPU (Recommended): 
   - CUDA enabled GPU (NVIDIA ONLY), otherwise it will fall back to using CPU.
