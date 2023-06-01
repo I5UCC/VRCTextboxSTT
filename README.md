@@ -71,15 +71,19 @@ This program is supposed to be entirely free (as in money), open source and inde
 
 With default settings, this program has following requirements:
 
-- CPU version:
-  - ~2GB of storage space.
-  - ~400MB of available RAM.
-- GPU version: 
+- [.NET 4.8.1](https://dotnet.microsoft.com/en-us/download/dotnet-framework/thank-you/net481-web-installer) (***Should*** be preinstalled on Windows 10 and up)
+- [Visual C++ Redistributables](https://aka.ms/vs/17/release/vc_redist.x64.exe)
+- SteamVR (IF ran in VR, no Oculus/Meta support as of now.)
+- Inference on GPU (Recommended): 
   - CUDA enabled GPU (NVIDIA ONLY), otherwise it will fall back to using CPU.
   - ~5GB of storage space.
   - ~1GB of available RAM.
-  - ~500MB of available VRAM.
-- SteamVR (IF ran in VR, no Oculus/Meta support as of now.)
+  - ~600MB of available VRAM.
+- Inference on CPU:
+  - ~2GB of storage space.
+  - ~400MB of available RAM.
+
+Depending on settings changed in the program those requirements can change exponentially.
 
 # Demo
 
@@ -88,18 +92,18 @@ With default settings, this program has following requirements:
 
 # Installing and Updating TextboxSTT
 
-Install the [Visual C++ Redistributables](https://github.com/abbodi1406/vcredist/releases/download/v0.72.0/VisualCppRedist_AIO_x86_x64.exe)
+- Install the [Requirements](https://github.com/I5UCC/VRCTextboxSTT#requirements)
 
-Download and unpack the [latest release of TextboxSTT](https://github.com/I5UCC/VRCTextboxSTT/releases/latest)
-  
-Launch TextboxSTT.exe
+- Download and unpack this release of TextboxSTT
 
-After first launch, the TextboxSTT Launcher will tell you that the program is not yet installed and asks you if you want to only install the CPU dependencies: <br>
-![234649759-d70f5fb6-ef71-49c6-b84b-91e6530bb2e3](https://user-images.githubusercontent.com/43730681/235293653-f51b616d-ff45-4ffa-9599-7176c2ee70c8.png) <br>
+- Launch TextboxSTT.exe
+
+- After first launch, the TextboxSTT Launcher will tell you that the program is not yet installed and asks you if you want to only install the CPU dependencies: <br>
+![234649759-d70f5fb6-ef71-49c6-b84b-91e6530bb2e3](https://user-images.githubusercontent.com/43730681/235293653-f51b616d-ff45-4ffa-9599-7176c2ee70c8.png)
 After selecting an option (y = yes, n = no), ***No by default and recommended***, TextboxSTT will start installing all the dependencies needed. ***This only has to be done once***, after it will update dependencies whenever an update is available.
-After the installation is done, TextboxSTT will start like normal.
+After the installation is done, TextboxSTT will start like normal. The first Startup might take a bit longer then usual.
 To know whether an update is available, a button in the top right of the program will appear, informing you of a new update: <br>
-![Updater](https://user-images.githubusercontent.com/43730681/234651576-fc79209d-1ba1-43a5-8fdd-b27816bc48ac.png) <br>
+![Updater](https://user-images.githubusercontent.com/43730681/234651576-fc79209d-1ba1-43a5-8fdd-b27816bc48ac.png)
 After clicking this button, the program will be updated and leads to a restart of the program. This process generally doesnt take much time.
 
 # How to use
