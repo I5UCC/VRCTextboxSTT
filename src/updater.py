@@ -48,7 +48,7 @@ class Update_Handler(object):
     def fetch(self):
         try:
             log.debug("Fetching Tags")
-            result = run([self.git_path, "fetch", "--all", "--tags"], cwd=self.repo_path, stdout=PIPE, stderr=STDOUT, startupinfo=self.startupinfo)
+            result = run([self.git_path, "fetch", "--all", "--tags", "--force"], cwd=self.repo_path, stdout=PIPE, stderr=STDOUT, startupinfo=self.startupinfo)
             log.debug(result.stdout.decode('utf-8'))
         except Exception:
             log.debug(traceback.format_exc())
@@ -58,7 +58,7 @@ class Update_Handler(object):
             self.fetch()
             result = run([self.git_path, "reset", "--hard"], cwd=self.repo_path, stdout=PIPE, stderr=STDOUT, startupinfo=self.startupinfo)
             log.debug(result.stdout.decode('utf-8'))
-            result = run([self.git_path, "pull"], cwd=self.repo_path, stdout=PIPE, stderr=STDOUT, startupinfo=self.startupinfo)
+            result = run([self.git_path, "pull", "--rebase"], cwd=self.repo_path, stdout=PIPE, stderr=STDOUT, startupinfo=self.startupinfo)
             log.debug(result.stdout.decode('utf-8'))
         except Exception:
             log.debug(traceback.format_exc())
