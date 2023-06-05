@@ -6,10 +6,13 @@ import glob
 import shutil
 import os
 import torch
-from helper import get_best_compute_type, get_absolute_path, log
+from helper import get_best_compute_type, get_absolute_path
 from ctranslate2 import get_supported_compute_types
 from config import config_struct, LANGUAGE_TO_KEY, WHISPER_MODELS
 from multiprocessing import cpu_count
+import logging
+
+log = logging.getLogger(__name__)
 
 class MainWindow(object):
     def __init__(self, script_path, x=None, y=None):

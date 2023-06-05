@@ -10,7 +10,7 @@ from glob import glob
 import traceback
 import re
 
-log = logging.getLogger('TextboxSTT')
+log = logging.getLogger(__name__)
 
 class LogToFile(object):
     def __init__(self, cache_path):

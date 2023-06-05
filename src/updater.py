@@ -1,9 +1,12 @@
 import sys
-from helper import get_absolute_path, log
+from helper import get_absolute_path
 from subprocess import run, Popen, PIPE, STDOUT, STARTUPINFO, STARTF_USESHOWWINDOW
 import threading
 import os
 import traceback
+import logging
+
+log = logging.getLogger(__name__)
 
 class Update_Handler(object):
     def __init__(self, git_path, repo_path: str = "..", script_path: str = __file__):

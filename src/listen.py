@@ -2,8 +2,10 @@ import speech_recognition as sr
 import numpy as np
 from queue import Queue
 from config import listener_config
-from helper import log
 import traceback
+import logging
+
+log = logging.getLogger(__name__)
 
 class ListenHandler(object):
     def __init__(self, config: listener_config) -> None:

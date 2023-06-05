@@ -1,11 +1,14 @@
 import os
 import torch
-from helper import get_best_compute_type, log
+from helper import get_best_compute_type
 from faster_whisper import WhisperModel
 from ctranslate2.converters import TransformersConverter
 from shutil import rmtree
 from config import whisper_config, vad_config, ct2_device_config, WHISPER_MODELS, LANGUAGE_TO_KEY
 import traceback
+import logging
+
+log = logging.getLogger(__name__)
 
 class TranscribeHandler(object):
     def __init__(self, config_whisper: whisper_config, config_vad: vad_config, cache_path, translate) -> None:

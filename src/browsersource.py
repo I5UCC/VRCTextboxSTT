@@ -2,8 +2,10 @@ import waitress
 from flask import Flask, render_template_string, jsonify
 from kthread import KThread
 from config import obs_config
-from helper import log
 import traceback
+import logging
+
+log = logging.getLogger(__name__)
 
 class FlaskAppWrapper(object):
 
@@ -81,6 +83,7 @@ class OBSBrowserSource(object):
     
     def start(self):
         self.running = True
+        log.info(f"Flask server started on 127.0.0.1:{self.config.port}")
         return self.app.start()
 
     def stop(self):

@@ -1,4 +1,4 @@
-from helper import log, get_best_compute_type
+from helper import get_best_compute_type
 from shutil import rmtree
 from config import translator_config, LANGUAGE_TO_KEY, TRANSLATE_MODELS
 from ctranslate2.converters import TransformersConverter
@@ -8,6 +8,9 @@ import os
 import json
 import traceback
 import torch
+import logging
+
+log = logging.getLogger(__name__)
 
 
 class TranslationHandler(object):

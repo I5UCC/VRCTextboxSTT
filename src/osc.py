@@ -6,8 +6,10 @@ from threading import Timer
 from pythonosc import udp_client, osc_server, dispatcher
 import math, asyncio, threading
 from config import osc_config, config_struct
-from helper import log
 import traceback
+import logging
+
+log = logging.getLogger(__name__)
 
 
 class OscHandler:

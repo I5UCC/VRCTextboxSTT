@@ -6,8 +6,10 @@ import ctypes
 import textwrap
 from config import overlay_config
 from psutil import process_iter
-from helper import log
 import traceback
+import logging
+
+log = logging.getLogger(__name__)
 
 ACTIONSETHANDLE = "/actions/textboxstt"
 STTLISTENHANDLE = "/actions/textboxstt/in/sttlisten"

@@ -29,13 +29,15 @@ try:
     from config import config_struct, audio, LANGUAGE_TO_KEY
     from updater import Update_Handler
     from pydub import AudioSegment
-    from helper import replace_words, replace_emotes, loadfont, log
+    from helper import replace_words, replace_emotes, loadfont
     from torch.cuda import is_available
     from autocorrect import Speller
     import winsound
     import copy
     import subprocess
     import numpy as np
+    import logging
+    log = logging.getLogger(__name__)
 except FileNotFoundError as e:
     import ctypes
     ctypes.windll.user32.MessageBoxW(0, f"Couldn't Import some dependencies, you might be missing C++ Redistributables needed for this program.\n\n Please try to reinstall the C++ Redistributables, link in the Requirements of the repository.\n\n{e}", "TextboxSTT - Dependency Error", 0)
@@ -120,7 +122,6 @@ def init():
     if config.obs.enabled and not browsersource.running:
         if browsersource.start():
             main_window.set_status_label("INITIALIZED FLASK SERVER", "green")
-            log.info(f"Flask server started on 127.0.0.1:{config.obs.port}")
         else:
             main_window.set_status_label("COULDNT INITIALIZE FLASK SERVER, CONTINUING WITHOUT OBS SOURCE", "orange")
     elif not config.obs.enabled and browsersource.running:
@@ -676,19 +677,19 @@ def main_window_closing():
     try:
         osc.stop()
     except Exception:
-        log.error(traceback.format_exc())
+        pass
     try:
         main_window.on_closing()
     except Exception:
-        log.error(traceback.format_exc())
+        pass
     try:
         config_ui.on_closing()
     except Exception:
-        log.error(traceback.format_exc())
+        pass
     try:
         browsersource.stop()
     except Exception:
-        log.error(traceback.format_exc())
+        pass
     sys.exit()
 
 
