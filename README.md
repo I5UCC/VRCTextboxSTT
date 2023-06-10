@@ -49,7 +49,6 @@ This program is supposed to be entirely free (as in money), open source and inde
 - ***Simple API.*** latest transcription bound to the "/transcript" endpoint. (Requires OBS Source to be turned on)
 - ***Audio feedback*** for each step in the transcription.
   - Volume for each of the feedbacks can be modified over the Settings menu.
-  
 - ***Multi Language support***. whisper supports around [100 different languages](https://github.com/openai/whisper/blob/main/whisper/tokenizer.py#L10). 
   - Translate into and from those different languages. (Powered by [M2M100](https://huggingface.co/docs/transformers/model_doc/m2m_100))
 - Word Replacements and Emote Replacements with [Regular Expressions](https://en.wikipedia.org/wiki/Regular_expression).
