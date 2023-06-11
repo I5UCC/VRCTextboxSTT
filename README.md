@@ -21,6 +21,7 @@ This program is supposed to be entirely free (as in money), open source and inde
 - [Modifying SteamVR binding](https://github.com/I5UCC/VRCTextboxSTT#modifying-steamvr-binding)
 - [Automatic launch with SteamVR](https://github.com/I5UCC/VRCTextboxSTT#automatic-launch-with-steamvr)
 - [Backlog](https://github.com/I5UCC/VRCTextboxSTT#backlog)
+- [Similar Projects](https://github.com/I5UCC/VRCTextboxSTT#similar-projects)
 - [Donate](https://github.com/I5UCC/VRCTextboxSTT#donate)
 - [Credit](https://github.com/I5UCC/VRCTextboxSTT#credit)
 
@@ -174,6 +175,14 @@ If it doesnt show up, manually register the ´app.vrmanifest´ file by double cl
 - Implement Text To Speech [silero-tts](https://github.com/snakers4/silero-models#text-to-speech)
 - Linux Support
 - Documentation of features in wiki
+
+# Similar Projects
+
+There are similar projects that already exist that you might want to consider using (or not)
+
+- RabidCrab's STT. Costs Money, Uses cloud based transcription, the nature of that makes it typically slower and less reliable then local transcription methods.
+- [VRCWizard's TTS-Voice-Wizard](https://github.com/VRCWizard/TTS-Voice-Wizard) uses a whole lot of different Transcription methods, both local and also cloud based. It also supports KAT like this project does. Moreover it has neat additional features that go over just being a Speech To Text program. You might want to take a look at this.
+- [yum-food's TaSTT](https://github.com/yum-food/TaSTT) This project is spiritually and philosophically very close to this project, they have very feature rich avatar text solution that supports more characters then KAT does. They have made great progress on this problem, definitely take a look at it!
 
 ## Donate
 
