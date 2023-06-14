@@ -13,7 +13,7 @@ pydub
 dataclasses-json
 sentencepiece
 autocorrect
-transformers==4.29.2
+transformers==4.30.0
 ctranslate2==3.15.0
 torch==2.0.1
 faster-whisper==0.6.0
