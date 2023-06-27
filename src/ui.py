@@ -430,7 +430,7 @@ class SettingsWindow:
         self.label_audio_feedback.bind("<Enter>", (lambda event: self.show_tooltip("If you want enable Audio Feedback")))
         self.label_audio_feedback.bind("<Leave>", self.hide_tooltip)
         self.value_audio_feedback = tk.StringVar(self.tkui)
-        self.value_audio_feedback.set("ON" if bool(self.config.audio_feedback) else "OFF")
+        self.value_audio_feedback.set("ON" if bool(self.config.audio_feedback.enabled) else "OFF")
         self.opt_audio_feedback = tk.OptionMenu(self.tkui, self.value_audio_feedback, *self.yn_options)
         self.opt_audio_feedback.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_audio_feedback.grid(row=5, column=5, padx=PADX_R, pady=PADY, sticky='ws')
