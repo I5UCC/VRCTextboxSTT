@@ -13,6 +13,9 @@ namespace obs_only_Launcher
             string installed_file = currpath + "\\python\\INSTALLED";
             string cpu_file = currpath + "\\python\\CPU";
             string python_path = currpath + "\\python\\python.exe";
+            string cache_path = currpath + "\\python\\cache";
+            string requirements_file_cpu = currpath + "\\src\\requirements.cpu.txt";
+            string requirements_file = currpath + "\\src\\requirements.txt";
             bool first_install = false;
             ProcessStartInfo pInfo = new ProcessStartInfo();
 
@@ -29,14 +32,16 @@ namespace obs_only_Launcher
                     string choice = Console.ReadLine();
                     pInfo.FileName = python_path;
                     pInfo.WorkingDirectory = currpath;
+                    pInfo.UseShellExecute = false;
+                    pInfo.EnvironmentVariables.Add("TMPDIR", cache_path);
                     if (choice.ToLower() == "y")
                     {
                         File.Create(cpu_file);
-                        pInfo.Arguments = String.Format("-m pip install -U -r \"{0}\" --no-warn-script-location", currpath + "\\src\\requirements.cpu.txt");
+                        pInfo.Arguments = String.Format("-m pip install -U -r \"{0}\" --no-warn-script-location --cache-dir \"{1}\"", requirements_file_cpu, cache_path);
                     }
                     else
                     {
-                        pInfo.Arguments = String.Format("-m pip install -U -r \"{0}\" --no-warn-script-location", currpath + "\\src\\requirements.txt");
+                        pInfo.Arguments = String.Format("-m pip install -U -r \"{0}\" --no-warn-script-location --cache-dir \"{1}\"", requirements_file, cache_path);
                     }
                     Process process = Process.Start(pInfo);
                     process.WaitForExit();
