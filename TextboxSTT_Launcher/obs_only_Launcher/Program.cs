@@ -52,6 +52,9 @@ namespace obs_only_Launcher
                     Directory.Delete(cache_path, true);
                     Directory.CreateDirectory(cache_path);
 
+                    if (process.ExitCode != 0)
+                        throw new Exception("Something unexpectedly went wrong installing TextboxSTT. ExitCode: " + process.ExitCode.ToString());
+
                     Console.WriteLine("\nTextboxSTT installed.\n");
 
                     File.Create(installed_file);
