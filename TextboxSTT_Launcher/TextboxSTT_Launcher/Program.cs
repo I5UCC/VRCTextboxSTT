@@ -49,12 +49,8 @@ namespace TextboxSTT_Launcher
                     process = Process.Start(pInfo);
                     process.WaitForExit();
 
-                    DirectoryInfo cache_dir = new DirectoryInfo(cache_path);
-
-                    foreach (FileInfo file in cache_dir.GetFiles())
-                        file.Delete();
-                    foreach (DirectoryInfo dir in cache_dir.GetDirectories())
-                        dir.Delete();
+                    Directory.Delete(cache_path, true);
+                    Directory.CreateDirectory(cache_path);
 
                     Console.WriteLine("\nTextboxSTT installed.\n");
 
