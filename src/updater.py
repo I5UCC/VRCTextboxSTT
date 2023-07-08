@@ -5,6 +5,7 @@ import threading
 import os
 import traceback
 import logging
+import shutil
 
 log = logging.getLogger(__name__)
 
@@ -19,6 +20,8 @@ class Update_Handler(object):
         self.startupinfo = STARTUPINFO()
         self.startupinfo.dwFlags = STARTF_USESHOWWINDOW
         self.startupinfo.wShowWindow = 0
+        self.cache_folder = os.path.join(os.path.dirname(sys.executable), "cache")
+        self.custom_env = {**os.environ, 'TMPDIR': self.cache_folder}
 
     def get_latest_tag(self):
         try:
@@ -73,7 +76,7 @@ class Update_Handler(object):
                 requirements_file = "requirements.cpu.txt"
             ui_output("Updating... 10%")
 
-            process = Popen([sys.executable, "-m", "pip", "install", "-U", "-r", get_absolute_path(requirements_file, self.script_path), "--no-warn-script-location"], cwd=self.repo_path, stdout=PIPE, stderr=STDOUT, startupinfo=self.startupinfo)
+            process = Popen([sys.executable, "-m", "pip", "install", "-U", "-r", get_absolute_path(requirements_file, self.script_path), "--no-warn-script-location", f"--cache-dir {self.cache_folder}"], cwd=self.repo_path, stdout=PIPE, stderr=STDOUT, startupinfo=self.startupinfo, env=self.custom_env)
             ui_output("Updating... 25%")
             i = 20
             with process.stdout:
@@ -86,13 +89,16 @@ class Update_Handler(object):
                     i += 1
             process.wait()
             ui_output("Updating... 99%")
-            process = Popen([sys.executable, "-m", "pip", "cache", "purge"], cwd=self.repo_path, stdout=PIPE, stderr=STDOUT, startupinfo=self.startupinfo)
+            process = Popen([sys.executable, "-m", "pip", "cache", "purge", f"--cache-dir {self.cache_folder}"], cwd=self.repo_path, stdout=PIPE, stderr=STDOUT, startupinfo=self.startupinfo, env=self.custom_env)
             with process.stdout:
                 for line in iter(process.stdout.readline, b''):
                     log.debug(str(line)[2:-5])
             process.wait()
             ui_output("Updating... 100%")
             callback()
+            
+            shutil.rmtree(self.cache_folder, ignore_errors=True)
+            os.makedirs(self.cache_folder, exist_ok=True)
 
         thread = threading.Thread(target=run_in_thread, args=(callback,))
         thread.start()
