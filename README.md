@@ -76,11 +76,11 @@ With default settings, this program has following requirements:
 - SteamVR (IF ran in VR, no Oculus/Meta support as of now.)
 - Inference on GPU (Recommended): 
   - CUDA enabled GPU (NVIDIA ONLY), otherwise it will fall back to using CPU.
-  - ~5GB of storage space.
+  - ~11GB of available space for installation, ~6GB of space used after successful installation and loading models.
   - ~1GB of available RAM.
   - ~600MB of available VRAM.
 - Inference on CPU:
-  - ~2GB of storage space.
+  - ~4GB of available space for installation, ~2GB of space used after successful installation and loading models.
   - ~400MB of available RAM.
 
 Depending on settings changed in the program those requirements can change exponentially.
