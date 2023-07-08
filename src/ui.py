@@ -698,7 +698,7 @@ class SettingsWindow:
             _realtime = 2
         self.config.mode = _realtime
         self.config.listener.dynamic_energy_threshold = True if self.value_det.get() == "ON" else False
-        self.config.listener.energy_threshold = int(self.entry_energy_threshold.get())
+        self.config.listener.energy_threshold = float(self.entry_energy_threshold.get())
         self.config.listener.pause_threshold = float(self.entry_pause_threshold.get())
         self.config.text_timeout = float(self.entry_text_timeout_time.get())
         self.config.listener.timeout_time = float(self.entry_timeout_time.get())
