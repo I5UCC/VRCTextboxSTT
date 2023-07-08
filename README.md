@@ -32,6 +32,7 @@ This program is supposed to be entirely free (as in money), open source and inde
   - [KillFrenzyAvatarText (KAT)](https://github.com/killfrenzy96/KillFrenzyAvatarText) that needs to be integrated to an avatar. 
     - You can use [Frosty704's Billboard](https://github.com/Frosty704/Billboard) to add a speech bubble to your avatar.
     - Support for up to 80 emotes!
+  - OBS over Browser Source!
   - Automatic Detection of KAT on an avatar. It will use KAT if available, otherwise fall back to VRChat Textbox.
 - ***Fast and Efficient***. VRCTextboxSTT uses [ctranslate2](https://github.com/OpenNMT/CTranslate2) as the runtime for transcription and translation, which makes it incredibly efficient and fast.
 - ***Uses Steam Input***, press to transcribe, hold to clear/cancel (A/X by default). Also works on desktop with the "F1" Key by default.
@@ -46,7 +47,6 @@ This program is supposed to be entirely free (as in money), open source and inde
 - Optional ***Automatic launch*** with SteamVR.
 - ***Text to Text*** for quick typing.
 - Optional ***SteamVR Overlay*** for seeing your transcription without having to look at your own textbox in-game.
-- Optional ***OBS Browser Source***.
 - ***Simple API.*** latest transcription bound to the "/transcript" endpoint. (Requires OBS Source to be turned on)
 - ***Audio feedback*** for each step in the transcription.
   - Volume for each of the feedbacks can be modified over the Settings menu.
