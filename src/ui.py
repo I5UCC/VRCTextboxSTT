@@ -11,6 +11,7 @@ from ctranslate2 import get_supported_compute_types
 from config import config_struct, LANGUAGE_TO_KEY, WHISPER_MODELS
 from multiprocessing import cpu_count
 import logging
+import traceback
 
 log = logging.getLogger(__name__)
 
@@ -660,15 +661,24 @@ class SettingsWindow:
             self.entry_pause_threshold.insert(0, 0.8)
 
     def get_sound_devices(self):
-        res = ["Default"]
-        p = pyaudio.PyAudio()
-        info = p.get_host_api_info_by_index(0)
-        numdev = info.get("deviceCount")
+        try:
+            res = ["Default"]
+            p = pyaudio.PyAudio()
+            info = p.get_host_api_info_by_index(0)
+            numdev = info.get("deviceCount")
+        except Exception:
+            log.error("Failed to get audio devices.")
+            log.error(traceback.format_exc())
+            return res
 
         for i in range(0, numdev):
-            if (p.get_device_info_by_host_api_device_index(0, i).get('maxInputChannels')) > 0:
-                res.append([i, p.get_device_info_by_host_api_device_index(0, i).get('name')])
-
+            try:
+                if (p.get_device_info_by_host_api_device_index(0, i).get('maxInputChannels')) > 0:
+                    res.append([i, p.get_device_info_by_host_api_device_index(0, i).get('name')])
+            except Exception:
+                log.error("Failed to get audio device info.")
+                log.error(traceback.format_exc())
+                res.append([i, "Unknown Device"])
         return res
 
     def get_audiodevice_index(self):
