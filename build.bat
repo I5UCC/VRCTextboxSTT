@@ -17,4 +17,4 @@ robocopy VRCTextboxSTT TextboxSTT /MOVE /E /NFL /NDL /NJH /NJS /nc /ns /np
 7z x ../git_python.7z -oTextboxSTT
 set /p version=< ../src/VERSION
 cd build
-7z a TextboxSTT_%version%.zip TextboxSTT
+7z a TextboxSTT.zip TextboxSTT
