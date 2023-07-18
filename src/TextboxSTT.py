@@ -3,7 +3,8 @@ try:
     import os
     sys.path.append(os.path.dirname(__file__))
     DEBUG = len(sys.argv) <= 3
-    from helper import LogToFile, get_absolute_path, force_single_instance
+
+    from logger import LogToFile, get_absolute_path, force_single_instance
     if DEBUG:
         CACHE_PATH = get_absolute_path('cache/', __file__)
         CONFIG_PATH = get_absolute_path('config.json', __file__)
@@ -14,7 +15,7 @@ try:
     OUT_FILE_LOGGER = LogToFile(CACHE_PATH)
     sys.stdout = OUT_FILE_LOGGER
     sys.stderr = OUT_FILE_LOGGER
-    
+
     import traceback
     from threading import Thread
     from time import time, sleep
