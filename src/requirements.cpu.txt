@@ -14,6 +14,6 @@ dataclasses-json
 sentencepiece
 autocorrect
 transformers==4.30.1
-ctranslate2==3.17.0
+ctranslate2==3.17.1
 torch==2.0.1
 faster-whisper==0.7.0
