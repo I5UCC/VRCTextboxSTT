@@ -53,7 +53,7 @@ class MainWindow(object):
 
         self.time_lbl = tk.Label(self.tkui, text=f"0.000s")
         self.time_lbl.configure(bg="#333333", fg="#666666", font=(self.FONT, 10))
-        self.time_lbl.place(relx=0.99, rely=0.78, anchor="e")
+        self.time_lbl.place(relx=0.075, rely=0.78, anchor="e")
 
         self.ver_lbl = tk.Label(self.tkui, text=f"VRCTextboxSTT {self.version} by I5UCC")
         self.ver_lbl.configure(bg="#333333", fg="#666666", font=(self.FONT, 10))
@@ -66,6 +66,10 @@ class MainWindow(object):
         self.color_lbl = tk.Label(self.tkui, text="")
         self.color_lbl.configure(bg="red", width=2, fg="white", font=(self.FONT, 12))
         self.color_lbl.place(relx=0.01, rely=0.07, anchor="w")
+
+        self.btn_copy = tk.Button(self.tkui, text="📋")
+        self.btn_copy.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=6, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.btn_copy.place(relx=0.99, rely=0.76, anchor="e")
 
         self.btn_settings = tk.Button(self.tkui, text="⚙")
         self.btn_settings.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=6, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white", state="disabled")
@@ -162,8 +166,8 @@ class SettingsWindow:
         self.tkui = tk.Tk()
         coordinates = get_coodinates()
         self.tkui.geometry(f"+{coordinates[0] - 22}+{coordinates[1] - 22}")
-        self.tkui.minsize(920, 580)
-        self.tkui.maxsize(920, 580)
+        self.tkui.minsize(920, 585)
+        self.tkui.maxsize(920, 585)
         self.tkui.resizable(False, False)
         self.tkui.configure(bg="#333333")
         self.tkui.title("TextboxSTT - Settings")
@@ -370,6 +374,19 @@ class SettingsWindow:
         self.button_refresh.grid(row=12, column=2, padx=2, pady=3, sticky='ws')
         self.button_refresh.bind("<Enter>", (lambda event: self.show_tooltip("Manually refreshes the energy threshold value. \n Be silent for 5 Seconds after pressing this button. \n The Textfield is going to be populated with the new value.")))
         self.button_refresh.bind("<Leave>", self.hide_tooltip)
+
+        self.label_clipboard_mode = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Copy Clipboard Mode', font=(self.FONT, 12))
+        self.label_clipboard_mode.grid(row=13, column=0, padx=PADX_L, pady=PADY, sticky='es')
+        self.label_clipboard_mode.bind("<Enter>", (lambda event: self.show_tooltip("Under 'ideal' conditions (such as in a quiet room), \nvalues between 0 and 100 are considered silent or ambient,\n and values 300 to about 3500 are considered speech.")))
+        self.label_clipboard_mode.bind("<Leave>", self.hide_tooltip)
+        self.options_clipboard_mode = ["Manual", "Always"]
+        self.value_clipboard_mode = tk.StringVar(self.tkui)
+        self.value_clipboard_mode.set("Always" if self.config.always_clipboard else "Manual")
+        self.opt_clipboard_mode = tk.OptionMenu(self.tkui, self.value_clipboard_mode, *self.options_clipboard_mode)
+        self.opt_clipboard_mode.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.opt_clipboard_mode.grid(row=13, column=1, padx=PADX_R, pady=PADY, sticky='ws')
+        self.opt_clipboard_mode.bind("<Enter>", (lambda event: self.show_tooltip("Writes the transcription to the clipboard.\nIf set to 'Manual' you can press the '📋' button to copy the text to the clipboard.\nIf set to 'Always' it will automatically copy the text to the clipboard.")))
+        self.opt_clipboard_mode.bind("<Leave>", self.hide_tooltip)
 
         self.label_pause_threshold = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Pause Threshold', font=(self.FONT, 12))
         self.label_pause_threshold.grid(row=0, column=4, padx=PADX_L, pady=PADY, sticky='es')
@@ -587,9 +604,9 @@ class SettingsWindow:
         self.btn_save.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=46, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.btn_save.place(relx=0.215, rely=0.95, anchor="center")
 
-        self.restart_lbl = tk.Label(self.tkui, text="* When changed, the program will restart.")
+        self.restart_lbl = tk.Label(self.tkui, text="* When changed, the program might restart.")
         self.restart_lbl.configure(bg="#333333", fg="#666666", font=(self.FONT, 10))
-        self.restart_lbl.place(relx=0.01, rely=0.89, anchor="w")
+        self.restart_lbl.place(relx=0.01, rely=0.9, anchor="w")
 
         self.mode_changed()
         self.tkui.withdraw()
@@ -725,6 +742,7 @@ class SettingsWindow:
         self.config.obs.enabled = True if self.value_obs_source.get() == "ON" else False
         self.config.autocorrect.language = self.value_autocorrect.get() if self.value_autocorrect.get() != "OFF" else None
         self.config.vad.enabled = True if self.value_vad.get() == "ON" else False
+        self.config.always_clipboard = True if self.value_clipboard_mode.get() == "Always" else False
 
         json.dump(self.config.to_dict(), open(self.config_path, "w"), indent=4)
 
@@ -983,8 +1001,8 @@ class OverlaySettingsWindow:
         self.tkui = tk.Tk()
         coordinates = get_coordinates()
         self.tkui.geometry(f"+{coordinates[0]}+{coordinates[1]}")
-        self.tkui.minsize(350, 305)
-        self.tkui.maxsize(350, 305)
+        self.tkui.minsize(350, 350)
+        self.tkui.maxsize(350, 350)
         self.tkui.resizable(False, False)
         self.tkui.configure(bg="#333333")
         self.tkui.title("TextboxSTT - Overlay Settings")
@@ -993,54 +1011,61 @@ class OverlaySettingsWindow:
         self.current_selection = None
         self.current_key = None
 
+        self.label_timeout = tk.Label(self.tkui, text="Timeout time", bg="#333333", fg="white", font=(self.FONT, 12))
+        self.label_timeout.grid(row=0, column=1, padx=12, pady=5, sticky='ws')
+        self.entry_timeout = tk.Entry(self.tkui)
+        self.entry_timeout.insert(0, self.config.overlay.timeout)
+        self.entry_timeout.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666")
+        self.entry_timeout.grid(row=0, column=2, padx=12, pady=5, sticky='ws')
+
         self.label_pos_x = tk.Label(self.tkui, text="Position X", bg="#333333", fg="white", font=(self.FONT, 12))
-        self.label_pos_x.grid(row=0, column=1, padx=12, pady=5, sticky='ws')
+        self.label_pos_x.grid(row=1, column=1, padx=12, pady=5, sticky='ws')
         self.entry_pos_x = tk.Entry(self.tkui)
         self.entry_pos_x.insert(0, self.config.overlay.pos_x)
         self.entry_pos_x.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666")
-        self.entry_pos_x.grid(row=0, column=2, padx=12, pady=5, sticky='ws')
+        self.entry_pos_x.grid(row=1, column=2, padx=12, pady=5, sticky='ws')
 
         self.label_pos_y = tk.Label(self.tkui, text="Position Y", bg="#333333", fg="white", font=(self.FONT, 12))
-        self.label_pos_y.grid(row=1, column=1, padx=12, pady=5, sticky='ws')
+        self.label_pos_y.grid(row=2, column=1, padx=12, pady=5, sticky='ws')
         self.entry_pos_y = tk.Entry(self.tkui)
         self.entry_pos_y.insert(0, self.config.overlay.pos_y)
         self.entry_pos_y.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666")
-        self.entry_pos_y.grid(row=1, column=2, padx=12, pady=5, sticky='ws')
+        self.entry_pos_y.grid(row=2, column=2, padx=12, pady=5, sticky='ws')
 
         self.label_size = tk.Label(self.tkui, text="Size", bg="#333333", fg="white", font=(self.FONT, 12))
-        self.label_size.grid(row=2, column=1, padx=12, pady=5, sticky='ws')
+        self.label_size.grid(row=3, column=1, padx=12, pady=5, sticky='ws')
         self.entry_size = tk.Entry(self.tkui)
         self.entry_size.insert(0, self.config.overlay.size)
         self.entry_size.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666")
-        self.entry_size.grid(row=2, column=2, padx=12, pady=5, sticky='ws')
+        self.entry_size.grid(row=3, column=2, padx=12, pady=5, sticky='ws')
 
         self.label_distance = tk.Label(self.tkui, text="Distance", bg="#333333", fg="white", font=(self.FONT, 12))
-        self.label_distance.grid(row=3, column=1, padx=12, pady=5, sticky='ws')
+        self.label_distance.grid(row=4, column=1, padx=12, pady=5, sticky='ws')
         self.entry_distance = tk.Entry(self.tkui)
         self.entry_distance.insert(0, self.config.overlay.distance)
         self.entry_distance.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666")
-        self.entry_distance.grid(row=3, column=2, padx=12, pady=5, sticky='ws')
+        self.entry_distance.grid(row=4, column=2, padx=12, pady=5, sticky='ws')
 
         self.label_font_color = tk.Label(self.tkui, text="Font Color", bg="#333333", fg="white", font=(self.FONT, 12))
-        self.label_font_color.grid(row=4, column=1, padx=12, pady=5, sticky='ws')
+        self.label_font_color.grid(row=5, column=1, padx=12, pady=5, sticky='ws')
         self.entry_font_color = tk.Entry(self.tkui)
         self.entry_font_color.insert(0, self.config.overlay.font_color)
         self.entry_font_color.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666")
-        self.entry_font_color.grid(row=4, column=2, padx=12, pady=5, sticky='ws')
+        self.entry_font_color.grid(row=5, column=2, padx=12, pady=5, sticky='ws')
 
         self.label_border_color = tk.Label(self.tkui, text="Border Color", bg="#333333", fg="white", font=(self.FONT, 12))
-        self.label_border_color.grid(row=5, column=1, padx=12, pady=5, sticky='ws')
+        self.label_border_color.grid(row=6, column=1, padx=12, pady=5, sticky='ws')
         self.entry_border_color = tk.Entry(self.tkui)
         self.entry_border_color.insert(0, self.config.overlay.border_color)
         self.entry_border_color.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666")
-        self.entry_border_color.grid(row=5, column=2, padx=12, pady=5, sticky='ws')
+        self.entry_border_color.grid(row=6, column=2, padx=12, pady=5, sticky='ws')
 
         self.label_opacity = tk.Label(self.tkui, text="Opacity", bg="#333333", fg="white", font=(self.FONT, 12))
-        self.label_opacity.grid(row=6, column=1, padx=12, pady=5, sticky='ws')
+        self.label_opacity.grid(row=7, column=1, padx=12, pady=5, sticky='ws')
         self.entry_opacity = tk.Entry(self.tkui)
         self.entry_opacity.insert(0, self.config.overlay.opacity)
         self.entry_opacity.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666")
-        self.entry_opacity.grid(row=6, column=2, padx=12, pady=5, sticky='ws')
+        self.entry_opacity.grid(row=7, column=2, padx=12, pady=5, sticky='ws')
 
         self.btn_save = tk.Button(self.tkui, text="Save", command=self.save)
         self.btn_save.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=39, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
@@ -1049,6 +1074,7 @@ class OverlaySettingsWindow:
         self.tkui.mainloop()
 
     def save(self):
+        self.config.overlay.timeout = float(self.entry_timeout.get())
         self.config.overlay.pos_x = float(self.entry_pos_x.get())
         self.config.overlay.pos_y = float(self.entry_pos_y.get())
         self.config.overlay.size = float(self.entry_size.get())

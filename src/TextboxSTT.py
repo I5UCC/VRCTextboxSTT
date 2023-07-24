@@ -38,6 +38,7 @@ try:
     import subprocess
     import numpy as np
     import logging
+    import pyperclip as clipboard
     log = logging.getLogger(__name__)
 except FileNotFoundError as e:
     import ctypes
@@ -61,6 +62,7 @@ translator: TranslationHandler = None
 browsersource: OBSBrowserSource = None
 autocorrect: Speller = None
 timeout_time: float = 0.0
+overlay_timeout_time: float = 0.0
 finished: bool = False
 curr_time: float = 0.0
 pressed: bool = False
@@ -71,6 +73,7 @@ config_ui: SettingsWindow = None
 config_ui_open: bool = False
 enter_pressed: bool = False
 initialized: bool = False
+curr_text: str = ""
 
 
 def init():
@@ -87,6 +90,12 @@ def init():
     global listen
     global autocorrect
     global updater
+
+    if config.always_clipboard:
+        main_window.btn_copy.place_forget()
+    else:
+        main_window.btn_copy.place(relx=0.99, rely=0.76, anchor="e")
+        main_window.btn_copy.configure(command=(lambda: clipboard.copy(curr_text)))
 
     modify_audio_files(config.audio_feedback.__dict__.copy())
 
@@ -222,6 +231,7 @@ def clear_chatbox():
     global transcriber
     global finished
     global timeout_time
+    global overlay_timeout_time
 
     if browsersource:
         browsersource.setText("")
@@ -234,6 +244,7 @@ def clear_chatbox():
         ovr.set_overlay_text("")
 
     finished = False
+    overlay_timeout_time = 0.0
     timeout_time = 0.0
 
     main_window.set_text_label("- No Text -")
@@ -247,13 +258,18 @@ def populate_chatbox(text, cutoff: bool = False, is_textfield: bool = False):
     global osc
     global ovr
     global browsersource
-    global timeout_time
+    global curr_text
 
     if config.wordreplacement.enabled:
         text = replace_words(text, config.wordreplacement.list)
 
     if not text:
         return
+
+    curr_text = text
+
+    if config.always_clipboard:
+        clipboard.copy(text)
 
     if browsersource:
         browsersource.setText(text)
@@ -290,6 +306,7 @@ def process_forever():
     global transcriber
     global finished
     global timeout_time
+    global overlay_timeout_time
 
     play_sound(config.audio_feedback.sound_listen)
 
@@ -360,6 +377,7 @@ def process_forever():
 
     finished = True
     timeout_time = time()
+    overlay_timeout_time = time()
     set_typing_indicator(False)
     main_window.set_button_enabled(True)
     listen.stop_listen_background()
@@ -376,6 +394,7 @@ def process_loop():
     global transcriber
     global finished
     global timeout_time
+    global overlay_timeout_time
 
     finished = False
     _text = ""
@@ -448,6 +467,7 @@ def process_loop():
 
     finished = True
     timeout_time = time()
+    overlay_timeout_time = time()
     set_typing_indicator(False)
     main_window.set_button_enabled(True)
     listen.stop_listen_background()
@@ -462,6 +482,7 @@ def process_once():
     global listen
     global finished
     global timeout_time
+    global overlay_timeout_time
 
     finished = False
     main_window.set_button_enabled(False)
@@ -507,6 +528,7 @@ def process_once():
             finished = False
 
     timeout_time = time()
+    overlay_timeout_time = time()
     set_typing_indicator(False)
     main_window.set_button_enabled(True)
 
@@ -542,7 +564,13 @@ def get_trigger_state():
 def check_timeout():
 
     global timeout_time
+    global overlay_timeout_time
     global finished
+
+    if finished and config.overlay.timeout > 0 and overlay_timeout_time > 0 and time() - overlay_timeout_time > config.overlay.timeout:
+        if ovr.initialized and config.overlay.enabled:
+            ovr.set_overlay_text("")
+        overlay_timeout_time = 0.0
 
     if finished and config.text_timeout > 0 and timeout_time > 0 and time() - timeout_time > config.text_timeout:
         clear_chatbox()
@@ -604,8 +632,7 @@ def entrybox_enter_event(text):
     global enter_pressed
     global finished
     global timeout_time
-    global finished
-    global timeout_time
+    global overlay_timeout_time
 
     enter_pressed = True
     if text:
@@ -628,6 +655,7 @@ def entrybox_enter_event(text):
 
     finished = True
     timeout_time = time()
+    overlay_timeout_time = time()
 
 
 def textfield_keyrelease(text, last_char):
@@ -638,8 +666,7 @@ def textfield_keyrelease(text, last_char):
     global enter_pressed
     global finished
     global timeout_time
-    global finished
-    global timeout_time
+    global overlay_timeout_time
     global autocorrect
 
     if autocorrect and last_char in [" ", ",", ".", "!", "?", ";", ":"]:
@@ -663,6 +690,7 @@ def textfield_keyrelease(text, last_char):
     enter_pressed = False
     finished = True
     timeout_time = time()
+    overlay_timeout_time = time()
 
 
 def main_window_closing():

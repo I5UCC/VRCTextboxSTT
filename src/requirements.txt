@@ -9,6 +9,7 @@ Pillow
 waitress
 flask
 kthread
+pyperclip
 pydub
 dataclasses-json
 sentencepiece

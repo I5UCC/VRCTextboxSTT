@@ -214,6 +214,7 @@ class listener_config(object):
 @dataclass
 class overlay_config(object):
     enabled: bool = True
+    timeout: float = 30.0
     pos_x: float = 0.0
     pos_y: float = -0.4
     size: float = 1.0
@@ -343,6 +344,7 @@ class config_struct(object):
     mode: int = 1
     hotkey: str = "f1"
     text_timeout: float = 30.0
+    always_clipboard: bool = False
     audio_feedback: audio_feedback_config = field(default_factory=audio_feedback_config)
     osc: osc_config = field(default_factory=osc_config)
     whisper: whisper_config = field(default_factory=whisper_config)
