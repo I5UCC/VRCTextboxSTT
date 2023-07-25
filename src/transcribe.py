@@ -56,8 +56,11 @@ class TranscribeHandler(object):
 
         _text = ""
         try:
-            segments, _ = self.model.transcribe(audio, beam_size=5, language=self.language, word_timestamps=False, without_timestamps=True, task=self.task, vad_filter=self.config_vad.enabled, vad_parameters=self.config_vad.parameters.__dict__)
-            _text = "".join([segment.text for segment in segments])
+            segments, _ = self.model.transcribe(audio, beam_size=5, temperature=0.0, log_prob_threshold=-0.8, no_speech_threshold=0.6, language=self.language, word_timestamps=False, without_timestamps=True, task=self.task, vad_filter=self.config_vad.enabled, vad_parameters=self.config_vad.parameters.__dict__)
+            for s in segments:
+                if s.avg_logprob < -0.8 or s.no_speech_prob > 0.6:
+                    continue
+                _text += s.text
         except Exception:
             log.error("Error transcribing: ")
             log.error(traceback.format_exc())
