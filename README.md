@@ -175,7 +175,7 @@ If it doesnt show up, manually register the ´app.vrmanifest´ file by double cl
 - [ ] Support [OSCQuery](https://github.com/vrchat-community/vrc-oscquery-lib)
 - [ ] Implement Text To Speech (Maybe)
 - [ ] Linux Support
-- [ ] Documentation of features in wiki
+- [ ] Documentation of features and code (In progress)
 
 # Similar Projects
 
