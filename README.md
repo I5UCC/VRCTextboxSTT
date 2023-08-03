@@ -161,20 +161,21 @@ After setting the option to ON it will launch the program on SteamVR startup.
 If it doesnt show up, manually register the ´app.vrmanifest´ file by double clicking it and running it with SteamVR.
 
 # Backlog
-- ~~Add a quick entry box for quick messaging.~~ Done.
-- ~~Create a Settings UI for easy config editing.~~ Done.
-- ~~Enable Integration with [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText).~~ Done.
-- ~~Transcribe continuously until the user stops talking.~~ Done.
-- ~~Add an emote feature~~ Done.
-- ~~Demo Gif/Video (Stole from Frosty, thanks lol)~~ Done.
-- ~~Add a OBS browsersource~~ Done.
-- ~~Use [whisper.cpp](https://github.com/ggerganov/whisper.cpp)/[faster-whisper](https://github.com/guillaumekln/faster-whisper) for transcription, for better performance.~~ Done.
-- ~~Allow use of finetuned models.~~ Done.
-- ~~Allow translation into and from different languages. M2M100 using ctranslate2~~ Done.
-- ~~remove the need for building the program, enable OTA updates.~~ Done.
-- Implement Text To Speech [silero-tts](https://github.com/snakers4/silero-models#text-to-speech)
-- Linux Support
-- Documentation of features in wiki
+- [x] Add a quick entry box for quick messagin
+- [x] Create a Settings UI for easy config editing.
+- [x] Enable Integration with [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText).
+- [x] Transcribe continuously until the user stops talking.
+- [x] Add an emote feature
+- [x] Demo Gif/Video (Stole from Frosty, thanks lol)
+- [x] Add a OBS browsersource
+- [x] Use [whisper.cpp](https://github.com/ggerganov/whisper.cpp)/[faster-whisper](https://github.com/guillaumekln/faster-whisper) for transcription, for better performance.
+- [x] Allow use of finetuned models.
+- [x] Allow translation into and from different languages. M2M100 using ctranslate2
+- [x] remove the need for building the program, enable OTA updates.
+- [ ] Support [OSCQuery](https://github.com/vrchat-community/vrc-oscquery-lib)
+- [ ] Implement Text To Speech (Maybe)
+- [ ] Linux Support
+- [ ] Documentation of features in wiki
 
 # Similar Projects
 
