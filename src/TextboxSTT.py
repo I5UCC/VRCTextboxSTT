@@ -128,7 +128,12 @@ def init():
 
     # Start Flask server
     if not browsersource:
-        browsersource = OBSBrowserSource(config.obs, get_absolute_path('resources/obs_source.html', __file__))
+        try:
+            browsersource = OBSBrowserSource(config.obs, get_absolute_path('resources/obs_source.html', __file__))
+        except Exception as e:
+            log.error(f"Couldn't initialize Browser source: {e}")
+            browsersource = object()
+            browsersource.running = False
     if config.obs.enabled and not browsersource.running:
         if browsersource.start():
             main_window.set_status_label("INITIALIZED FLASK SERVER", "green")
