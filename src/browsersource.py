@@ -62,6 +62,11 @@ class OBSBrowserSource(object):
         self.app.add_endpoint('/transcript', 'flask_get_transcript', self.flask_get_transcript, methods=['GET'])
         self.running = False
 
+    def __init__(self):
+        self.text = ""
+        self.finished = True
+        self.running = False
+
     def flask_root(self):
         _html = ""
         with open(self.template_path) as f:
