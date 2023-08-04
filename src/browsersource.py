@@ -52,20 +52,19 @@ class FlaskAppWrapper(object):
 
 class OBSBrowserSource(object):
 
-    def __init__(self, config: obs_config, template_path):
+    def __init__(self, config: obs_config, template_path: str):
         self.template_path = template_path
         self.text = ""
         self.finished = True
         self.config: obs_config = config
-        self.app = FlaskAppWrapper(Flask(__name__), self.config.port)
-        self.app.add_endpoint('/', 'flask_root', self.flask_root, methods=['GET'])
-        self.app.add_endpoint('/transcript', 'flask_get_transcript', self.flask_get_transcript, methods=['GET'])
         self.running = False
-
-    def __init__(self):
-        self.text = ""
-        self.finished = True
-        self.running = False
+        try: 
+            self.app = FlaskAppWrapper(Flask(__name__), self.config.port)
+            self.app.add_endpoint('/', 'flask_root', self.flask_root, methods=['GET'])
+            self.app.add_endpoint('/transcript', 'flask_get_transcript', self.flask_get_transcript, methods=['GET'])
+        except:
+            log.error(f"Couldn't initialize Browser source")
+            log.error(traceback.format_exc())
 
     def flask_root(self):
         _html = ""
