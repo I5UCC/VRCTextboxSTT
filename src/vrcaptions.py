@@ -5,8 +5,8 @@ DEBUG = len(sys.argv) == 1
 from time import sleep, time
 from listen import ListenHandler
 from transcribe import TranscribeHandler
-from browsersource import OBSBrowserSource
 from translate import TranslationHandler
+from ovr import OVRHandler
 from helper import get_absolute_path, replace_words
 import keyboard
 from config import config_struct
@@ -36,8 +36,9 @@ def main():
     translator: TranslationHandler = None
     if config.translator.language and config.translator.language != config.whisper.language and transcriber.task == "transcribe":
         translator = TranslationHandler(CACHE_PATH, config.whisper.language, config.translator)
-    browsersource = OBSBrowserSource(config.obs, get_absolute_path('resources/obs_source.html', __file__))
-    browsersource.start()
+    ovr: OVRHandler = OVRHandler(config.overlay, __file__, DEBUG)
+    if OVRHandler.is_running():
+        ovr.init()
 
     phrase_timeout = config.listener.timeout_time
     clear_timeout = config.text_timeout
@@ -73,7 +74,7 @@ def main():
         print("Adjusting for ambient noise. Please wait a moment and be silent.")
         listen.rec.energy_threshold = listen.get_energy_threshold()
 
-    print("---------------- OBS Whisper Transcriber -----------------")
+    print("----------------------- VRCaptions -----------------------")
     print("Press {} to toggle listening.".format(toggle_hotkey))
     print("Press Ctrl+C to exit, or close the console window.")
     print("----------------------------------------------------------")
@@ -94,7 +95,6 @@ def main():
             time_last = time()
 
             if not listen.data_queue.empty():
-                browsersource.finished = False
                 cleared = False
                 phrase_end = False
                 
@@ -117,7 +117,7 @@ def main():
                     print(f"bytes:\t\t{len(last_sample)}\ntext_length:\t{len(text)}")
                     if config.wordreplacement.enabled:
                         text = replace_words(text, config.wordreplacement.list)
-                    browsersource.setText(text)
+                    ovr.set_overlay_text(text)
                     print("- " + text if text else "No text found")
                     sentence_end = text[-1] in [".", "!", "?"]
                     first_run = False
@@ -131,19 +131,17 @@ def main():
                 phrase_time = time()
             elif not cleared and phrase_time and time_last - phrase_time > clear_timeout:
                 cleared = True
-                browsersource.setText("")
+                ovr.set_overlay_text("")
                 print("------------------------- CLEARED ------------------------")
             elif not phrase_end and phrase_time and time_last - phrase_time > phrase_timeout:
                 append = False
                 phrase_end = True
-                browsersource.finished = True
                 last_sample = bytes()
                 print("------------------------ NEW PHRASE ----------------------")
 
             sleep(0.1)
         except KeyboardInterrupt:
             listen.stop_listen_background()
-            browsersource.stop()
             break
 
 if __name__=='__main__':
