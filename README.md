@@ -34,19 +34,18 @@ This program is supposed to be entirely free (as in money), open source and inde
     - Support for up to 80 emotes!
   - OBS over Browser Source!
   - Automatic Detection of KAT on an avatar. It will use KAT if available, otherwise fall back to VRChat Textbox.
+- ***SteamVR Overlay*** for seeing your transcription without having to look at your own textbox in-game.
 - ***Fast and Efficient***. VRCTextboxSTT uses [ctranslate2](https://github.com/OpenNMT/CTranslate2) as the runtime for transcription and translation, which makes it incredibly efficient and fast.
 - ***Uses Steam Input***, press to transcribe, hold to clear/cancel (A/X by default). Also works on desktop with the "F1" Key by default.
 - ***Customizable***
   - You can bind the button to start transcription to any action that SteamVR allows you to set.
   - You can bind it to any key on your keyboard.
   - Many Timing settings for transcription delays and button presses.
-  - Mutliple different Transcription modes to choose from.
+  - Multiple different Transcription modes to choose from.
   - You can change all of the Audio feedback sounds to a sound of your liking.
 - Ability to to use fine tuned models from [Huggingface](https://huggingface.co/models?sort=downloads&search=whisper)
-- Optional ***Live Transcription***
-- Optional ***Automatic launch*** with SteamVR.
+- ***Automatic launch*** with SteamVR.
 - ***Text to Text*** for quick typing.
-- Optional ***SteamVR Overlay*** for seeing your transcription without having to look at your own textbox in-game.
 - ***Simple API.*** latest transcription bound to the "/transcript" endpoint. (Requires OBS Source to be turned on)
 - ***Audio feedback*** for each step in the transcription.
   - Volume for each of the feedbacks can be modified over the Settings menu.
@@ -55,6 +54,7 @@ This program is supposed to be entirely free (as in money), open source and inde
 - Word Replacements and Emote Replacements with [Regular Expressions](https://en.wikipedia.org/wiki/Regular_expression).
 - Free to use as of the [GPL-3.0 license](https://github.com/I5UCC/VRCTextboxSTT/blob/main/LICENSE)
 - Completely free of Subscription/Cloud Services, by running locally on your hardware.
+- Runs completely offline, besides downloading models/dependencies and updates/update checks
 
 # Limitations
 
