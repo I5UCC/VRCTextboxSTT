@@ -22,6 +22,7 @@ class OscHandler:
 
 		self.osc_enable_server = True # Used to improve sync with in-game avatar and autodetect sync parameter count used for the avatar.
 		self.osc_server_ip = self.config_osc.ip # OSC server IP to listen too
+		self.default_osc_server_port = self.config_osc.server_port
 		self.osc_server_port = self.config_osc.server_port # OSC network port for recieving messages
 		self.http_port = self.config_osc.http_port # HTTP port for OSCQuery
 		self.osc_ip = self.config_osc.ip # OSC server IP to send too

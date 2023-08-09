@@ -123,7 +123,7 @@ def init():
     # Initialize OSC Handler
     if not osc:
         osc = OscHandler(config, copy.deepcopy(config.osc))
-    elif osc.osc_ip != config.osc.ip or osc.osc_port != config.osc.client_port or osc.osc_server_port != config.osc.server_port:
+    elif osc.osc_ip != config.osc.ip or osc.osc_port != config.osc.client_port or osc.default_osc_server_port != config.osc.server_port:
         restart()
 
     # Start Flask server
