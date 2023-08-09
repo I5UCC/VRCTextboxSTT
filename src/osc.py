@@ -8,6 +8,8 @@ import math, asyncio, threading
 from config import osc_config, config_struct
 import traceback
 import logging
+from tinyoscquery.queryservice import OSCQueryService
+from tinyoscquery.utility import get_open_tcp_port, get_open_udp_port, check_if_tcp_port_open, check_if_udp_port_open
 
 log = logging.getLogger(__name__)
 
@@ -21,6 +23,7 @@ class OscHandler:
 		self.osc_enable_server = True # Used to improve sync with in-game avatar and autodetect sync parameter count used for the avatar.
 		self.osc_server_ip = self.config_osc.ip # OSC server IP to listen too
 		self.osc_server_port = self.config_osc.server_port # OSC network port for recieving messages
+		self.http_port = self.config_osc.http_port # HTTP port for OSCQuery
 		self.osc_ip = self.config_osc.ip # OSC server IP to send too
 		self.osc_port = self.config_osc.client_port # OSC network port for sending messages
 
@@ -353,6 +356,7 @@ class OscHandler:
 			self.osc_client.send_message(self.osc_parameter_prefix + self.param_sync + str(value), 0.0) # Reset KAT characters sync
 
 		# Setup OSC Server
+		self.oscqs: OSCQueryService = None
 		self.osc_server: osc_server.ThreadingOSCUDPServer = None
 		self.osc_server_test_step: int = 0
 		self.osc_dispatcher: dispatcher.Dispatcher = None
@@ -370,6 +374,11 @@ class OscHandler:
 			try:
 				self.osc_server_test_step = 1
 
+				if self.osc_server_port == 9001 or self.osc_server_port <= 0 or not check_if_udp_port_open(self.osc_server_port):
+					self.osc_server_port = get_open_udp_port()
+				if self.http_port <= 0 or not check_if_tcp_port_open(self.http_port):
+					self.http_port = self.osc_server_port if check_if_tcp_port_open(self.osc_server_port) else get_open_tcp_port()
+
 				self.osc_dispatcher = dispatcher.Dispatcher()
 				self.osc_dispatcher.map(self.osc_parameter_prefix + self.param_sync + "*", self.osc_server_handler_char)
 				self.osc_dispatcher.map(self.osc_avatar_change_path + "*", self.osc_server_handler_avatar)
@@ -380,6 +389,14 @@ class OscHandler:
 
 				self.osc_server = osc_server.ThreadingOSCUDPServer((self.osc_server_ip, self.osc_server_port), self.osc_dispatcher, asyncio.get_event_loop())
 				threading.Thread(target = self.osc_server_serve, daemon = True).start()
+
+				self.oscqs = OSCQueryService("TextboxSTT", self.http_port, self.osc_server_port)
+				self.oscqs.advertise_endpoint(self.osc_parameter_prefix + self.param_sync + "*", access="readwrite")
+				self.oscqs.advertise_endpoint(self.osc_avatar_change_path + "*", access="readwrite")
+				self.oscqs.advertise_endpoint(self.osc_use_kat_path, access="readwrite")
+				self.oscqs.advertise_endpoint(self.osc_use_textbox_path, access="readwrite")
+				self.oscqs.advertise_endpoint(self.osc_use_both_path, access="readwrite")
+				self.oscqs.advertise_endpoint(self.osc_stt_mode_path, access="readwrite")
 			except:
 				self.osc_enable_server = False
 				self.osc_server_test_step = 0
@@ -390,7 +407,7 @@ class OscHandler:
 			self.osc_server.shutdown()
 			self.osc_server = False
 			self.osc_enable_server = False
-
+			self.oscqs.stop()
 
 	# Set the text to any value
 	def set_textbox_text(self, text: str, cutoff: bool = False, instant: bool = False):

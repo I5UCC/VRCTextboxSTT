@@ -159,7 +159,8 @@ class ct2_device_config(object):
 class osc_config(object):
     ip: str = "127.0.0.1"
     client_port: int = 9000
-    server_port: int = 9001
+    server_port: int = 0
+    http_port: int = 0
     use_textbox: bool = True
     use_kat: bool = True
     use_both: bool = False
