@@ -6,7 +6,6 @@ import os
 import traceback
 import logging
 import shutil
-import re
 
 log = logging.getLogger(__name__)
 
@@ -42,11 +41,9 @@ class Update_Handler(object):
         latest_tag = self.get_latest_tag()
         log.debug("Latest Tag: " + str(latest_tag))
 
-        if latest_tag is None:
+        if latest_tag is None or "-" in latest_tag:
             return False, None
 
-        current_version = re.sub(r'-.+', "", current_version)
-        latest_tag = re.sub(r'-.+', "", latest_tag)
         update_available = current_version != latest_tag
 
         return update_available, latest_tag
