@@ -41,7 +41,7 @@ class Update_Handler(object):
         latest_tag = self.get_latest_tag()
         log.debug("Latest Tag: " + str(latest_tag))
 
-        if latest_tag is None or "-" in latest_tag:
+        if latest_tag is None or ("-" in latest_tag and "-" not in current_version):
             return False, None
 
         update_available = current_version != latest_tag
