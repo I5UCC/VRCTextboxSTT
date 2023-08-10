@@ -392,8 +392,9 @@ class OscHandler:
 				threading.Thread(target = self.osc_server_serve, daemon = True).start()
 
 				self.oscqs = OSCQueryService("TextboxSTT", self.http_port, self.osc_server_port)
-				self.oscqs.advertise_endpoint(self.osc_parameter_prefix + self.param_sync + "*", access="readwrite")
-				self.oscqs.advertise_endpoint(self.osc_avatar_change_path + "*", access="readwrite")
+				for i in range(self.sync_params_max):
+					self.oscqs.advertise_endpoint(self.osc_parameter_prefix + self.param_sync + str(i), access="readwrite")
+				self.oscqs.advertise_endpoint(self.osc_avatar_change_path, access="readwrite")
 				self.oscqs.advertise_endpoint(self.osc_use_kat_path, access="readwrite")
 				self.oscqs.advertise_endpoint(self.osc_use_textbox_path, access="readwrite")
 				self.oscqs.advertise_endpoint(self.osc_use_both_path, access="readwrite")
@@ -581,6 +582,7 @@ class OscHandler:
 
 	# Handle OSC server to retest sync on avatar change
 	def osc_server_handler_avatar(self, address: tuple[str, int], value: str, *args: list[dispatcher.Any]):
+		log.info("Avatar change detected, retesting sync parameters")
 		self.osc_server_test_step = 1
 		self.isactive = False
 	
