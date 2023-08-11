@@ -608,7 +608,6 @@ class SettingsWindow:
         self.restart_lbl.configure(bg="#333333", fg="#666666", font=(self.FONT, 10))
         self.restart_lbl.place(relx=0.01, rely=0.9, anchor="w")
 
-        self.mode_changed()
         self.tkui.withdraw()
 
     def open_emote_window(self):
