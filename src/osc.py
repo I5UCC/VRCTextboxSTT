@@ -375,10 +375,11 @@ class OscHandler:
 			try:
 				self.osc_server_test_step = 1
 
-				if self.osc_server_port == 9001 or self.osc_server_port <= 0 or not check_if_udp_port_open(self.osc_server_port):
-					self.osc_server_port = get_open_udp_port()
-				if self.http_port <= 0 or not check_if_tcp_port_open(self.http_port):
-					self.http_port = self.osc_server_port if check_if_tcp_port_open(self.osc_server_port) else get_open_tcp_port()
+				if self.osc_server_port != 9001:
+					if self.osc_server_port <= 0 or not check_if_udp_port_open(self.osc_server_port):
+						self.osc_server_port = get_open_udp_port()
+					if self.http_port <= 0 or not check_if_tcp_port_open(self.http_port):
+						self.http_port = self.osc_server_port if check_if_tcp_port_open(self.osc_server_port) else get_open_tcp_port()
 
 				self.osc_dispatcher = dispatcher.Dispatcher()
 				self.osc_dispatcher.map(self.osc_parameter_prefix + self.param_sync + "*", self.osc_server_handler_char)
@@ -391,14 +392,15 @@ class OscHandler:
 				self.osc_server = osc_server.ThreadingOSCUDPServer((self.osc_server_ip, self.osc_server_port), self.osc_dispatcher, asyncio.get_event_loop())
 				threading.Thread(target = self.osc_server_serve, daemon = True).start()
 
-				self.oscqs = OSCQueryService("TextboxSTT", self.http_port, self.osc_server_port)
-				for i in range(self.sync_params_max):
-					self.oscqs.advertise_endpoint(self.osc_parameter_prefix + self.param_sync + str(i), access="readwrite")
-				self.oscqs.advertise_endpoint(self.osc_avatar_change_path, access="readwrite")
-				self.oscqs.advertise_endpoint(self.osc_use_kat_path, access="readwrite")
-				self.oscqs.advertise_endpoint(self.osc_use_textbox_path, access="readwrite")
-				self.oscqs.advertise_endpoint(self.osc_use_both_path, access="readwrite")
-				self.oscqs.advertise_endpoint(self.osc_stt_mode_path, access="readwrite")
+				if self.osc_server_port != 9001:
+					self.oscqs = OSCQueryService("TextboxSTT", self.http_port, self.osc_server_port)
+					for i in range(self.sync_params_max):
+						self.oscqs.advertise_endpoint(self.osc_parameter_prefix + self.param_sync + str(i), access="readwrite")
+					self.oscqs.advertise_endpoint(self.osc_avatar_change_path, access="readwrite")
+					self.oscqs.advertise_endpoint(self.osc_use_kat_path, access="readwrite")
+					self.oscqs.advertise_endpoint(self.osc_use_textbox_path, access="readwrite")
+					self.oscqs.advertise_endpoint(self.osc_use_both_path, access="readwrite")
+					self.oscqs.advertise_endpoint(self.osc_stt_mode_path, access="readwrite")
 			except:
 				self.osc_enable_server = False
 				self.osc_server_test_step = 0
