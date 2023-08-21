@@ -39,7 +39,7 @@
     "osc": {
         "ip": "127.0.0.1",
         "client_port": 9000,
-        "server_port": 0,
+        "server_port": 9001,
         "http_port": 0,
         "use_textbox": true,
         "use_kat": true,

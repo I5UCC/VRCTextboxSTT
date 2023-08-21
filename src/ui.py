@@ -227,13 +227,13 @@ class SettingsWindow:
 
         self.label_osc_server_port = tk.Label(master=self.tkui, bg="#333333", fg="white", text='OSC Server Port *', font=(self.FONT, 12))
         self.label_osc_server_port.grid(row=3, column=0, padx=PADX_L, pady=PADY, sticky='es')
-        self.label_osc_server_port.bind("<Enter>", (lambda event: self.show_tooltip("Port to get the OSC information from.\nUsed to improve KAT sync with in-game avatar and autodetect sync parameter count used for the avatar.\nOnly used if KAT Sync Params is set to 'Auto Detect' and use KAT set to 'Yes'")))
+        self.label_osc_server_port.bind("<Enter>", (lambda event: self.show_tooltip("Port to get the OSC information from.\nUsed to improve KAT sync with in-game avatar and autodetect sync parameter count used for the avatar.\nKeep at 9001 to use the default port.\nSet to 0 to auto-detect the port with OSC-Query.\nSet to -1 to disable receiving OSC information entirely.")))
         self.label_osc_server_port.bind("<Leave>", self.hide_tooltip)
         self.entry_osc_server_port = tk.Entry(self.tkui)
         self.entry_osc_server_port.insert(0, self.config.osc.server_port)
         self.entry_osc_server_port.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, insertbackground="#666666", width=23, disabledbackground="#444444")
         self.entry_osc_server_port.grid(row=3, column=1, padx=PADX_R, pady=PADY, sticky='ws')
-        self.entry_osc_server_port.bind("<Enter>", (lambda event: self.show_tooltip("Port to get the OSC information from.\nUsed to improve KAT sync with in-game avatar and autodetect sync parameter count used for the avatar.\nOnly used if KAT Sync Params is set to 'Auto Detect' and use KAT set to 'Yes'")))
+        self.entry_osc_server_port.bind("<Enter>", (lambda event: self.show_tooltip("Port to get the OSC information from.\nUsed to improve KAT sync with in-game avatar and autodetect sync parameter count used for the avatar.\nKeep at 9001 to use the default port.\nSet to 0 to auto-detect the port with OSC-Query.\nSet to -1 to disable receiving OSC information entirely.")))
         self.entry_osc_server_port.bind("<Leave>", self.hide_tooltip)
 
         self.label_model = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Model *', font=(self.FONT, 12))

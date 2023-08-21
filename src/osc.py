@@ -20,7 +20,7 @@ class OscHandler:
 		self.config_osc: osc_config = config_osc
 		self.isactive = False
 
-		self.osc_enable_server = True # Used to improve sync with in-game avatar and autodetect sync parameter count used for the avatar.
+		self.osc_enable_server = self.config_osc.server_port >= 0 # Used to improve sync with in-game avatar and autodetect sync parameter count used for the avatar.
 		self.osc_server_ip = self.config_osc.ip # OSC server IP to listen too
 		self.default_osc_server_port = self.config_osc.server_port
 		self.osc_server_port = self.config_osc.server_port # OSC network port for recieving messages
@@ -363,7 +363,10 @@ class OscHandler:
 		self.osc_dispatcher: dispatcher.Dispatcher = None
 
 		if self.osc_enable_server:
+			log.info("OSC Server enabled, autodetecting sync parameters")
 			self.osc_start_server()
+		else:
+			log.info("OSC Server disabled.")
 
 		# Start timer loop
 		self.osc_chatbox_timer.start()
@@ -376,10 +379,13 @@ class OscHandler:
 				self.osc_server_test_step = 1
 
 				if self.osc_server_port != 9001:
+					log.info("OSC Server port is not default, testing port availability and advertising OSCQuery endpoints")
 					if self.osc_server_port <= 0 or not check_if_udp_port_open(self.osc_server_port):
 						self.osc_server_port = get_open_udp_port()
 					if self.http_port <= 0 or not check_if_tcp_port_open(self.http_port):
 						self.http_port = self.osc_server_port if check_if_tcp_port_open(self.osc_server_port) else get_open_tcp_port()
+				else:
+					log.info("OSC Server port is default.")
 
 				self.osc_dispatcher = dispatcher.Dispatcher()
 				self.osc_dispatcher.map(self.osc_parameter_prefix + self.param_sync + "*", self.osc_server_handler_char)
@@ -411,6 +417,7 @@ class OscHandler:
 			self.osc_server.shutdown()
 			self.osc_server = False
 			self.osc_enable_server = False
+		if self.oscqs:
 			self.oscqs.stop()
 
 	# Set the text to any value
