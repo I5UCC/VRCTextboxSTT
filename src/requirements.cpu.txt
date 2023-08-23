@@ -16,7 +16,8 @@ sentencepiece
 autocorrect
 zeroconf
 requests
-transformers==4.30.1
+safetensors==0.3.2
+transformers==4.32.0
 ctranslate2==3.18.0
 torch==2.0.1
 faster-whisper==0.7.1
