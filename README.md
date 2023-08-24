@@ -172,10 +172,11 @@ If it doesnt show up, manually register the ´app.vrmanifest´ file by double cl
 - [x] Allow use of finetuned models.
 - [x] Allow translation into and from different languages. M2M100 using ctranslate2
 - [x] remove the need for building the program, enable OTA updates.
-- [ ] Support [OSCQuery](https://github.com/vrchat-community/vrc-oscquery-lib)
-- [ ] Implement Text To Speech (Maybe)
+- [x] Support [OSCQuery](https://github.com/vrchat-community/vrc-oscquery-lib)
+- [ ] VRCaptions sub program, that only outputs to SteamVR overlay.
 - [ ] Linux Support
-- [ ] Documentation of features and code (In progress)
+- [ ] Implement Text To Speech (Maybe, im still debating if this makes sense)
+- [ ] Documentation of features and code
 
 # Similar Projects
 
