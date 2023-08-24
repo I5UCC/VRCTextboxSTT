@@ -198,3 +198,4 @@ You can always leave a Github Star 🟊 (It's free) or buy me a coffee:<br />
 - [Uberi/speech_recognition](https://github.com/Uberi/speech_recognition) and [jleb/pyaudio](https://github.com/jleb/pyaudio)
 - [killfrenzy96](https://github.com/killfrenzy96) for [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText) and [KatOSC](https://github.com/killfrenzy96/KatOscApp)
 - [Frosty704's Billboard](https://github.com/Frosty704/Billboard) for making this project more useful.
+- [cyberkitsune's OSCQuery implementation](https://github.com/cyberkitsune/tinyoscquery) because i was too lazy to do that myself xD
