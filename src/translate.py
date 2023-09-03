@@ -47,7 +47,7 @@ class TranslationHandler(object):
     def download_model(self):
         try:
             _converter = TransformersConverter(self.model, copy_files=["generation_config.json", "sentencepiece.bpe.model", "special_tokens_map.json", "tokenizer_config.json", "vocab.json"])
-            _converter.convert(self.model_path, force=False, quantization=self.cache_path)
+            _converter.convert(self.model_path, force=False, quantization=self.compute_type)
             j: dict = json.load(open(self.model_path + "config.json"))
             j.update({"model_type": "m2m_100"})
             json.dump(j, open(self.model_path + "config.json", "w"), indent=4)
