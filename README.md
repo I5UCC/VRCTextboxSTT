@@ -96,7 +96,7 @@ Depending on settings changed in the program those requirements can change expon
 
 # Similar Projects
 
-There are similar projects that already exist that you might want to consider using (or not)
+There are similar projects that already exist that you might want to consider using
 
 - RabidCrab's STT. Costs Money, Uses cloud based transcription, the nature of that makes it typically slower and less reliable then local transcription methods.
 - [VRCWizard's TTS-Voice-Wizard](https://github.com/VRCWizard/TTS-Voice-Wizard) uses a whole lot of different Transcription methods, both local and also cloud based. It also supports KAT like this project does. Moreover it has neat additional features that go over just being a Speech To Text program. You might want to take a look at this.
