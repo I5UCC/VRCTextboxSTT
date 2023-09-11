@@ -90,93 +90,9 @@ Depending on settings changed in the program those requirements can change expon
 [Frosty704](https://github.com/Frosty704) using VRCTextboxSTT and [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText) with their [Billboard](https://github.com/Frosty704/Billboard) project. More to that on their repository. <br>
 ![](https://user-images.githubusercontent.com/36753686/223066845-2eddf954-c953-4dd4-816c-e0fbb5684ec0.gif)
 
-# Installing and Updating TextboxSTT
+# [Documentation (In Progress)](https://github.com/I5UCC/VRCTextboxSTT/wiki)
 
-- Install the [Requirements](https://github.com/I5UCC/VRCTextboxSTT#requirements)
-
-- Download and unpack this release of TextboxSTT
-
-- Launch TextboxSTT.exe
-
-- After first launch, the TextboxSTT Launcher will tell you that the program is not yet installed and asks you if you want to only install the CPU dependencies: <br>
-![234649759-d70f5fb6-ef71-49c6-b84b-91e6530bb2e3](https://user-images.githubusercontent.com/43730681/235293653-f51b616d-ff45-4ffa-9599-7176c2ee70c8.png) <br>
-After selecting an option (y = yes, n = no), ***No by default and recommended***, TextboxSTT will start installing all the dependencies needed. ***This only has to be done once***, after it will update dependencies whenever an update is available.
-After the installation is done, TextboxSTT will start like normal. The first Startup might take a bit longer then usual.
-To know whether an update is available, a button in the top right of the program will appear, informing you of a new update: <br>
-![Updater](https://user-images.githubusercontent.com/43730681/234651576-fc79209d-1ba1-43a5-8fdd-b27816bc48ac.png) <br>
-After clicking this button, the program will be updated and leads to a restart of the program. This process generally doesnt take much time.
-
-# How to use
-
-### Usage in VRChat
-- Activate OSC in VRChat: <br/><br/>
-![EnableOSC](https://user-images.githubusercontent.com/43730681/172059335-db3fd6f9-86ae-4f6a-9542-2a74f47ff826.gif)
-- Run the program.
-- The program will use your standard microphone set in windows.
-- if you have a lot of background noise you should play around with the "energy_threshold" option in the configuration (or press the ⟳ button next to it), to get it working well.
-- Press A on the left Controller on index or X on Oculus or F1 on your Keyboard.
-- Holding any of those for 1.5s clears the chatbox or cancels the action.
-- If the program doesnt work as its supposed to, try the troubleshooting steps in the next section.
-
-## OSC Troubleshoot
-
-
-If you have problems with this program, try this to fix it:<br><br>
-1 - Close VRChat.<br>
-2a - Press the "Reset OSC Settings" in the Settings of TextboxSTT<br>
-2b - Open 'Run' in Windows (Windows Key + R). <br>
-        Type in `%APPDATA%\..\LocalLow\VRChat\VRChat\OSC`<br>
-       ㅤㅤ Delete the folders that start with 'usr_*'.<br>
-3 - Startup VRChat again and it should work.
-
-# Configuration
-
-You can either Edit this configuration manually by editing the ***config.json*** file, or you can change those settings in the Program itself by clicking "Settings" in the bottom right: <br>
-You can hover over any of the options to get a brief explanation on what that option does. <br>
-![image](https://user-images.githubusercontent.com/43730681/232797308-5d2b38e4-dd00-4366-bd7b-e5fb3374edc0.png)
-
-You can edit Word replacements by clicking the "Edit Word Replacements" button:
-
-![image](https://user-images.githubusercontent.com/43730681/235309167-190135e9-024e-4bc2-a673-ce92db5e7833.png)
-
-You can edit the emote settings by clicking the "Edit Emotes" button:
-
-![image](https://user-images.githubusercontent.com/43730681/232797590-fbc99083-6c4d-4c46-8c10-89de5679ca10.png)
-
-# Modifying SteamVR binding
-You can set the boolean "sttlisten" in the Binding UI of SteamVR. Anyone who has set up OpenVR-Advanced-Settings might be familiar with that.
-You can set it to any action that supports a boolean input. By default it is the left A button (X button on Oculus/Meta respectively).
-![image](https://user-images.githubusercontent.com/43730681/210201138-d60d0936-22e5-4845-bbc1-4d1b0c412c43.png)
-
-If you want to use a Chord, you have to create **empty actions** for the buttons you want to use for that chord and they will show up in the chrod menu: <br>
-![image](https://user-images.githubusercontent.com/43730681/227457598-47b68d7b-3f4c-49d3-aa50-97c2b2bfeca7.png)
-![image](https://user-images.githubusercontent.com/43730681/227457640-b2c3a55b-edad-4d66-84d7-5f331fe67ca4.png)
-
-# Automatic launch with SteamVR
-On first launch of the program, it registers as an Overlay app on SteamVR just like other well known programs like XSOverlay or OVRAdvancedSettings and can be launched on startup: <br>
-![Screenshot 2022-12-04 184629](https://user-images.githubusercontent.com/43730681/205506892-0927ed45-69c6-480f-b4b3-bc02d89c151e.png) <br>
-![Screenshot 2023-01-02 084823](https://user-images.githubusercontent.com/43730681/210209107-746196dd-7e19-47c4-a668-221824d44a4e.png)
-
-After setting the option to ON it will launch the program on SteamVR startup.
-If it doesnt show up, manually register the ´app.vrmanifest´ file by double clicking it and running it with SteamVR.
-
-# Backlog
-- [x] Add a quick entry box for quick messagin
-- [x] Create a Settings UI for easy config editing.
-- [x] Enable Integration with [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText).
-- [x] Transcribe continuously until the user stops talking.
-- [x] Add an emote feature
-- [x] Demo Gif/Video (Stole from Frosty, thanks lol)
-- [x] Add a OBS browsersource
-- [x] Use [whisper.cpp](https://github.com/ggerganov/whisper.cpp)/[faster-whisper](https://github.com/guillaumekln/faster-whisper) for transcription, for better performance.
-- [x] Allow use of finetuned models.
-- [x] Allow translation into and from different languages. M2M100 using ctranslate2
-- [x] remove the need for building the program, enable OTA updates.
-- [x] Support [OSCQuery](https://github.com/vrchat-community/vrc-oscquery-lib)
-- [ ] VRCaptions sub program, that only outputs to SteamVR overlay.
-- [ ] Linux Support
-- [ ] Implement Text To Speech (Maybe, im still debating if this makes sense)
-- [ ] Documentation of features and code
+# [Backlog](https://github.com/users/I5UCC/projects/1)
 
 # Similar Projects
 
@@ -186,7 +102,7 @@ There are similar projects that already exist that you might want to consider us
 - [VRCWizard's TTS-Voice-Wizard](https://github.com/VRCWizard/TTS-Voice-Wizard) uses a whole lot of different Transcription methods, both local and also cloud based. It also supports KAT like this project does. Moreover it has neat additional features that go over just being a Speech To Text program. You might want to take a look at this.
 - [yum-food's TaSTT](https://github.com/yum-food/TaSTT) This project is spiritually and philosophically very close to this project, they have very feature rich avatar text solution that supports more characters then KAT does. They have made great progress on this problem, definitely take a look at it!
 
-## Donate
+# Support this Project
 
 You can always leave a Github Star 🟊 (It's free) or buy me a coffee:<br /> 
 
