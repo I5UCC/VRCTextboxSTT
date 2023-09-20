@@ -98,8 +98,8 @@ Depending on settings changed in the program those requirements can change expon
 
 There are similar projects that already exist that you might want to consider using
 
-- RabidCrab's STT. Costs Money, Uses cloud based transcription, the nature of that makes it typically slower and less reliable then local transcription methods.
-- [VRCWizard's TTS-Voice-Wizard](https://github.com/VRCWizard/TTS-Voice-Wizard) uses a whole lot of different Transcription methods, both local and also cloud based. It also supports KAT like this project does. Moreover it has neat additional features that go over just being a Speech To Text program. You might want to take a look at this.
+- RabidCrab's STT incurs a monetary cost and relies on cloud-based transcription services, which inherently tend to be slower and less reliable compared to local transcription methods.
+- [VRCWizard's TTS-Voice-Wizard](https://github.com/VRCWizard/TTS-Voice-Wizard) employs a wide array of transcription methods, encompassing both local and cloud-based approaches. Furthermore, it offers support similar to that of KAT, as seen in this project. Beyond functioning solely as a Speech To Text program, TTS-Voice-Wizard boasts a range of additional, noteworthy features. It may be worth your while to explore this tool further.
 - [yum-food's TaSTT](https://github.com/yum-food/TaSTT) This project is spiritually and philosophically very close to this project, they have very feature rich avatar text solution that supports more characters then KAT does. They have made great progress on this problem, definitely take a look at it!
 
 # Support this Project
