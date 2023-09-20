@@ -2,7 +2,7 @@
 
 A SpeechToText application that uses [OpenAI's whisper](https://github.com/openai/whisper) via [faster-whisper](https://github.com/guillaumekln/faster-whisper) to transcribe audio and send that information to VRChats textbox system and/or [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText) over OSC. Also supports OBS via Browsersource and a SteamVR overlay!
 
-This program is supposed to be entirely free (as in money), open source and independent of Cloud Based Transcription services like Microsoft Azure etc., by using transcription Algorithms running on your own hardware, thus respecting privacy and improving latency and reliability, all at the cost of compromising a bit of performance by running on your own hardware. Therefore, I will not be implementing any Cloud Based transcription/translation etc.
+This program is designed to be completely free of charge, open source, and independent from Cloud-Based Transcription services such as Microsoft Azure. It accomplishes this by utilizing transcription algorithms that run on your own hardware, thereby upholding privacy, enhancing latency, and ensuring reliability. As a result, I will not be incorporating any cloud-based transcription or translation services into this program.
 
 ### [<img src="https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6ca814282eca7172c6_icon_clyde_white_RGB.svg"  width="20" height="20"> Discord Support Server](https://discord.gg/rqcWHje3hn)
 
