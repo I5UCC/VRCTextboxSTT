@@ -8,23 +8,6 @@ This program is designed to be completely free of charge, open source, and indep
 
 ### [🢃 Download Latest Release](https://github.com/I5UCC/VRCTextboxSTT/releases/latest)
 
-# Contents
-
-- [Features](https://github.com/I5UCC/VRCTextboxSTT#features)
-- [Limitations](https://github.com/I5UCC/VRCTextboxSTT#limitations)
-- [Requirements](https://github.com/I5UCC/VRCTextboxSTT#requirements)
-- [Demo](https://github.com/I5UCC/VRCTextboxSTT#demo)
-- [Installing and Updating TextboxSTT](https://github.com/I5UCC/VRCTextboxSTT#installing-and-updating-textboxstt)
-- [How to use](https://github.com/I5UCC/VRCTextboxSTT#how-to-use)
-- [OSC Troubleshoot](https://github.com/I5UCC/VRCTextboxSTT#osc-troubleshoot)
-- [Configuration](https://github.com/I5UCC/VRCTextboxSTT#configuration)
-- [Modifying SteamVR binding](https://github.com/I5UCC/VRCTextboxSTT#modifying-steamvr-binding)
-- [Automatic launch with SteamVR](https://github.com/I5UCC/VRCTextboxSTT#automatic-launch-with-steamvr)
-- [Backlog](https://github.com/I5UCC/VRCTextboxSTT#backlog)
-- [Similar Projects](https://github.com/I5UCC/VRCTextboxSTT#similar-projects)
-- [Donate](https://github.com/I5UCC/VRCTextboxSTT#donate)
-- [Credit](https://github.com/I5UCC/VRCTextboxSTT#credit)
-
 # Features
 
 - Sending transcription to either:
