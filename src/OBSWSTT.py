@@ -107,6 +107,9 @@ def main():
 
                     print("----------------------------------------------------------")
                     text = transcriber.transcribe(torch_audio)
+                    if not text:
+                        continue
+
                     if translator:
                         text = translator.translate(text)
                     if append and text:
