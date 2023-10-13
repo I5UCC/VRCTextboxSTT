@@ -352,9 +352,10 @@ class OscHandler:
 		self.osc_client = udp_client.SimpleUDPClient(self.osc_ip, self.osc_port)
 		self.osc_timer = RepeatedTimer(self.osc_delay, self.osc_timer_loop)
 
-		self.osc_client.send_message(self.osc_parameter_prefix + self.param_pointer, 255) # Clear KAT text
-		for value in range(self.sync_params):
-			self.osc_client.send_message(self.osc_parameter_prefix + self.param_sync + str(value), 0.0) # Reset KAT characters sync
+		if config_osc.use_kat:
+			self.osc_client.send_message(self.osc_parameter_prefix + self.param_pointer, 255) # Clear KAT text
+			for value in range(self.sync_params):
+				self.osc_client.send_message(self.osc_parameter_prefix + self.param_sync + str(value), 0.0) # Reset KAT characters sync
 
 		# Setup OSC Server
 		self.oscqs: OSCQueryService = None
@@ -618,6 +619,8 @@ class OscHandler:
 
 	# Updates the characters within a pointer
 	def osc_update_pointer(self, pointer_index: int, gui_text: str, osc_chars: list[int]):
+		if not self.config_osc.use_kat:
+			return
 		self.osc_client.send_message(self.osc_parameter_prefix + self.param_pointer, pointer_index + 1) # Set pointer position
 
 		# Loop through characters within this pointer and set them
