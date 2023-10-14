@@ -1,8 +1,8 @@
 # <img src="https://raw.githubusercontent.com/I5UCC/VRCTextboxSTT/main/src/resources/icon.ico" width="32" height="32"> TextboxSTT [![Github All Releases](https://img.shields.io/github/downloads/i5ucc/VRCTextboxSTT/total.svg)](https://github.com/I5UCC/VRCTextboxSTT/releases/latest) <a href='https://ko-fi.com/i5ucc' target='_blank'><img height='35' style='border:0px;height:25px;' src='https://az743702.vo.msecnd.net/cdn/kofi3.png?v=0' border='0' alt='Buy Me a Coffee at ko-fi.com' />
 
 A SpeechToText application that uses [OpenAI's whisper](https://github.com/openai/whisper) via [faster-whisper](https://github.com/guillaumekln/faster-whisper) to transcribe audio and send that information to VRChats textbox system and/or [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText) over OSC. Also supports OBS via Browsersource and a SteamVR overlay!
-
-This program is designed to be completely free of charge, open source, and independent from Cloud-Based Transcription services such as Microsoft Azure. It accomplishes this by utilizing transcription algorithms that run on your own hardware, thereby upholding privacy, enhancing latency, and ensuring reliability. As a result, I will not be incorporating any cloud-based transcription or translation services into this program.
+> [!NOTE]
+> This program is designed to be completely free of charge, open source, and independent from Cloud-Based Transcription services such as Microsoft Azure. It accomplishes this by utilizing transcription algorithms that run on your own hardware, thereby upholding privacy, enhancing latency, and ensuring reliability. As a result, I will not be incorporating any cloud-based transcription or translation services into this program.
 
 ### [<img src="https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6ca814282eca7172c6_icon_clyde_white_RGB.svg"  width="20" height="20"> Discord Support Server](https://discord.gg/rqcWHje3hn)
 
@@ -66,7 +66,8 @@ With default settings, this program has following requirements:
   - ~4GB of available space for installation, ~2GB of space used after successful installation and loading models.
   - ~400MB of available RAM.
 
-Depending on settings changed in the program those requirements can change exponentially.
+> [!NOTE]
+> Depending on settings changed in the program those requirements can change exponentially.
 
 # Demo
 
