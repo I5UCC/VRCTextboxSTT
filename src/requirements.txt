@@ -17,7 +17,7 @@ autocorrect
 zeroconf
 requests
 safetensors==0.4.0
-transformers==4.34.0
+transformers==4.34.1
 ctranslate2==3.20.0
 torch==2.1.0
 --extra-index-url https://download.pytorch.org/whl/cu121
