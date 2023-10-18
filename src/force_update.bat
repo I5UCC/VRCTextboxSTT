@@ -1,5 +1,11 @@
 @echo off
 
+cd %~dp0\..\python\Lib\site-packages
+@ECHO OFF
+FOR /F "tokens=*" %%G IN ('DIR /B /AD /S "*~*"') DO (
+    RMDIR /S /Q "%%G"
+)
+
 cd %~dp0\..
 .\git\bin\git.exe reset --hard
 .\git\bin\git.exe pull --rebase
