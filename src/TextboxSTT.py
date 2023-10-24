@@ -142,6 +142,7 @@ def init():
     main_window.set_status_label("LOADING WHISPER MODEL", "orange")
     if not transcriber:
         transcriber = TranscribeHandler(copy.deepcopy(config.whisper), config.vad, CACHE_PATH, config.translator.language == "english")
+        log.info("Device: " + transcriber.device_name)
         transcriber.transcribe(np.zeros(100000, dtype=np.float32))
     elif config.whisper != transcriber.config_whisper:
         restart()
