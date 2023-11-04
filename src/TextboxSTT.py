@@ -125,6 +125,8 @@ def init():
         osc = OscHandler(config, copy.deepcopy(config.osc))
     elif osc.osc_ip != config.osc.ip or osc.osc_port != config.osc.client_port or osc.default_osc_server_port != config.osc.server_port:
         restart()
+    else:
+        osc.config_osc = copy.deepcopy(config.osc)
 
     # Start Flask server
     if not browsersource:
@@ -146,6 +148,8 @@ def init():
         transcriber.transcribe(np.zeros(100000, dtype=np.float32))
     elif config.whisper != transcriber.config_whisper:
         restart()
+    else:
+        transcriber.config_whisper = copy.deepcopy(config.whisper)
     main_window.set_status_label(f"LOADED \"{transcriber.whisper_model}\"", "orange")
 
     # Initialize TranslationHandler
