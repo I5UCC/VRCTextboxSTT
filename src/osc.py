@@ -534,7 +534,8 @@ class OscHandler:
 					self.osc_server_test_step = 0
 
 			# Clear text
-			self.osc_client.send_message(self.osc_parameter_prefix + self.param_pointer, self.pointer_clear)
+			if self.config_osc.use_kat:
+				self.osc_client.send_message(self.osc_parameter_prefix + self.param_pointer, self.pointer_clear)
 			self.osc_text = " ".ljust(self.kat_charlimit)
 			return
 
@@ -618,6 +619,8 @@ class OscHandler:
 
 	# Updates the characters within a pointer
 	def osc_update_pointer(self, pointer_index: int, gui_text: str, osc_chars: list[int]):
+		if not self.config_osc.use_kat:
+			return
 		self.osc_client.send_message(self.osc_parameter_prefix + self.param_pointer, pointer_index + 1) # Set pointer position
 
 		# Loop through characters within this pointer and set them
