@@ -118,6 +118,8 @@ WHISPER_MODELS = {
     'medium.en': 'openai/whisper-medium.en',
     'large': 'openai/whisper-large',
     'large-v2': 'openai/whisper-large-v2',
+    'distil-medium': "distil-whisper/distil-medium.en",
+    'distil-large-v2': "distil-whisper/distil-large-v2"
 }
 
 TRANSLATE_MODELS = {
