@@ -503,7 +503,10 @@ class SettingsWindow:
         self.option_index = 0 if self.config.listener.microphone_index is None else int(self.config.listener.microphone_index) + 1
         self.options_mic = self.get_sound_devices()
         self.value_mic = tk.StringVar(self.tkui)
-        self.value_mic.set(self.options_mic[self.option_index])
+        try:
+            self.value_mic.set(self.options_mic[self.option_index])
+        except IndexError:
+            self.value_mic.set("Default")
         self.opt_mic = tk.OptionMenu(self.tkui, self.value_mic, *self.options_mic)
         self.opt_mic.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_mic.grid(row=8, column=5, padx=PADX_R, pady=PADY, sticky='ws')
