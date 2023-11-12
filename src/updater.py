@@ -47,7 +47,7 @@ class Update_Handler(object):
         update_available = current_version != latest_tag
 
         return update_available, latest_tag
-    
+
     def fetch(self):
         try:
             log.debug("Fetching Tags")
@@ -68,7 +68,7 @@ class Update_Handler(object):
             time.sleep(0.5)
 
         if process.returncode != 0:
-            ctypes.windll.user32.MessageBoxW(0, "The Update process may have failed, please try again or run `force_update.bat` in the src folder as administator", "TextboxSTT - Unexpected Error", 0)
+            ctypes.windll.user32.MessageBoxW(0, "The Update process may have failed, please try again or run `force_update.bat` in the src folder as administator", f"TextboxSTT - Unexpected Error - {str(process.returncode)}", 0)
         else:
             ui_output("Update finished! Restarting...")
             time.sleep(1)
