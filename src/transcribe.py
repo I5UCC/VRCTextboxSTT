@@ -1,7 +1,8 @@
 import os
 import torch
 from helper import get_best_compute_type
-from faster_whisper import WhisperModel
+from faster_whisper import WhisperModel, __version__ as whisper_version
+from ctranslate2 import __version__ as ctranslate2_version
 from ctranslate2.converters import TransformersConverter
 from shutil import rmtree
 from config import whisper_config, vad_config, ct2_device_config, WHISPER_MODELS, LANGUAGE_TO_KEY
@@ -38,6 +39,9 @@ class TranscribeHandler(object):
         self.compute_type = self.device_config.compute_type if self.device_config.compute_type else get_best_compute_type(self.device, self.device_index)
         
         log.info(f"Using model: {self.whisper_model} for language: {self.language} ({self.task}) - {self.compute_type}")
+        log.info("ct2 version: " + ctranslate2_version)
+        log.info("whisper version: " + whisper_version)
+        log.info("torch version: " + torch.__version__)
         
         self.use_cpu = True if str(self.device) == "cpu" else False
         self.model_path = self.load_model(self.whisper_model, self.compute_type, self.is_openai_model)
