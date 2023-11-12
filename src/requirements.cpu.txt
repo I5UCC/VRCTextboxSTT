@@ -14,8 +14,8 @@ pydub
 dataclasses-json
 sentencepiece
 autocorrect
-zeroconf
 requests
+zeroconf==0.123.0
 safetensors==0.4.0
 transformers==4.34.1
 ctranslate2==3.21.0
