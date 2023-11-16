@@ -84,7 +84,7 @@
         "pause_threshold": 3.0,
         "timeout_time": 5.0,
         "hold_time": 1.5,
-        "phrase_time_limit": 1.0
+        "phrase_time_limit": 0.5
     },
     "overlay": {
         "enabled": true,
