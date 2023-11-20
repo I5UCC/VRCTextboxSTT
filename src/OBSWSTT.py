@@ -36,7 +36,7 @@ def main():
     translator: TranslationHandler = None
     if config.translator.language and config.translator.language != config.whisper.language and transcriber.task == "transcribe":
         translator = TranslationHandler(CACHE_PATH, config.whisper.language, config.translator)
-    browsersource = OBSBrowserSource(config.obs, get_absolute_path('resources/obs_source.html', __file__))
+    browsersource = OBSBrowserSource(config.obs, get_absolute_path('resources/obs_source.html', __file__), CACHE_PATH)
     browsersource.start()
 
     phrase_timeout = config.listener.timeout_time

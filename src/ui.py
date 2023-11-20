@@ -1100,8 +1100,8 @@ class OBSSettingsWindow:
         self.tkui = tk.Tk()
         coordinates = get_coordinates()
         self.tkui.geometry(f"+{coordinates[0]}+{coordinates[1]}")
-        self.tkui.minsize(370, 230)
-        self.tkui.maxsize(370, 230)
+        self.tkui.minsize(370, 360)
+        self.tkui.maxsize(370, 360)
         self.tkui.resizable(False, False)
         self.tkui.configure(bg="#333333")
         self.tkui.title("TextboxSTT - OBS Source Settings")
@@ -1145,7 +1145,29 @@ class OBSSettingsWindow:
         self.opt_align = tk.OptionMenu(self.tkui, self.value_align, *["center", "left", "right"])
         self.opt_align.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=18, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_align.grid(row=4, column=2, padx=12, pady=5, sticky='ws')
-        
+
+        self.label_emotes = tk.Label(self.tkui, text="Emotes", bg="#333333", fg="white", font=(self.FONT, 12))
+        self.label_emotes.grid(row=5, column=1, padx=12, pady=5, sticky='ws')
+        self.value_emotes = tk.StringVar(self.tkui)
+        self.value_emotes.set("OFF" if not self.config.obs.seventv.enabled else "ON")
+        self.opt_emotes = tk.OptionMenu(self.tkui, self.value_emotes, *["OFF", "ON"])
+        self.opt_emotes.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=18, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.opt_emotes.grid(row=5, column=2, padx=12, pady=5, sticky='ws')
+
+        self.label_emoteid = tk.Label(self.tkui, text="Emote Set ID", bg="#333333", fg="white", font=(self.FONT, 12))
+        self.label_emoteid.grid(row=6, column=1, padx=12, pady=5, sticky='ws')
+        self.entry_emoteid = tk.Entry(self.tkui)
+        self.entry_emoteid.insert(0, self.config.obs.seventv.emote_set)
+        self.entry_emoteid.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666")
+        self.entry_emoteid.grid(row=6, column=2, padx=12, pady=5, sticky='ws')
+
+        self.label_case_sensitive = tk.Label(self.tkui, text="Case Sensitive", bg="#333333", fg="white", font=(self.FONT, 12))
+        self.label_case_sensitive.grid(row=7, column=1, padx=12, pady=5, sticky='ws')
+        self.value_case_sensitive = tk.StringVar(self.tkui)
+        self.value_case_sensitive.set("OFF" if not self.config.obs.seventv.case_sensitive else "ON")
+        self.opt_case_sensitive = tk.OptionMenu(self.tkui, self.value_case_sensitive, *["OFF", "ON"])
+        self.opt_case_sensitive.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=18, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.opt_case_sensitive.grid(row=7, column=2, padx=12, pady=5, sticky='ws')
 
         self.btn_save = tk.Button(self.tkui, text="Save", command=self.save)
         self.btn_save.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=43, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
@@ -1159,6 +1181,9 @@ class OBSSettingsWindow:
         self.config.obs.font = self.entry_font.get()
         self.config.obs.color = self.entry_color.get()
         self.config.obs.align = self.value_align.get()
+        self.config.obs.seventv.enabled = True if self.value_emotes.get() == "ON" else False
+        self.config.obs.seventv.emote_set = self.entry_emoteid.get()
+        self.config.obs.seventv.case_sensitive = True if self.value_case_sensitive.get() == "ON" else False
 
         json.dump(self.config.to_dict(), open(self.config_path, "w"), indent=4)
         self.on_closing()

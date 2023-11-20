@@ -28,14 +28,41 @@
         let current_text = "";
         let text = "";
         let finished = true;
+        let done = false;
         let e_transcript = document.getElementById("transcript");
         let i = 0;
+        let emotes;
+        let reg_string = "(?<!\\w)emote(?!\\w)|emote(\\.|!|\\?|,)";
+        let flags = "";
+        fetch("http://127.0.0.1:[PORT]/emotes")
+            .then(function (response) {
+                return response.json();
+            })
+            .then((data) => {
+                emotes = data[0];
+                flags = data[1];
+            })
+        
         function typeWriter() {
-            
+            if (text.charAt(i) === "<") {
+                let end = text.indexOf(">", i);
+                e_transcript.innerHTML += text.slice(i, end + 1);
+                i += end + 1;
+            }
             if (i < text.length) {
                 e_transcript.innerHTML += text.charAt(i);
                 i++;
                 setTimeout(typeWriter, [SPEED]);
+            }
+            else {
+                done = true;
+            }
+        }
+        function replace_emotes() {
+            for (let emote in emotes) {
+                tmp = reg_string.replace("emote", emote.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'))
+                const reg = new RegExp(tmp, flags)
+                e_transcript.innerHTML = e_transcript.innerHTML.replaceAll(reg, "<img src='" + emotes[emote] + "'>");
             }
         }
         function getTranscript() {
@@ -62,12 +89,18 @@
                         }
                         i = 0;
                         typeWriter()
+                        replace_emotes()
+                    }
+                    if (done) {
+                        done = false;
+                        replace_emotes()
                     }
                 })
                 .catch(function (err) {
                     console.log('Fetch Error: ', err);
                 });
             window.scrollTo(0, document.body.scrollHeight);
+            
         }
         setInterval(getTranscript, [INTERVAL]);
     </script>

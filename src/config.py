@@ -229,6 +229,14 @@ class overlay_config(object):
 
 @dataclass_json
 @dataclass
+class seventv_config(object):
+    enabled: bool = False
+    emote_set: str = ""
+    case_sensitive: bool = True
+
+
+@dataclass_json
+@dataclass
 class obs_config(object):
     enabled: bool = False
     port: int = 5000
@@ -238,6 +246,7 @@ class obs_config(object):
     shadow_color: str = "black"
     align: str = "center"
     speed: int = 30
+    seventv: seventv_config = field(default_factory=seventv_config)
 
 
 @dataclass_json

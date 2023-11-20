@@ -2,8 +2,12 @@ import waitress
 from flask import Flask, render_template_string, jsonify
 from kthread import KThread
 from config import obs_config
+import requests
 import traceback
 import logging
+import ctypes
+import json
+import os
 
 log = logging.getLogger(__name__)
 
@@ -52,19 +56,41 @@ class FlaskAppWrapper(object):
 
 class OBSBrowserSource(object):
 
-    def __init__(self, config: obs_config, template_path: str):
+    def __init__(self, config: obs_config, template_path: str, cache_path: str):
         self.template_path = template_path
         self.text = ""
         self.finished = True
         self.config: obs_config = config
         self.running = False
+        self.emotes = dict()
+        self.emote_cache = cache_path + "emotes.json"
+        if self.config.seventv.enabled and self.config.seventv.emote_set != "" and self.config.enabled:
+            self.emotes = self.get_7tv_emote_set(self.config.seventv.emote_set)
+            open(self.emote_cache, "w").write(json.dumps(self.emotes, indent=4))
         try: 
             self.app = FlaskAppWrapper(Flask(__name__), self.config.port)
             self.app.add_endpoint('/', 'flask_root', self.flask_root, methods=['GET'])
             self.app.add_endpoint('/transcript', 'flask_get_transcript', self.flask_get_transcript, methods=['GET'])
+            self.app.add_endpoint('/emotes', 'flask_get_emotes', self.flask_get_emotes, methods=['GET'])
         except:
             log.error(f"Couldn't initialize Browser source")
             log.error(traceback.format_exc())
+        
+    def get_7tv_emote_set(self, emote_set_id: str):
+        try:
+            r = requests.get(f"https://7tv.io/v3/emote-sets/{emote_set_id}")
+            _emotes = dict((emote["name"], f'https://cdn.7tv.app/emote/{emote["data"]["id"]}/1x.webp') for emote in r.json()["emotes"])
+            log.info(f"Loaded 7TV emote set {emote_set_id}, {len(_emotes)} emotes found.")
+            return _emotes
+        except KeyError:
+            log.error(f"Couldn't get 7TV emote set {emote_set_id}")
+            log.error("Either 7TV has Rate limited you or the emote set doesn't exist.")
+            if os.path.isfile(self.emote_cache):
+                log.error(f"Cached emotes found, using them instead.")
+                return json.loads(open(self.emote_cache).read())
+            else:
+                ctypes.windll.user32.MessageBoxW(0, f"Couldn't get 7TV emote set {emote_set_id}\nEither 7TV has Rate limited you or the emote set doesn't exist.", "TextboxSTT - Unexpected Error", 0)
+                return dict()
 
     def flask_root(self):
         _html = ""
@@ -84,6 +110,9 @@ class OBSBrowserSource(object):
     
     def flask_get_transcript(self):
         return jsonify(self.text, self.finished)
+    
+    def flask_get_emotes(self):
+        return jsonify(self.emotes, "g" if self.config.seventv.case_sensitive else "gi")
     
     def start(self):
         self.running = True

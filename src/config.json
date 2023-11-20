@@ -105,7 +105,12 @@
         "color": "white",
         "shadow_color": "black",
         "align": "center",
-        "speed": 30
+        "speed": 30,
+        "seventv": {
+            "enabled": true,
+            "emote_set": "",
+            "case_sensitive": true
+        }
     },
     "autocorrect": {
         "language": null
