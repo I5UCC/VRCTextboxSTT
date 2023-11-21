@@ -5,6 +5,7 @@ TITLE TextboxSTT Updater
 cd /d %~dp0\..
 .\git\bin\git.exe reset --hard
 .\git\bin\git.exe pull --rebase
+.\python\python.exe -m pip install --upgrade pip
 if exist python/CPU (
 	echo reinstalling CPU dependencies
 	.\python\python.exe -m pip install -U -r .\src\requirements.cpu.txt --no-warn-script-location
