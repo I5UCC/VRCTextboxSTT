@@ -16,6 +16,6 @@ if exist python/CPU (
 
 echo.
 echo.
-echo Done! Press any key to exit...
-pause >nul
+echo Done!
+timeout /T 15
 exit /b %errorlevel%

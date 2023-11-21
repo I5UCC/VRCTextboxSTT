@@ -106,8 +106,9 @@
         "shadow_color": "black",
         "align": "center",
         "speed": 30,
+        "size": 48,
         "seventv": {
-            "enabled": true,
+            "enabled": false,
             "emote_set": "",
             "case_sensitive": true
         }
