@@ -246,6 +246,7 @@ class obs_config(object):
     shadow_color: str = "black"
     align: str = "center"
     speed: int = 30
+    size: int = 48
     seventv: seventv_config = field(default_factory=seventv_config)
 
 

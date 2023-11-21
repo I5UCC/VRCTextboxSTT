@@ -14,7 +14,7 @@
             1px -1px 2px [SHADOW],
             -1px 1px 2px [SHADOW],
             -1px -1px 2px [SHADOW];
-        font-size: 48px;
+        font-size: [SIZE]px;
         font-weight: 700;
         width: 100%;
         text-align: [ALIGN];
@@ -62,7 +62,7 @@
             for (let emote in emotes) {
                 tmp = reg_string.replace("emote", emote.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'))
                 const reg = new RegExp(tmp, flags)
-                e_transcript.innerHTML = e_transcript.innerHTML.replaceAll(reg, "<img src='" + emotes[emote] + "'>");
+                e_transcript.innerHTML = e_transcript.innerHTML.replaceAll(reg, "<img src='" + emotes[emote] + "' width='auto' height='[SIZE]px'>");
             }
         }
         function getTranscript() {

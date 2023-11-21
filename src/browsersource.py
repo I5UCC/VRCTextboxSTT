@@ -64,7 +64,7 @@ class OBSBrowserSource(object):
         self.running = False
         self.emotes = dict()
         self.emote_cache = cache_path + "emotes.json"
-        if self.config.seventv.enabled and self.config.seventv.emote_set != "" and self.config.enabled:
+        if self.config.seventv.enabled and self.config.seventv.emote_set != "":
             self.emotes = self.get_7tv_emote_set(self.config.seventv.emote_set)
             open(self.emote_cache, "w").write(json.dumps(self.emotes, indent=4))
         try: 
@@ -79,7 +79,7 @@ class OBSBrowserSource(object):
     def get_7tv_emote_set(self, emote_set_id: str):
         try:
             r = requests.get(f"https://7tv.io/v3/emote-sets/{emote_set_id}")
-            _emotes = dict((emote["name"], f'https://cdn.7tv.app/emote/{emote["data"]["id"]}/1x.webp') for emote in r.json()["emotes"])
+            _emotes = dict((emote["name"], f'https://cdn.7tv.app/emote/{emote["data"]["id"]}/4x.webp') for emote in r.json()["emotes"])
             log.info(f"Loaded 7TV emote set {emote_set_id}, {len(_emotes)} emotes found.")
             return _emotes
         except KeyError:
@@ -104,6 +104,7 @@ class OBSBrowserSource(object):
         _html = _html.replace("[PORT]", str(self.config.port))
         _html = _html.replace("[INTERVAL]", str(self.config.update_interval))
         _html = _html.replace("[SPEED]", str(self.config.speed))
+        _html = _html.replace("[SIZE]", str(self.config.size))
 
         log.info("Website Accessed.")
         return render_template_string(_html)
