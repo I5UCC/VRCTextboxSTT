@@ -252,6 +252,13 @@ class obs_config(object):
 
 @dataclass_json
 @dataclass
+class websocket_config(object):
+    enabled: bool = True
+    port: int = 8765
+
+
+@dataclass_json
+@dataclass
 class autocorrect_config(object):
     language: Optional[str] = None
 
@@ -366,6 +373,7 @@ class config_struct(object):
     listener: listener_config = field(default_factory=listener_config)
     overlay: overlay_config = field(default_factory=overlay_config)
     obs: obs_config = field(default_factory=obs_config)
+    websocket: websocket_config = field(default_factory=websocket_config)
     autocorrect: autocorrect_config = field(default_factory=autocorrect_config)
     wordreplacement: wordreplacement_config = field(default_factory=wordreplacement_config)
     emotes: emotes_config = field(default_factory=emotes_config)

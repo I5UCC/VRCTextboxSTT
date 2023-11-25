@@ -27,6 +27,7 @@ try:
     from listen import ListenHandler
     from transcribe import TranscribeHandler
     from translate import TranslationHandler
+    from websocket import WebsocketHandler
     from config import config_struct, audio, LANGUAGE_TO_KEY
     from updater import Update_Handler
     from pydub import AudioSegment
@@ -60,6 +61,7 @@ listen: ListenHandler = None
 transcriber: TranscribeHandler = None
 translator: TranslationHandler = None
 browsersource: OBSBrowserSource = None
+websocket: WebsocketHandler = None
 autocorrect: Speller = None
 timeout_time: float = 0.0
 overlay_timeout_time: float = 0.0
@@ -84,6 +86,7 @@ def init():
     global osc
     global transcriber
     global translator
+    global websocket
     global ovr
     global initialized
     global browsersource
@@ -137,6 +140,14 @@ def init():
         else:
             main_window.set_status_label("COULDNT INITIALIZE FLASK SERVER, CONTINUING WITHOUT OBS SOURCE", "orange")
     elif not config.obs.enabled and browsersource.running:
+        restart()
+
+    if not websocket:
+        websocket = WebsocketHandler(config.websocket.port)
+    if config.websocket.enabled and not websocket.running:
+        websocket.start()
+        main_window.set_status_label("INITIALIZED WEBSOCKET SERVER", "green")
+    elif not config.websocket.enabled and websocket.running:
         restart()
 
     # Temporarily output to text label for download progress.
@@ -233,6 +244,7 @@ def clear_chatbox():
     global osc
     global ovr
     global browsersource
+    global websocket
     global transcriber
     global finished
     global timeout_time
@@ -240,6 +252,8 @@ def clear_chatbox():
 
     if browsersource:
         browsersource.setText("")
+    if websocket:
+        websocket.set_text("")
     main_window.clear_textfield()
     if config.osc.use_textbox and config.osc.use_both or config.osc.use_textbox and config.osc.use_kat and not osc.isactive or not config.osc.use_kat:
         osc.clear_chatbox(config.mode == 0)
@@ -263,6 +277,7 @@ def populate_chatbox(text, cutoff: bool = False, is_textfield: bool = False):
     global osc
     global ovr
     global browsersource
+    global websocket
     global curr_text
 
     if config.wordreplacement.enabled:
@@ -278,6 +293,9 @@ def populate_chatbox(text, cutoff: bool = False, is_textfield: bool = False):
 
     if browsersource:
         browsersource.setText(text)
+
+    if websocket:
+        websocket.set_text(text)
 
     if config.osc.use_textbox and config.osc.use_both or config.osc.use_textbox and config.osc.use_kat and not osc.isactive or not config.osc.use_kat:
         osc.set_textbox_text(text, cutoff, config.mode == 0 and not is_textfield)
@@ -706,6 +724,7 @@ def main_window_closing():
     global config_ui
     global osc
     global browsersource
+    global websocket
 
     log.info("Closing...")
     try:
@@ -724,7 +743,11 @@ def main_window_closing():
         browsersource.stop()
     except Exception:
         pass
-    sys.exit()
+    try:
+        websocket.stop()
+    except Exception:
+        pass
+    os._exit(0)
 
 
 def open_settings():

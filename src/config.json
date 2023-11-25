@@ -113,6 +113,10 @@
             "case_sensitive": true
         }
     },
+    "websocket": {
+        "enabled": true,
+        "port": 8765
+    },
     "autocorrect": {
         "language": null
     },
