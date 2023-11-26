@@ -21,6 +21,7 @@ class WebsocketHandler:
     def stop(self):
         self.server.ws_server.close()
         self.loop.stop()
+        self.running = False
 
     async def update_clients(self, websocket, path):
         print("New Websocket client connected.")
