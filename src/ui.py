@@ -507,6 +507,11 @@ class SettingsWindow:
         self.opt_websocket.grid(row=8, column=5, padx=PADX_R, pady=PADY, sticky='ws')
         self.opt_websocket.bind("<Enter>", (lambda event: self.show_tooltip("If you want to use the OBS Browser Source (Requires Restart)")))
         self.opt_websocket.bind("<Leave>", self.hide_tooltip)
+        self.button_websocket = tk.Button(self.tkui, text=" ⚙ ", command=self.open_websocket_window)
+        self.button_websocket.configure(bg="#333333", fg="white", height=1, highlightthickness=0, anchor="center", activebackground="#555555", activeforeground="white")
+        self.button_websocket.grid(row=8, column=6, padx=2, pady=7, sticky='ws')
+        self.button_websocket.bind("<Enter>", (lambda event: self.show_tooltip("Edit Websocket Settings (Requires Restart)")))
+        self.button_websocket.bind("<Leave>", self.hide_tooltip)
 
         self.label_mic = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Microphone', font=(self.FONT, 12))
         self.label_mic.grid(row=9, column=4, padx=PADX_L, pady=PADY, sticky='es')
@@ -636,6 +641,9 @@ class SettingsWindow:
 
     def open_obs_window(self):
         _ = OBSSettingsWindow(self.config, self.config_path, self.icon_path, self.get_coordinates)
+
+    def open_websocket_window(self):
+        _ = WebsocketSettingsWindow(self.config, self.config_path, self.icon_path, self.get_coordinates)
 
     def open_audio_window(self):
         _ = AudioSettingsWindow(self.config, self.config_path, self.icon_path, self.get_coordinates)
@@ -1211,6 +1219,43 @@ class OBSSettingsWindow:
 
     def on_closing(self):
         self.tkui.destroy()
+
+class WebsocketSettingsWindow:
+    def __init__(self, conf: config_struct, config_path, icon_path, get_coordinates):
+        self.config_path = config_path
+        self.config: config_struct = conf
+        self.FONT = "Cascadia Code"
+
+        self.tkui = tk.Tk()
+        coordinates = get_coordinates()
+        self.tkui.geometry(f"+{coordinates[0]}+{coordinates[1]}")
+        self.tkui.minsize(280, 70)
+        self.tkui.maxsize(280, 70)
+        self.tkui.resizable(False, False)
+        self.tkui.configure(bg="#333333")
+        self.tkui.title("TextboxSTT - Websocket Settings")
+        self.tkui.iconbitmap(icon_path)
+
+        self.label_port = tk.Label(self.tkui, text="Port", bg="#333333", fg="white", font=(self.FONT, 12))
+        self.label_port.grid(row=0, column=1, padx=12, pady=5, sticky='ws')
+        self.entry_port = tk.Entry(self.tkui)
+        self.entry_port.insert(0, self.config.websocket.port)
+        self.entry_port.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666")
+        self.entry_port.grid(row=0, column=2, padx=12, pady=5, sticky='ws')
+
+        self.btn_save = tk.Button(self.tkui, text="Save", command=self.save)
+        self.btn_save.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=33, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.btn_save.place(relx=0.5, rely=0.74, anchor="center")
+    
+    def save(self):
+        self.config.websocket.port = int(self.entry_port.get())
+
+        json.dump(self.config.to_dict(), open(self.config_path, "w"), indent=4)
+        self.on_closing()
+
+    def on_closing(self):
+        self.tkui.destroy()
+
 
 class DeviceSettingsWindow:
     def __init__(self, conf: config_struct, config_path, device, device_index, icon_path, get_coordinates):
