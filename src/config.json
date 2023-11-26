@@ -114,7 +114,7 @@
         }
     },
     "websocket": {
-        "enabled": true,
+        "enabled": false,
         "port": 8765
     },
     "autocorrect": {

@@ -253,7 +253,7 @@ class obs_config(object):
 @dataclass_json
 @dataclass
 class websocket_config(object):
-    enabled: bool = True
+    enabled: bool = False
     port: int = 8765
 
 
