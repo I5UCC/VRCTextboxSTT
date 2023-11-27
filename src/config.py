@@ -268,6 +268,15 @@ class autocorrect_config(object):
 class wordreplacement_config(object):
     enabled: bool = True
     list: dict = field(default_factory=dict)
+    base_replacements: dict = field(default_factory=lambda: {
+        "-(?=[a-z])": "",
+        "(?<!\\w)dot(?!\\w)|dot(?![a-z])": ".",
+        "(?<!\\w)asterisk(?!\\w)|asterisk(?![a-z])": "*",
+        "(?<!\\w)exclamation mark(?!\\w)|exclamation mark(?![a-z])": "!",
+        "(?<!\\w)exclamation point(?!\\w)|exclamation point(?![a-z])": "!",
+        "(?<!\\w)question mark(?!\\w)|question mark(?![a-z])": "?",
+        "(?<!\\w)comma(?!\\w)|comma(?![a-z])": ","
+    })
 
 
 @dataclass_json

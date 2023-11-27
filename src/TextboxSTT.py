@@ -282,6 +282,7 @@ def populate_chatbox(text, cutoff: bool = False, is_textfield: bool = False):
 
     if config.wordreplacement.enabled:
         text = replace_words(text, config.wordreplacement.list)
+        text = replace_words(text, config.wordreplacement.base_replacements)
 
     if not text:
         return

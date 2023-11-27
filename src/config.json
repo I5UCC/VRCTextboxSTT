@@ -122,13 +122,15 @@
     },
     "wordreplacement": {
         "enabled": true,
-        "list": {
-            "(?<!\\w)dot(?!\\w)|dot(\\.|!|\\?|,)": ".",
-            "(?<!\\w)asterisk(?!\\w)|asterisk(\\.|!|\\?|,)": "*",
-            "(?<!\\w)exclamation mark(?!\\w)|exclamation mark(\\.|!|\\?|,)": "!",
-            "(?<!\\w)exclamation point(?!\\w)|exclamation point(\\.|!|\\?|,)": "!",
-            "(?<!\\w)question mark(?!\\w)|question mark(\\.|!|\\?|,)": "?",
-            "(?<!\\w)comma(?!\\w)|comma(\\.|!|\\?|,)": ","
+        "list": {},
+        "base_replacements": {
+            "-(?=[a-z])": "",
+            "(?<!\\w)dot(?!\\w)|dot(?![a-z])": ".",
+            "(?<!\\w)asterisk(?!\\w)|asterisk(?![a-z])": "*",
+            "(?<!\\w)exclamation mark(?!\\w)|exclamation mark(?![a-z])": "!",
+            "(?<!\\w)exclamation point(?!\\w)|exclamation point(?![a-z])": "!",
+            "(?<!\\w)question mark(?!\\w)|question mark(?![a-z])": "?",
+            "(?<!\\w)comma(?!\\w)|comma(?![a-z])": ","
         }
     },
     "emotes": {

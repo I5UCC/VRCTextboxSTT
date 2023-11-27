@@ -120,6 +120,7 @@ def main():
                     print(f"bytes:\t\t{len(last_sample)}\ntext_length:\t{len(text)}")
                     if config.wordreplacement.enabled:
                         text = replace_words(text, config.wordreplacement.list)
+                        text = replace_words(text, config.wordreplacement.base_replacements)
                     browsersource.setText(text)
                     print("- " + text if text else "No text found")
                     sentence_end = text[-1] in [".", "!", "?"]
