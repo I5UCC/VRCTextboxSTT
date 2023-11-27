@@ -6,6 +6,7 @@ import traceback
 import logging
 import time
 import ctypes
+from packaging import version
 
 log = logging.getLogger(__name__)
 
@@ -28,7 +29,12 @@ class Update_Handler(object):
             self.fetch()
             result = subprocess.run([self.git_path, "tag"], cwd=self.repo_path, stdout=subprocess.PIPE, startupinfo=self.startupinfo)
             tags = result.stdout.decode('utf-8')
-            latest_tag = tags[tags.rfind("v"):].strip()
+            latest_tag = "v0.0.0"
+            for tag in tags.split("\n"):
+                if "-" in tag or tag == "":
+                    continue
+                if version.parse(tag) > version.parse(latest_tag):
+                    latest_tag = tag
             return latest_tag
         except Exception:
             log.debug(traceback.format_exc())
