@@ -15,8 +15,9 @@ A SpeechToText application that uses [OpenAI's whisper](https://github.com/opena
   - [KillFrenzyAvatarText (KAT)](https://github.com/killfrenzy96/KillFrenzyAvatarText) that needs to be integrated to an avatar. 
     - You can use [Frosty704's Billboard](https://github.com/Frosty704/Billboard) to add a speech bubble to your avatar.
     - Support for up to 80 emotes!
+    - Automatic Detection of KAT on an avatar. It will use KAT if available, otherwise fall back to VRChat Textbox.
   - OBS over Browser Source!
-  - Automatic Detection of KAT on an avatar. It will use KAT if available, otherwise fall back to VRChat Textbox.
+  - Websockets
 - ***SteamVR Overlay*** for seeing your transcription without having to look at your own textbox in-game.
 - ***Fast and Efficient***. VRCTextboxSTT uses [ctranslate2](https://github.com/OpenNMT/CTranslate2) as the runtime for transcription and translation, which makes it incredibly efficient and fast.
 - ***Uses Steam Input***, press to transcribe, hold to clear/cancel (A/X by default). Also works on desktop with the "F1" Key by default.
