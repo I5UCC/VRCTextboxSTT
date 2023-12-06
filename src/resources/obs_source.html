@@ -19,10 +19,13 @@
         width: 100%;
         text-align: [ALIGN];
     }
+    #transcript:empty {
+        display: none;
+    } 
 </style>
 
 <body>
-    <div id="transcript"></div>
+    <div><span id="transcript"></span></div>
     <script>
         let last_text = "";
         let current_text = "";
