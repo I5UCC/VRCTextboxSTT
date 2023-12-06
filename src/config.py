@@ -210,7 +210,7 @@ class listener_config(object):
     pause_threshold: float = 3.0
     timeout_time: float = 5.0
     hold_time: float = 1.5
-    phrase_time_limit: float = 1.0
+    phrase_time_limit: float = 0.5
 
 
 @dataclass_json
