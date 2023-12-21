@@ -18,7 +18,7 @@ requests
 websockets
 zeroconf==0.123.0
 safetensors==0.4.0
-transformers==4.35.2
+transformers==4.36.2
 ctranslate2==3.23.0
 torch==2.1.0
 --extra-index-url https://download.pytorch.org/whl/cu118
