@@ -61,8 +61,20 @@ class TranscribeHandler(object):
         _text = ""
         try:
             segments, _ = self.model.transcribe(audio, beam_size=5, temperature=0.0, log_prob_threshold=-0.8, no_speech_threshold=0.6, language=self.language, word_timestamps=False, without_timestamps=True, task=self.task, vad_filter=self.config_vad.enabled, vad_parameters=self.config_vad.parameters.__dict__)
+            # With high no_speech_prob and modest avg_logprob, seems to be likely hallucinations
+            # Code adapted from the TaSTT project
             for s in segments:
-                if s.avg_logprob < -0.8 or s.no_speech_prob > 0.6:
+                if s.no_speech_prob > 0.6 and s.avg_logprob < -0.5:
+                    log.warn(f"Skipping possible hallucination: {s.text}\n" +
+                                f"with no_speech_prob: {s.no_speech_prob}\n" +
+                                f"and avg_logprob: {s.avg_logprob}\n" +
+                                "case 1")
+                    continue
+                if s.no_speech_prob > 0.15 and s.avg_logprob < -0.7:
+                    log.warn(f"Skipping possible hallucination: {s.text}\n" +
+                                f"with no_speech_prob: {s.no_speech_prob}\n" +
+                                f"and avg_logprob: {s.avg_logprob}\n" +
+                                "case 2")
                     continue
                 _text += s.text
         except Exception:
@@ -81,9 +93,6 @@ class TranscribeHandler(object):
         :return: The path to the ctranslate2 model.
         """
         try:
-            if "guillaumekln" in model_name:
-                model_name = model_name.split("-")[-1].lower()
-                model_name = WHISPER_MODELS[model_name]
             model_split = model_name.split('/')
             _model_path = f"{self.cache_path}{model_split[0]}-{model_split[1]}-ct2-{quantization}"
             _converter = TransformersConverter(model_name, copy_files=["tokenizer.json"] if download_tokenizer else None)
