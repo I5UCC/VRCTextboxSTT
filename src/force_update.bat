@@ -21,7 +21,6 @@ if /i "%answer%" EQU "n" (
 	.\git\bin\git.exe stash pop
 )
 
-.\python\python.exe -m pip install --upgrade pip
 if exist python/CPU (
 	echo reinstalling CPU dependencies
 	.\python\python.exe -m pip install -U -r .\src\requirements.cpu.txt --no-warn-script-location
