@@ -50,6 +50,8 @@
         "custom_models": [],
         "language": "english",
         "max_transciption_time": 2.0,
+        "max_samples": 1600000,
+        "cutoff_buffer": 1000,
         "device": {
             "type": "cuda",
             "index": 0,

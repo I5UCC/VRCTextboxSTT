@@ -176,6 +176,8 @@ class whisper_config(object):
     custom_models: Optional[list[str]] = field(default_factory=list)
     language: str = "english"
     max_transciption_time: float = 2.0
+    max_samples: int = 1600000
+    cutoff_buffer: int = 1000
     device: ct2_device_config = field(default_factory=lambda: ct2_device_config(type="cuda", index=0, compute_type=None, cpu_threads=4, num_workers=1))
 
 
@@ -207,7 +209,7 @@ class translator_config(object):
 class listener_config(object):
     microphone_index: Optional[int] = None
     dynamic_energy_threshold: bool = False
-    energy_threshold: float = 200
+    energy_threshold: int = 200
     pause_threshold: float = 3.0
     timeout_time: float = 5.0
     hold_time: float = 1.5

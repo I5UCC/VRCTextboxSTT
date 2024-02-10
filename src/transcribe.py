@@ -82,7 +82,7 @@ class TranscribeHandler(object):
             log.error(traceback.format_exc())
             return None
 
-        return _text
+        return _text.strip()
 
     def load_model(self, model_name: str = "openai/whisper-base.en", quantization = "float32", download_tokenizer = True):
         """

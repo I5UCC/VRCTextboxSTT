@@ -747,7 +747,7 @@ class SettingsWindow:
             _realtime = 2
         self.config.mode = _realtime
         self.config.listener.dynamic_energy_threshold = True if self.value_det.get() == "ON" else False
-        self.config.listener.energy_threshold = float(self.entry_energy_threshold.get())
+        self.config.listener.energy_threshold = int(self.entry_energy_threshold.get())
         self.config.listener.pause_threshold = float(self.entry_pause_threshold.get())
         self.config.text_timeout = float(self.entry_text_timeout_time.get())
         self.config.listener.timeout_time = float(self.entry_timeout_time.get())
@@ -1266,8 +1266,8 @@ class DeviceSettingsWindow:
         self.tkui = tk.Tk()
         coordinates = get_coordinates()
         self.tkui.geometry(f"+{coordinates[0]}+{coordinates[1]}")
-        self.tkui.minsize(430, 190)
-        self.tkui.maxsize(430, 190)
+        self.tkui.minsize(430, 290)
+        self.tkui.maxsize(430, 290)
         self.tkui.resizable(False, False)
         self.tkui.configure(bg="#333333")
         self.tkui.title("TextboxSTT - Device Settings")
@@ -1309,6 +1309,20 @@ class DeviceSettingsWindow:
         self.entry_max_transciption_time.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666")
         self.entry_max_transciption_time.grid(row=3, column=1, padx=12, pady=5, sticky='ws')
 
+        self.label_max_sample = tk.Label(self.tkui, text="Max Samples", bg="#333333", fg="white", font=(self.FONT, 12))
+        self.label_max_sample.grid(row=4, column=0, padx=12, pady=5, sticky='ws')
+        self.entry_max_sample = tk.Entry(self.tkui)
+        self.entry_max_sample.insert(0, self.config.whisper.max_samples)
+        self.entry_max_sample.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666")
+        self.entry_max_sample.grid(row=4, column=1, padx=12, pady=5, sticky='ws')
+
+        self.label_max_cutoff_buffer = tk.Label(self.tkui, text="Cutoff Buffer", bg="#333333", fg="white", font=(self.FONT, 12))
+        self.label_max_cutoff_buffer.grid(row=5, column=0, padx=12, pady=5, sticky='ws')
+        self.entry_max_cutoff_buffer = tk.Entry(self.tkui)
+        self.entry_max_cutoff_buffer.insert(0, self.config.whisper.cutoff_buffer)
+        self.entry_max_cutoff_buffer.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666")
+        self.entry_max_cutoff_buffer.grid(row=5, column=1, padx=12, pady=5, sticky='ws')
+
         self.btn_save = tk.Button(self.tkui, text="Save", command=self.save)
         self.btn_save.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=49, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.btn_save.place(relx=0.5, rely=0.88, anchor="center")
@@ -1322,6 +1336,8 @@ class DeviceSettingsWindow:
         self.config.whisper.device.cpu_threads = num_threads if num_threads <= max_cpu_threads else max_cpu_threads
         self.config.whisper.device.num_workers = int(self.entry_num_workers.get())
         self.config.whisper.max_transciption_time = float(self.entry_max_transciption_time.get())
+        self.config.whisper.max_samples = int(self.entry_max_sample.get())
+        self.config.whisper.cutoff_buffer = int(self.entry_max_cutoff_buffer.get())
 
         json.dump(self.config.to_dict(), open(self.config_path, "w"), indent=4)
         self.on_closing()

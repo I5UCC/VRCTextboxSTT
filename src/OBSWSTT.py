@@ -42,6 +42,8 @@ def main():
     phrase_timeout = config.listener.timeout_time
     clear_timeout = config.text_timeout
     max_transciption_time = config.whisper.max_transciption_time
+    max_samples = config.whisper.max_samples
+    cutoff_buffer = config.whisper.cutoff_buffer
     toggle_hotkey = config.hotkey
     energy_threshold = config.listener.energy_threshold
 
@@ -81,6 +83,8 @@ def main():
     print("phrase_timeout:\t\t{}".format(phrase_timeout))
     print("clear_timeout:\t\t{}".format(clear_timeout))
     print("max_transciption_time:\t{}".format(max_transciption_time))
+    print("max_samples:\t\t{}".format(max_samples))
+    print("cutoff_buffer:\t\t{}".format(cutoff_buffer))
     print("energy_threshold:\t{}".format(energy_threshold))
     print("vad:\t\t\t{}".format(config.vad.enabled))
     print()
@@ -123,13 +127,14 @@ def main():
                         text = replace_words(text, config.wordreplacement.base_replacements)
                     browsersource.setText(text)
                     print("- " + text if text else "No text found")
-                    sentence_end = text[-1] in [".", "!", "?"]
-                    first_run = False
 
-                    if time_taken > max_transciption_time and sentence_end and not first_run:
+                    first_run = False
+                    sentence_end = text and text[-1] in {".", "!", "?"}
+                    if sentence_end and not first_run and (len(last_sample) > max_samples or time_taken > max_transciption_time):
+                        print("------------------------ CUTOFF ----------------------")
                         last_text = text + " "
                         append = True
-                        last_sample = bytes()
+                        last_sample = last_sample[-cutoff_buffer:]
                 except Exception as e:
                     print(e)
                 phrase_time = time()
