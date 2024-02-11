@@ -341,6 +341,7 @@ def process_forever():
     _last_sample = bytes()
     last_text = ""
     append = False
+    first_run = True
 
     main_window.set_button_enabled(True)
     set_typing_indicator(True)
@@ -376,7 +377,7 @@ def process_forever():
             _np_audio = listen.raw_to_np(_last_sample)
             _text = transcriber.transcribe(_np_audio)
             log.info("Transcription: " + _text)
-            first_run = False
+            
             if append:
                 _text = last_text + _text
             if translator:
@@ -395,6 +396,8 @@ def process_forever():
                 last_text = _text + " "
                 append = True
                 _last_sample = _last_sample[-config.whisper.cutoff_buffer:]
+            
+            first_run = False
         elif _last_sample != bytes() and time() - _time_last > config.listener.pause_threshold:
             set_typing_indicator(False)
             _last_sample = bytes()
@@ -429,6 +432,7 @@ def process_loop():
     _last_sample = bytes()
     last_text = ""
     append = False
+    first_run = True
 
     main_window.set_button_enabled(False)
     set_typing_indicator(True)
@@ -476,7 +480,6 @@ def process_loop():
 
             _time_last = time()
             populate_chatbox(_text, True)
-            first_run = False
 
             sentence_end = _text and _text[-1] in {".", "!", "?"}
             if sentence_end and not first_run and (len(_last_sample) > config.whisper.max_samples or time_taken > config.whisper.max_transciption_time):
@@ -484,6 +487,8 @@ def process_loop():
                 last_text = _text + " "
                 append = True
                 _last_sample = _last_sample[-config.whisper.cutoff_buffer:]
+            
+            first_run = False
         elif _last_sample != bytes() and time() - _time_last > config.listener.pause_threshold:
             main_window.set_status_label("FINISHED - WAITING FOR INPUT", "blue")
             play_sound(config.audio_feedback.sound_finished)
