@@ -71,6 +71,8 @@
     "translator": {
         "model": "small",
         "language": null,
+        "show_original": false,
+        "format": "{1} ({2})",
         "device": {
             "type": "cpu",
             "index": 0,

@@ -41,8 +41,12 @@ class TranslationHandler(object):
         target_prefix = [self.tokenizer.lang_code_to_token[self.to_language]]
         results = self.translator.translate_batch([source], target_prefix=[target_prefix])
         target = results[0].hypotheses[0][1:]
+        text_trans = self.tokenizer.decode(self.tokenizer.convert_tokens_to_ids(target))
 
-        return self.tokenizer.decode(self.tokenizer.convert_tokens_to_ids(target))
+        if self.translator_config.show_original:
+            return self.translator_config.format.replace("{1}", text).replace("{2}", text_trans)
+        else:
+            return text_trans
 
     def download_model(self):
         try:

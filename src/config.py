@@ -207,6 +207,8 @@ class vad_config(object):
 class translator_config(object):
     model: str = "small"
     language: Optional[str] = None
+    show_original: bool = False
+    format: str = "{1} ({2})"
     device: ct2_device_config = field(default_factory=ct2_device_config)
 
 
