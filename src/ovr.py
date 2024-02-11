@@ -1,6 +1,7 @@
 import os
 import openvr
 from helper import get_absolute_path
+from config import LANGUAGE_TO_FONT
 from PIL import Image, ImageDraw, ImageFont
 import ctypes
 import textwrap
@@ -20,8 +21,9 @@ class NotInitializedException(Exception):
 
 
 class OVRHandler(object):
-    def __init__(self, config_overlay: overlay_config, script_path, debug = False) -> None:
+    def __init__(self, config_overlay: overlay_config, script_path, language, debug = False) -> None:
         self.debug = debug
+        self.language = language
         self.overlay_conf: overlay_config = config_overlay
         self._script_path = script_path
         self.initialized = False
@@ -47,7 +49,10 @@ class OVRHandler(object):
                 openvr.VROverlay().setOverlayWidthInMeters(self.overlay_handle, 1)
                 openvr.VROverlay().setOverlayColor(self.overlay_handle, 1.0, 1.0, 1.0)
                 openvr.VROverlay().setOverlayAlpha(self.overlay_handle, self.overlay_conf.opacity)
-                self.overlay_font = ImageFont.truetype(get_absolute_path("resources/CascadiaCode.ttf", self._script_path), 46)
+                
+                font = LANGUAGE_TO_FONT.get(self.language, "Overlay.ttf")
+                font = get_absolute_path(f"resources/fonts/{font}", self._script_path)
+                self.overlay_font = ImageFont.truetype(font, 46)
                 self.set_overlay_position_to_device()
         except openvr.openvr.error_code.InitError_Init_HmdNotFound:
             self.initialized = False

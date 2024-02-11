@@ -40,6 +40,7 @@ try:
     import numpy as np
     import logging
     import pyperclip as clipboard
+    import glob
     log = logging.getLogger(__name__)
 except FileNotFoundError as e:
     import ctypes
@@ -115,7 +116,7 @@ def init():
 
     # Initialize OpenVR
     if not ovr:
-        ovr = OVRHandler(config.overlay, __file__, DEBUG)
+        ovr = OVRHandler(config.overlay, __file__, config.whisper.language, DEBUG)
     if OVRHandler.is_running():
         ovr.init()
     if ovr.initialized:
@@ -881,12 +882,22 @@ def reload(save=False):
     config_ui_open = False
 
 
-if __name__ == "__main__":
-    if os.name == 'nt':
-        loadfont(get_absolute_path("resources/CascadiaCode.ttf", __file__))
+def load_fonts():
+    """Loads all fonts in the resources/fonts folder on Windows."""
 
+    font_path = get_absolute_path("resources/fonts/", __file__)
+    if os.name == 'nt':
+        fonts = glob.glob(font_path + "*.ttf")
+        for font in fonts:
+            log.info(f"Loading font: {font}")
+            loadfont(font)
+
+
+if __name__ == "__main__":
     # Load config
     config = config_struct.load(CONFIG_PATH)
+
+    load_fonts()
 
     if not is_available():
         config.whisper.device.type = "cpu"

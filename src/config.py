@@ -107,6 +107,12 @@ LANGUAGE_TO_KEY = {
 
 KEY_TO_LANGUAGE = dict((v, k) for k, v in LANGUAGE_TO_KEY.items())
 
+LANGUAGE_TO_FONT = {
+    'japanese': "NotoSansJP.ttf",
+    'korean': "NotoSansKR.ttf",
+    'chinese': "NotoSansSC.ttf"
+}
+
 WHISPER_MODELS = {
     'tiny': 'openai/whisper-tiny',
     'tiny.en': 'openai/whisper-tiny.en',
