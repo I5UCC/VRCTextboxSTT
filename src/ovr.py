@@ -126,10 +126,12 @@ class OVRHandler(object):
 
             _width = 1920
             _height = 200
+            _width_half = 960
+            _height_half = 100
 
             _img = Image.new("RGBA", (_width, _height))
             _draw = ImageDraw.Draw(_img)
-            _draw.text((_width/2, _height/2), text, font=self.overlay_font, fill=self.overlay_conf.font_color, anchor="mm", stroke_width=2, stroke_fill=self.overlay_conf.border_color, align="center")
+            _draw.text((_width_half, _height_half), text, font=self.overlay_font, fill=self.overlay_conf.font_color, anchor="mm", stroke_width=2, stroke_fill=self.overlay_conf.border_color, align="center")
             _img_data = _img.tobytes()
 
             _buffer = (ctypes.c_char * len(_img_data)).from_buffer_copy(_img_data)

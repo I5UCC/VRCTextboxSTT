@@ -60,7 +60,7 @@ class TranscribeHandler(object):
 
         _text = ""
         try:
-            segments, _ = self.model.transcribe(audio, beam_size=5, temperature=0.0, log_prob_threshold=-0.8, no_speech_threshold=0.6, language=self.language, word_timestamps=False, without_timestamps=True, task=self.task, vad_filter=self.config_vad.enabled, vad_parameters=self.config_vad.parameters.__dict__)
+            segments, _ = self.model.transcribe(audio, temperature=0.0, language=self.language, word_timestamps=False, without_timestamps=True, task=self.task, vad_filter=self.config_vad.enabled, vad_parameters=self.config_vad.parameters.__dict__)
             # With high no_speech_prob and modest avg_logprob, seems to be likely hallucinations
             # Code adapted from the TaSTT project
             for s in segments:

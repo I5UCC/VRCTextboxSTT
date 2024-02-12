@@ -41,6 +41,7 @@ try:
     import logging
     import pyperclip as clipboard
     import glob
+    import re
     log = logging.getLogger(__name__)
 except FileNotFoundError as e:
     import ctypes
@@ -77,6 +78,8 @@ config_ui_open: bool = False
 enter_pressed: bool = False
 initialized: bool = False
 curr_text: str = ""
+replacement_dict: dict = {}
+base_replacement_dict: dict = {}
 
 
 def init():
@@ -94,6 +97,11 @@ def init():
     global listen
     global autocorrect
     global updater
+    global replacement_dict
+    global base_replacement_dict
+
+    replacement_dict = {re.compile(key, re.IGNORECASE): value for key, value in config.wordreplacement.list.items()}
+    base_replacement_dict = {re.compile(key, re.IGNORECASE): value for key, value in config.wordreplacement.base_replacements.items()}
 
     if config.always_clipboard:
         main_window.btn_copy.place_forget()
@@ -283,10 +291,12 @@ def populate_chatbox(text, cutoff: bool = False, is_textfield: bool = False):
     global browsersource
     global websocket
     global curr_text
+    global replacement_dict
+    global base_replacement_dict
 
     if config.wordreplacement.enabled:
-        text = replace_words(text, config.wordreplacement.list)
-        text = replace_words(text, config.wordreplacement.base_replacements)
+        text = replace_words(text, replacement_dict)
+        text = replace_words(text, base_replacement_dict)
 
     if not text:
         return

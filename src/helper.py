@@ -45,18 +45,12 @@ def get_absolute_path(relative_path, script_path=__file__) -> str:
 
 
 def get_best_compute_type(device, device_index=0) -> str:
-    types = list(get_supported_compute_types(device, device_index))
+    supported_types = set(get_supported_compute_types(device, device_index))
+    preferred_types = ["int8_float16", "int8", "float16", "float32"]
 
-    if "int8_float16" in types:
-        return "int8_float16"
-    
-    if "int8" in types:
-        return "int8"
-
-    if "float16" in types:
-        return "float16"
-
-    return "float32"
+    for compute_type in preferred_types:
+        if compute_type in supported_types:
+            return compute_type
 
 
 def replace_emotes(text, emote_list, emote_keys):
@@ -81,18 +75,13 @@ def replace_emotes(text, emote_list, emote_keys):
 def replace_words(text: str, replacement_dict: dict):
     """Replaces words in the text with the configured replacements."""
 
-    if not text:
-        return text
-
-    text = text.strip()
-
-    if replacement_dict == dict():
+    if not text or not replacement_dict:
         return text
 
     for key, value in replacement_dict.items():
-        tmp = re.compile(key, re.IGNORECASE)
-        text = tmp.sub(value, text)
+        text = key.sub(value, text)
 
     text = re.sub(' +', ' ', text)
+    text = text.strip()
 
     return text
