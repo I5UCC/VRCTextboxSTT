@@ -1277,7 +1277,7 @@ class DeviceSettingsWindow:
         self.value_device = tk.StringVar(self.tkui)
 
         self.label_comptype = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Compute Type', font=(self.FONT, 12))
-        self.label_comptype.grid(row=0, column=0, padx=12, pady=5, sticky='es')
+        self.label_comptype.grid(row=0, column=0, padx=12, pady=5, sticky='ws')
         self.options_comptype = list(get_supported_compute_types(device, device_index))
         self.value_comptype = tk.StringVar(self.tkui)
         if self.config.whisper.device.compute_type is None:
@@ -1516,7 +1516,7 @@ class TranslateSettingsWindow:
         self.entry_format.grid(row=1, column=1, padx=12, pady=5, sticky='ws')
 
         self.label_device = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Device', font=(self.FONT, 12))
-        self.label_device.grid(row=2, column=0, padx=12, pady=5, sticky='es')
+        self.label_device.grid(row=2, column=0, padx=12, pady=5, sticky='ws')
         self.opt_device = tk.OptionMenu(self.tkui, self.value_device, *self.devices_list)
         self.opt_device.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=18, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_device.grid(row=2, column=1, padx=12, pady=5, sticky='ws')
@@ -1525,13 +1525,13 @@ class TranslateSettingsWindow:
         self.value_model = tk.StringVar(self.tkui)
         self.value_model.set(self.config.translator.model)
         self.label_model = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Model', font=(self.FONT, 12))
-        self.label_model.grid(row=3, column=0, padx=12, pady=5, sticky='es')
+        self.label_model.grid(row=3, column=0, padx=12, pady=5, sticky='ws')
         self.opt_model = tk.OptionMenu(self.tkui, self.value_model, *self.model_list)
         self.opt_model.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=18, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_model.grid(row=3, column=1, padx=12, pady=5, sticky='ws')
 
         self.label_comptype = tk.Label(master=self.tkui, bg="#333333", fg="white", text='Compute Type', font=(self.FONT, 12))
-        self.label_comptype.grid(row=4, column=0, padx=12, pady=5, sticky='es')
+        self.label_comptype.grid(row=4, column=0, padx=12, pady=5, sticky='ws')
         self.options_comptype = list(get_supported_compute_types(self.config.translator.device.type, self.config.translator.device.index))
         self.value_comptype = tk.StringVar(self.tkui)
         if self.config.translator.device.compute_type is None:
