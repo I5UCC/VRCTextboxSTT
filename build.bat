@@ -15,6 +15,6 @@ git fetch --all --tags
 cd ..
 robocopy VRCTextboxSTT TextboxSTT /MOVE /E /NFL /NDL /NJH /NJS /nc /ns /np
 7z x ../git_python.7z -oTextboxSTT
+TextboxSTT\python\python.exe -m pip install --upgrade pip
 set /p version=< ../src/VERSION
-cd build
 7z a TextboxSTT.zip TextboxSTT
