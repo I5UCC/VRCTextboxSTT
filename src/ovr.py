@@ -27,6 +27,7 @@ class OVRHandler(object):
         self.overlay_conf: overlay_config = config_overlay
         self._script_path = script_path
         self.initialized = False
+        self.overlay_font = None
         
     def init(self):
         if self.initialized:
@@ -50,9 +51,7 @@ class OVRHandler(object):
                 openvr.VROverlay().setOverlayColor(self.overlay_handle, 1.0, 1.0, 1.0)
                 openvr.VROverlay().setOverlayAlpha(self.overlay_handle, self.overlay_conf.opacity)
                 
-                font = LANGUAGE_TO_FONT.get(self.language, "Overlay.ttf")
-                font = get_absolute_path(f"resources/fonts/{font}", self._script_path)
-                self.overlay_font = ImageFont.truetype(font, 46)
+                self.set_overlay_font(self.language)
                 self.set_overlay_position_to_device()
         except openvr.openvr.error_code.InitError_Init_HmdNotFound:
             self.initialized = False
@@ -64,6 +63,11 @@ class OVRHandler(object):
             self.initialized = False
             log.error("Error initializing OVR: ")
             log.error(traceback.format_exc())
+
+    def set_overlay_font(self, language: str) -> bool:
+        font = LANGUAGE_TO_FONT.get(language, "Overlay.ttf")
+        font = get_absolute_path(f"resources/fonts/{font}", self._script_path)
+        self.overlay_font = ImageFont.truetype(font, 46)
 
     def _check_init(self) -> bool:
         """Checks if OpenVR is initialized."""
