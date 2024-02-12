@@ -115,8 +115,11 @@ def init():
         listen.set_config(config.listener)
 
     # Initialize OpenVR
+    font_language = config.whisper.language if not config.translator.language else config.translator.language
     if not ovr:
-        ovr = OVRHandler(config.overlay, __file__, config.whisper.language, DEBUG)
+        ovr = OVRHandler(config.overlay, __file__, font_language, DEBUG)
+    else:
+        ovr.set_overlay_font(font_language)
     if OVRHandler.is_running():
         ovr.init()
     if ovr.initialized:
