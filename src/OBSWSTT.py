@@ -11,6 +11,7 @@ from helper import get_absolute_path, replace_words
 import keyboard
 from config import config_struct
 import numpy as np
+import re
 
 def main():
     global enabled, listen
@@ -22,6 +23,9 @@ def main():
         CACHE_PATH = get_absolute_path('../cache/', __file__)
         CONFIG_PATH = get_absolute_path('../config.json', __file__)
     config: config_struct = config_struct.load(CONFIG_PATH)
+
+    replacement_dict = {re.compile(key, re.IGNORECASE): value for key, value in config.wordreplacement.list.items()}
+    base_replacement_dict = {re.compile(key, re.IGNORECASE): value for key, value in config.wordreplacement.base_replacements.items()}
 
     if config.listener.pause_threshold < 3.0:
         config.listener.pause_threshold = 3.0
@@ -123,8 +127,8 @@ def main():
                     print(f"Time taken:\t{time_taken:.5f}s (max: {max_transciption_time}s)")
                     print(f"bytes:\t\t{len(last_sample)}\ntext_length:\t{len(text)}")
                     if config.wordreplacement.enabled:
-                        text = replace_words(text, config.wordreplacement.list)
-                        text = replace_words(text, config.wordreplacement.base_replacements)
+                        text = replace_words(text, replacement_dict)
+                        text = replace_words(text, base_replacement_dict)
                     browsersource.setText(text)
                     print("- " + text if text else "No text found")
 
