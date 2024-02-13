@@ -1,5 +1,6 @@
 import asyncio
 import websockets
+import json
 from threading import Thread
 
 class WebsocketHandler:
@@ -7,6 +8,7 @@ class WebsocketHandler:
         self.port = port
         self.transcript = ""
         self.last_transcript = ""
+        self.finished = False
         self.running = False
         self.clients = set()
         self.server = websockets.serve(self.update_clients, "127.0.0.1", self.port)
@@ -27,16 +29,26 @@ class WebsocketHandler:
         print("New Websocket client connected.")
         self.clients.add(websocket)
         while True:
-            if self.transcript != self.last_transcript:
+            if self.transcript != self.last_transcript or (self.transcript == self.last_transcript and self.finished):
                 for client in self.clients:
                     try:
-                        await client.send(self.transcript)
+                        if not self.transcript:
+                            self.finished = False
+                        
+                        await client.send(json.dumps({"transcript": self.transcript, "finished": self.finished}))
+                        
+                        if self.finished:
+                            await asyncio.sleep(1)
+                            self.finished = False
                     except Exception:
                         print("Client disconnected.")
                         self.clients.remove(client)
                         break
                 self.last_transcript = self.transcript
             await asyncio.sleep(0.5)
+
+    def set_finished(self, finished):
+        self.finished = finished
 
     def set_text(self, transcript):
         self.transcript = transcript

@@ -245,8 +245,13 @@ def set_typing_indicator(state: bool, textfield: bool = False):
         osc.set_textbox_typing_indicator(state)
     if config.osc.use_kat and osc.isactive and not textfield:
         osc.set_kat_typing_indicator(state)
+
+
+def set_finished(state: bool):
     if config.obs.enabled:
         browsersource.setFinished(state)
+    if config.websocket.enabled:
+        websocket.set_finished(state)
 
 
 def clear_chatbox():
@@ -358,6 +363,7 @@ def process_forever():
 
     main_window.set_button_enabled(True)
     set_typing_indicator(True)
+    set_finished(finished)
     main_window.set_status_label("LISTENING", "#FF00FF")
 
     listen.start_listen_background()
@@ -380,6 +386,7 @@ def process_forever():
                 main_window.set_status_label("CLEARED", "#00008b")
                 play_sound(config.audio_feedback.sound_clear)
                 clear_chatbox()
+                finished = False
                 break
         elif not listen.data_queue.empty():
             while not listen.data_queue.empty():
@@ -413,15 +420,17 @@ def process_forever():
             first_run = False
         elif _last_sample != bytes() and time() - _time_last > config.listener.pause_threshold:
             set_typing_indicator(False)
+            finished = True
+            set_finished(finished)
             _last_sample = bytes()
             append = False
 
         sleep(0.05)
 
-    finished = True
     timeout_time = time()
     overlay_timeout_time = time()
     set_typing_indicator(False)
+    set_finished(False)
     main_window.set_button_enabled(True)
     listen.stop_listen_background()
 
@@ -449,6 +458,7 @@ def process_loop():
 
     main_window.set_button_enabled(False)
     set_typing_indicator(True)
+    set_finished(finished)
     main_window.set_status_label("LISTENING", "#FF00FF")
     play_sound(config.audio_feedback.sound_listen)
 
@@ -468,10 +478,12 @@ def process_loop():
                 main_window.set_status_label("CLEARED - WAITING FOR INPUT", "#00008b")
                 play_sound(config.audio_feedback.sound_clear)
                 clear_chatbox()
+                finished = False
                 break
             elif _last_sample == bytes():
                 main_window.set_status_label("CANCELED - WAITING FOR INPUT", "#00008b")
                 play_sound(config.audio_feedback.sound_timeout)
+                finished = False
                 break
         elif not listen.data_queue.empty():
             while not listen.data_queue.empty():
@@ -504,18 +516,20 @@ def process_loop():
             first_run = False
         elif _last_sample != bytes() and time() - _time_last > config.listener.pause_threshold:
             main_window.set_status_label("FINISHED - WAITING FOR INPUT", "blue")
+            finished = True
             play_sound(config.audio_feedback.sound_finished)
             break
         elif _last_sample == bytes() and time() - _time_last > config.listener.timeout_time:
             main_window.set_status_label("TIMEOUT - WAITING FOR INPUT", "#00008b")
             play_sound(config.audio_feedback.sound_timeout)
+            finished = False
             break
         sleep(0.05)
 
-    finished = True
     timeout_time = time()
     overlay_timeout_time = time()
     set_typing_indicator(False)
+    set_finished(finished)
     main_window.set_button_enabled(True)
     listen.stop_listen_background()
 
@@ -534,6 +548,7 @@ def process_once():
     finished = False
     main_window.set_button_enabled(False)
     set_typing_indicator(True)
+    set_finished(finished)
     main_window.set_status_label("LISTENING", "#FF00FF")
     play_sound(config.audio_feedback.sound_listen)
     raw_audio = listen.listen_once()
@@ -577,6 +592,7 @@ def process_once():
     timeout_time = time()
     overlay_timeout_time = time()
     set_typing_indicator(False)
+    set_finished(finished)
     main_window.set_button_enabled(True)
 
 
@@ -733,6 +749,8 @@ def textfield_keyrelease(text, last_char):
             clear_chatbox()
         else:
             populate_chatbox(text, False, True)
+    else:
+        set_finished(True)
 
     enter_pressed = False
     finished = True
