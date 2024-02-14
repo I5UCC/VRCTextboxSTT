@@ -139,6 +139,7 @@ def init():
     if not osc:
         osc = OscHandler(config, copy.deepcopy(config.osc))
     elif osc.osc_ip != config.osc.ip or osc.osc_port != config.osc.client_port or osc.default_osc_server_port != config.osc.server_port:
+        log.info("Changed OSC settings, restarting...")
         restart()
     else:
         osc.config_osc = copy.deepcopy(config.osc)
@@ -152,6 +153,7 @@ def init():
         else:
             main_window.set_status_label("COULDNT INITIALIZE FLASK SERVER, CONTINUING WITHOUT OBS SOURCE", "orange")
     elif not config.obs.enabled and browsersource.running:
+        log.info("Changed OBS settings, restarting...")
         restart()
 
     if not websocket:
@@ -160,6 +162,7 @@ def init():
         websocket.start()
         main_window.set_status_label("INITIALIZED WEBSOCKET SERVER", "green")
     elif not config.websocket.enabled and websocket.running or config.websocket.is_client != websocket.is_client:
+        log.info("Changed WebSocket settings, restarting...")
         restart()
 
     # Temporarily output to text label for download progress.
@@ -170,6 +173,7 @@ def init():
         log.info("Device: " + transcriber.device_name)
         transcriber.transcribe(np.zeros(100000, dtype=np.float32))
     elif config.whisper != transcriber.config_whisper:
+        log.info("Changed Whisper settings, restarting...")
         restart()
     else:
         transcriber.config_whisper = copy.deepcopy(config.whisper)
@@ -181,8 +185,10 @@ def init():
         if not translator:
             translator = TranslationHandler(CACHE_PATH, config.whisper.language, copy.deepcopy(config.translator))
         elif config.translator != translator.translator_config:
+            log.info("Changed Translator settings, restarting...")
             restart()
     elif translator:
+        log.info("Changed Translator settings, restarting...")
         restart()
     OUT_FILE_LOGGER.remove_ui_output()
     
