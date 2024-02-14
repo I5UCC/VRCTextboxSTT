@@ -1229,26 +1229,55 @@ class WebsocketSettingsWindow:
         self.tkui = tk.Tk()
         coordinates = get_coordinates()
         self.tkui.geometry(f"+{coordinates[0]}+{coordinates[1]}")
-        self.tkui.minsize(280, 70)
-        self.tkui.maxsize(280, 70)
+        self.tkui.minsize(300, 150)
+        self.tkui.maxsize(300, 150)
         self.tkui.resizable(False, False)
         self.tkui.configure(bg="#333333")
         self.tkui.title("TextboxSTT - Websocket Settings")
         self.tkui.iconbitmap(icon_path)
+        self.yn_options = ["ON", "OFF"]
+
+        self.label_align = tk.Label(self.tkui, text="Act as", bg="#333333", fg="white", font=(self.FONT, 12))
+        self.label_align.grid(row=0, column=1, padx=12, pady=5, sticky='ws')
+        self.value_align = tk.StringVar(self.tkui)
+        self.value_align.set("Client" if self.config.websocket.is_client else "Server")
+        self.value_align.trace("w", self.changed)
+        self.opt_align = tk.OptionMenu(self.tkui, self.value_align, *["Server", "Client"])
+        self.opt_align.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=18, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.opt_align.grid(row=0, column=2, padx=12, pady=5, sticky='ws')
 
         self.label_port = tk.Label(self.tkui, text="Port", bg="#333333", fg="white", font=(self.FONT, 12))
-        self.label_port.grid(row=0, column=1, padx=12, pady=5, sticky='ws')
+        self.label_port.grid(row=1, column=1, padx=12, pady=5, sticky='ws')
         self.entry_port = tk.Entry(self.tkui)
         self.entry_port.insert(0, self.config.websocket.port)
-        self.entry_port.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666")
-        self.entry_port.grid(row=0, column=2, padx=12, pady=5, sticky='ws')
+        self.entry_port.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666", disabledbackground="#333333")
+        self.entry_port.grid(row=1, column=2, padx=12, pady=5, sticky='ws')
+
+        self.label_uri = tk.Label(self.tkui, text="URI", bg="#333333", fg="white", font=(self.FONT, 12))
+        self.label_uri.grid(row=2, column=1, padx=12, pady=5, sticky='ws')
+        self.entry_uri = tk.Entry(self.tkui)
+        self.entry_uri.insert(0, self.config.websocket.uri)
+        self.entry_uri.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666", disabledbackground="#333333")
+        self.entry_uri.grid(row=2, column=2, padx=12, pady=5, sticky='ws')
 
         self.btn_save = tk.Button(self.tkui, text="Save", command=self.save)
         self.btn_save.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=33, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
-        self.btn_save.place(relx=0.5, rely=0.74, anchor="center")
+        self.btn_save.place(relx=0.5, rely=0.88, anchor="center")
+
+        self.changed()
+
+    def changed(self, *args):
+        if self.value_align.get() == "Server":
+            self.entry_uri.configure(state="disabled")
+            self.entry_port.configure(state="normal")
+        else:
+            self.entry_uri.configure(state="normal")
+            self.entry_port.configure(state="disabled")
     
     def save(self):
         self.config.websocket.port = int(self.entry_port.get())
+        self.config.websocket.uri = self.entry_uri.get()
+        self.config.websocket.is_client = True if self.value_align.get() == "Client" else False
 
         json.dump(self.config.to_dict(), open(self.config_path, "w"), indent=4)
         self.on_closing()

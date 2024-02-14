@@ -265,7 +265,9 @@ class obs_config(object):
 @dataclass
 class websocket_config(object):
     enabled: bool = False
+    is_client: bool = False
     port: int = 8765
+    uri: str = "ws://localhost:8765"
 
 
 @dataclass_json

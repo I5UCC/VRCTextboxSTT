@@ -155,11 +155,11 @@ def init():
         restart()
 
     if not websocket:
-        websocket = WebsocketHandler(config.websocket.port)
+        websocket = WebsocketHandler(config.websocket.port, config.websocket.is_client, config.websocket.uri)
     if config.websocket.enabled and not websocket.running:
         websocket.start()
         main_window.set_status_label("INITIALIZED WEBSOCKET SERVER", "green")
-    elif not config.websocket.enabled and websocket.running:
+    elif not config.websocket.enabled and websocket.running or config.websocket.is_client != websocket.is_client:
         restart()
 
     # Temporarily output to text label for download progress.
@@ -732,7 +732,7 @@ def textfield_keyrelease(text, last_char):
     global overlay_timeout_time
     global autocorrect
 
-    if autocorrect and last_char in [" ", ",", ".", "!", "?", ";", ":"]:
+    if autocorrect and last_char in {" ", ",", ".", "!", "?", ";", ":"}:
         corrected_text = autocorrect(text)
         if corrected_text != text:
             main_window.textfield.delete(0, len(text))

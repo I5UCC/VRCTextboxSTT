@@ -119,7 +119,9 @@
     },
     "websocket": {
         "enabled": false,
-        "port": 8765
+        "is_client": false,
+        "port": 8765,
+        "uri": "ws://localhost:8765"
     },
     "autocorrect": {
         "language": null
