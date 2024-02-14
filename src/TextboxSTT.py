@@ -161,7 +161,7 @@ def init():
     if config.websocket.enabled and not websocket.running:
         websocket.start()
         main_window.set_status_label("INITIALIZED WEBSOCKET SERVER", "green")
-    elif not config.websocket.enabled and websocket.running or config.websocket.is_client != websocket.is_client:
+    elif not config.websocket.enabled and websocket.running or config.websocket.is_client != websocket.is_client or config.websocket.uri != websocket.uri or config.websocket.port != websocket.port:
         log.info("Changed WebSocket settings, restarting...")
         restart()
     if config.websocket.update_rate != websocket.update_rate:
