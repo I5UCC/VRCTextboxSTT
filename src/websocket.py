@@ -44,16 +44,16 @@ class WebsocketHandler:
             await asyncio.sleep(0.6)
             self.finished = False
         self.last_transcript = self.transcript
-        await asyncio.sleep(self.update_rate)
 
     async def update_clients(self, websocket, path):
         log.info("New Websocket client connected.")
         self.clients.add(websocket)
         while True:
-            if self.transcript != self.last_transcript or (self.transcript == self.last_transcript and self.finished):
+            if self.transcript != self.last_transcript or self.finished:
                 for client in self.clients:
                     try:
                         await self.send_transcript(client)
+                        await asyncio.sleep(self.update_rate)
                     except Exception:
                         log.info("Client disconnected.")
                         self.clients.remove(client)
@@ -64,10 +64,9 @@ class WebsocketHandler:
             log.info("Connected to WebSocket server.")
             while self.running:
                 try:
-                    if self.transcript != self.last_transcript or (self.transcript == self.last_transcript and self.finished):
+                    if self.transcript != self.last_transcript or self.finished:
                         await self.send_transcript(websocket)
-                    else:
-                        await asyncio.sleep(self.update_rate)
+                    await asyncio.sleep(self.update_rate)
                 except websockets.ConnectionClosed:
                     log.info("WebSocket connection closed.")
                     self.running = False
