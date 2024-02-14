@@ -34,6 +34,18 @@ class WebsocketHandler:
         else:
             self.stop_server()
 
+    async def send_transcript(self, websocket):
+        if not self.transcript:
+            self.finished = False
+
+        await websocket.send(json.dumps({"transcript": self.transcript, "finished": self.finished}))
+
+        if self.finished:
+            await asyncio.sleep(0.6)
+            self.finished = False
+        self.last_transcript = self.transcript
+        await asyncio.sleep(self.update_rate)
+
     async def update_clients(self, websocket, path):
         log.info("New Websocket client connected.")
         self.clients.add(websocket)
@@ -41,16 +53,7 @@ class WebsocketHandler:
             if self.transcript != self.last_transcript or (self.transcript == self.last_transcript and self.finished):
                 for client in self.clients:
                     try:
-                        if not self.transcript:
-                            self.finished = False
-                        
-                        await client.send(json.dumps({"transcript": self.transcript, "finished": self.finished}))
-                        
-                        if self.finished:
-                            await asyncio.sleep(0.6)
-                            self.finished = False
-                        self.last_transcript = self.transcript
-                        await asyncio.sleep(self.update_rate)
+                        self.send_transcript(client)
                     except Exception:
                         log.info("Client disconnected.")
                         self.clients.remove(client)
@@ -59,20 +62,9 @@ class WebsocketHandler:
     async def connect_to_websocket(self):
         async with websockets.connect(self.uri) as websocket:
             log.info("Connected to WebSocket server.")
-            self.running = True
             while self.running:
                 try:
-                    if self.transcript != self.last_transcript or (self.transcript == self.last_transcript and self.finished):
-                        if not self.transcript:
-                            self.finished = False
-
-                        await websocket.send(json.dumps({"transcript": self.transcript, "finished": self.finished}))
-
-                        if self.finished:
-                            await asyncio.sleep(0.6)
-                            self.finished = False
-                        self.last_transcript = self.transcript
-                    await asyncio.sleep(self.update_rate)
+                    self.send_transcript(websocket)
                 except websockets.ConnectionClosed:
                     log.info("WebSocket connection closed.")
                     self.running = False
