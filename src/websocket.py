@@ -20,20 +20,6 @@ class WebsocketHandler:
         self.uri = uri
         self.loop = asyncio.get_event_loop()
 
-    def start(self):
-        self.running = True
-        if self.is_client:
-            self.start_client()
-        else:
-            self.start_server()
-    
-    def stop(self):
-        self.running = False
-        if self.is_client:
-            self.stop_client()
-        else:
-            self.stop_server()
-
     async def send_transcript(self, websocket):
         if not self.transcript:
             self.finished = False
@@ -48,28 +34,50 @@ class WebsocketHandler:
     async def update_clients(self, websocket, path):
         log.info("New Websocket client connected.")
         self.clients.add(websocket)
-        while True:
+        while self.running:
             if self.transcript != self.last_transcript or self.finished:
                 for client in self.clients:
                     try:
                         await self.send_transcript(client)
                         await asyncio.sleep(self.update_rate)
-                    except Exception:
+                    except websockets.ConnectionClosed:
                         log.info("Client disconnected.")
                         self.clients.remove(client)
                         break
+                if not self.clients:
+                    await asyncio.sleep(2)
 
     async def connect_to_websocket(self):
-        async with websockets.connect(self.uri) as websocket:
-            log.info("Connected to WebSocket server.")
-            while self.running:
-                try:
-                    if self.transcript != self.last_transcript or self.finished:
-                        await self.send_transcript(websocket)
-                    await asyncio.sleep(self.update_rate)
-                except websockets.ConnectionClosed:
-                    log.info("WebSocket connection closed.")
-                    self.running = False
+        while self.running:
+            try:
+                async with websockets.connect(self.uri) as websocket:
+                    log.info("Connected to WebSocket server.")
+                    while self.running:
+                        try:
+                            if self.transcript != self.last_transcript or self.finished:
+                                await self.send_transcript(websocket)
+                            await asyncio.sleep(self.update_rate)
+                        except websockets.ConnectionClosed:
+                            log.error("WebSocket connection closed. Retrying in 5 seconds.")
+                            await asyncio.sleep(5)
+                            break
+            except ConnectionRefusedError:
+                log.error("Websocket Connection refused. Retrying in 5 seconds.")
+                await asyncio.sleep(5)
+
+    def start(self):
+        self.running = True
+        if self.is_client:
+            self.start_client()
+        else:
+            self.start_server()
+    
+    def stop(self):
+        self.running = False
+        if self.is_client:
+            self.stop_client()
+        else:
+            self.stop_server()
 
     def start_server(self):
         self.loop.run_until_complete(self.server)
@@ -79,6 +87,7 @@ class WebsocketHandler:
     def stop_server(self):
         self.server.ws_server.close()
         self.loop.stop()
+        self.thread.join()
 
     def start_client(self):
         self.thread = Thread(target=self.loop.run_until_complete, args=(self.connect_to_websocket(),))
@@ -92,3 +101,6 @@ class WebsocketHandler:
 
     def set_text(self, transcript):
         self.transcript = transcript
+    
+    def set_update_rate(self, rate):
+        self.update_rate = rate

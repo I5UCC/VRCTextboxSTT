@@ -164,6 +164,8 @@ def init():
     elif not config.websocket.enabled and websocket.running or config.websocket.is_client != websocket.is_client:
         log.info("Changed WebSocket settings, restarting...")
         restart()
+    if config.websocket.update_rate != websocket.update_rate:
+        websocket.set_update_rate(config.websocket.update_rate)
 
     # Temporarily output to text label for download progress.
     OUT_FILE_LOGGER.set_ui_output(main_window.loading_status)
