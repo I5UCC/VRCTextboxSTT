@@ -157,7 +157,7 @@ def init():
         restart()
 
     if not websocket:
-        websocket = WebsocketHandler(config.websocket.port, config.websocket.is_client, config.websocket.uri)
+        websocket = WebsocketHandler(config.websocket.port, config.websocket.update_rate, config.websocket.is_client, config.websocket.uri)
     if config.websocket.enabled and not websocket.running:
         websocket.start()
         main_window.set_status_label("INITIALIZED WEBSOCKET SERVER", "green")
