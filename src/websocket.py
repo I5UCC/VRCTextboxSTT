@@ -7,8 +7,9 @@ import logging
 log = logging.getLogger(__name__)
 
 class WebsocketHandler:
-    def __init__(self, port, is_client=False, uri="ws://localhost:8765"):
+    def __init__(self, port, update_rate, is_client=False, uri="ws://localhost:8765"):
         self.port = port
+        self.update_rate = update_rate
         self.transcript = ""
         self.last_transcript = ""
         self.finished = False
@@ -20,18 +21,18 @@ class WebsocketHandler:
         self.loop = asyncio.get_event_loop()
 
     def start(self):
+        self.running = True
         if self.is_client:
             self.start_client()
         else:
             self.start_server()
-        self.running = True
     
     def stop(self):
+        self.running = False
         if self.is_client:
             self.stop_client()
         else:
             self.stop_server()
-        self.running = False
 
     async def update_clients(self, websocket, path):
         log.info("New Websocket client connected.")
@@ -46,10 +47,10 @@ class WebsocketHandler:
                         await client.send(json.dumps({"transcript": self.transcript, "finished": self.finished}))
                         
                         if self.finished:
-                            await asyncio.sleep(1)
+                            await asyncio.sleep(0.6)
                             self.finished = False
                         self.last_transcript = self.transcript
-                        await asyncio.sleep(0.3)
+                        await asyncio.sleep(self.update_rate)
                     except Exception:
                         log.info("Client disconnected.")
                         self.clients.remove(client)
@@ -68,10 +69,10 @@ class WebsocketHandler:
                         await websocket.send(json.dumps({"transcript": self.transcript, "finished": self.finished}))
 
                         if self.finished:
-                            await asyncio.sleep(1)
+                            await asyncio.sleep(0.6)
                             self.finished = False
                         self.last_transcript = self.transcript
-                    await asyncio.sleep(0.3)
+                    await asyncio.sleep(self.update_rate)
                 except websockets.ConnectionClosed:
                     log.info("WebSocket connection closed.")
                     self.running = False

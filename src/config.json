@@ -121,7 +121,8 @@
         "enabled": false,
         "is_client": false,
         "port": 8765,
-        "uri": "ws://localhost:8765"
+        "uri": "ws://localhost:8765",
+        "update_rate": 0.3
     },
     "autocorrect": {
         "language": null

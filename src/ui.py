@@ -1229,8 +1229,8 @@ class WebsocketSettingsWindow:
         self.tkui = tk.Tk()
         coordinates = get_coordinates()
         self.tkui.geometry(f"+{coordinates[0]}+{coordinates[1]}")
-        self.tkui.minsize(300, 150)
-        self.tkui.maxsize(300, 150)
+        self.tkui.minsize(380, 190)
+        self.tkui.maxsize(380, 190)
         self.tkui.resizable(False, False)
         self.tkui.configure(bg="#333333")
         self.tkui.title("TextboxSTT - Websocket Settings")
@@ -1260,8 +1260,15 @@ class WebsocketSettingsWindow:
         self.entry_uri.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666", disabledbackground="#333333")
         self.entry_uri.grid(row=2, column=2, padx=12, pady=5, sticky='ws')
 
+        self.label_update_rate = tk.Label(self.tkui, text="Update Rate (s)", bg="#333333", fg="white", font=(self.FONT, 12))
+        self.label_update_rate.grid(row=3, column=1, padx=12, pady=5, sticky='ws')
+        self.entry_update_rate = tk.Entry(self.tkui)
+        self.entry_update_rate.insert(0, self.config.websocket.update_rate)
+        self.entry_update_rate.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666", disabledbackground="#333333")
+        self.entry_update_rate.grid(row=3, column=2, padx=12, pady=5, sticky='ws')
+
         self.btn_save = tk.Button(self.tkui, text="Save", command=self.save)
-        self.btn_save.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=33, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.btn_save.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=43, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.btn_save.place(relx=0.5, rely=0.88, anchor="center")
 
         self.changed()
@@ -1278,6 +1285,7 @@ class WebsocketSettingsWindow:
         self.config.websocket.port = int(self.entry_port.get())
         self.config.websocket.uri = self.entry_uri.get()
         self.config.websocket.is_client = True if self.value_align.get() == "Client" else False
+        self.config.websocket.update_rate = float(self.entry_update_rate.get())
 
         json.dump(self.config.to_dict(), open(self.config_path, "w"), indent=4)
         self.on_closing()

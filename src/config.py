@@ -268,6 +268,7 @@ class websocket_config(object):
     is_client: bool = False
     port: int = 8765
     uri: str = "ws://localhost:8765"
+    update_rate: float = 0.3
 
 
 @dataclass_json
