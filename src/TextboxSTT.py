@@ -748,6 +748,7 @@ def textfield_keyrelease(text, last_char):
             text = corrected_text
 
     if not enter_pressed:
+        set_finished(False)
         if len(text) > osc.textbox_charlimit:
             main_window.textfield.delete(osc.textbox_charlimit, len(text))
             main_window.textfield.icursor(osc.textbox_charlimit)
