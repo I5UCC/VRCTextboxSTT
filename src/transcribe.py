@@ -12,6 +12,37 @@ import logging
 log = logging.getLogger(__name__)
 
 class TranscribeHandler(object):
+    """
+    Handles the transcription of audio using the Whisper model.
+
+    Args:
+        config_whisper (whisper_config): The configuration for the Whisper model.
+        config_vad (vad_config): The configuration for the Voice Activity Detection (VAD).
+        cache_path (str): The path to the cache directory.
+        translate (bool): Flag indicating whether translation is enabled.
+
+    Attributes:
+        config_whisper (whisper_config): The configuration for the Whisper model.
+        config_vad (vad_config): The configuration for the Voice Activity Detection (VAD).
+        device_config (ct2_device_config): The device configuration for the Whisper model.
+        cache_path (str): The path to the cache directory.
+        whisper_model (str): The path or name of the Whisper model.
+        is_openai_model (bool): Flag indicating whether the Whisper model is an OpenAI model.
+        language (str): The language code for the transcription.
+        task (str): The task type for the Whisper model.
+        device (str): The device type for model inference.
+        device_index (int): The index of the device.
+        compute_type (str): The compute type for the model.
+        use_cpu (bool): Flag indicating whether CPU is used for model inference.
+        model_path (str): The path to the loaded model.
+        device_name (str): The name of the device used for model inference.
+        model (WhisperModel): The Whisper model instance.
+
+    Methods:
+        transcribe: Transcribes the audio and returns the transcribed text.
+        load_model: Loads the Whisper model.
+    """
+
     def __init__(self, config_whisper: whisper_config, config_vad: vad_config, cache_path, translate) -> None:
         self.config_whisper: whisper_config = config_whisper
         self.config_vad: vad_config = config_vad
@@ -52,12 +83,14 @@ class TranscribeHandler(object):
 
     def transcribe(self, audio) -> str:
         """
-        Transcribes the given audio data using the model and returns the text and the tokens.
+        Transcribes the given audio and returns the transcribed text.
 
-        :param torch_audio: The audio data as an np array/torch tensor.
-        :param last_tokens: The last tokens of the previous transcription.
+        Args:
+            audio: The audio input for transcription.
+
+        Returns:
+            str: The transcribed text.
         """
-
         _text = ""
         try:
             segments, _ = self.model.transcribe(audio, temperature=0.0, language=self.language, word_timestamps=False, without_timestamps=True, task=self.task, vad_filter=self.config_vad.enabled, vad_parameters=self.config_vad.parameters.__dict__)
@@ -84,13 +117,17 @@ class TranscribeHandler(object):
 
         return _text.strip()
 
-    def load_model(self, model_name: str = "openai/whisper-base.en", quantization = "float32", download_tokenizer = True):
+    def load_model(self, model_name: str = "openai/whisper-base.en", quantization = "float32", download_tokenizer = True) -> str:
         """
-        Loads a Transformer model from the given path and converts it to a ctranslate2 model.
+        Loads the Whisper model.
 
-        :param model_name: The name of the model to load.
-        :param quantization: The quantization to use for the model.
-        :return: The path to the ctranslate2 model.
+        Args:
+            model_name (str): The name of the model to load.
+            quantization: The quantization type for the model.
+            download_tokenizer (bool): Flag indicating whether to download the tokenizer.
+
+        Returns:
+            str: The path to the loaded model.
         """
         try:
             model_split = model_name.split('/')

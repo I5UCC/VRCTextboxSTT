@@ -14,6 +14,29 @@ log = logging.getLogger(__name__)
 
 
 class TranslationHandler(object):
+    """
+    Handles translation of text using a pre-trained translation model.
+
+    Args:
+        cache_path (str): The path to the cache directory.
+        source_language (str): The source language for translation.
+        translator_conf (translator_config): The configuration object for the translator.
+
+    Attributes:
+        cache_path (str): The path to the cache directory.
+        translator_config (translator_config): The configuration object for the translator.
+        from_language (str): The source language for translation.
+        to_language (str): The target language for translation.
+        device (str): The device (CPU or GPU) used for translation.
+        device_index (int): The index of the device used for translation.
+        model (str): The pre-trained translation model.
+        compute_type (str): The compute type used for translation.
+        model_path (str): The path to the pre-trained translation model.
+        translator (ctranslate2.Translator): The translation engine.
+        tokenizer (transformers.AutoTokenizer): The tokenizer for the translation model.
+
+    """
+
     def __init__(self, cache_path, source_language, translator_conf: translator_config):
         self.cache_path = cache_path
         self.translator_config = translator_conf
@@ -31,12 +54,24 @@ class TranslationHandler(object):
         self.download_model()
         self.load_model()
 
-    def load_model(self):
+    def load_model(self) -> None:
+        """
+        Loads the pre-trained translation model and tokenizer.
+        """
         self.translator = ctranslate2.Translator(self.model_path, device=self.device, device_index=self.device_index, compute_type=self.compute_type, inter_threads=self.translator_config.device.num_workers, intra_threads=self.translator_config.device.cpu_threads)
         self.tokenizer = transformers.AutoTokenizer.from_pretrained(self.model_path)
         self.tokenizer.src_lang = self.from_language
 
-    def translate(self, text):
+    def translate(self, text) -> str:
+        """
+        Translates the given text from the source language to the target language.
+
+        Args:
+            text (str): The text to be translated.
+
+        Returns:
+            str: The translated text.
+        """
         source = self.tokenizer.convert_ids_to_tokens(self.tokenizer.encode(text))
         target_prefix = [self.tokenizer.lang_code_to_token[self.to_language]]
         results = self.translator.translate_batch([source], target_prefix=[target_prefix])
@@ -48,7 +83,10 @@ class TranslationHandler(object):
         else:
             return text_trans
 
-    def download_model(self):
+    def download_model(self) -> None:
+        """
+        Downloads and converts the pre-trained translation model if necessary.
+        """
         try:
             _converter = TransformersConverter(self.model, copy_files=["generation_config.json", "sentencepiece.bpe.model", "special_tokens_map.json", "tokenizer_config.json", "vocab.json"])
             _converter.convert(self.model_path, force=False, quantization=self.compute_type)

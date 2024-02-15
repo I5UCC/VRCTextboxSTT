@@ -211,6 +211,15 @@ def init():
 
 
 def modify_audio_files(audio_dict):
+    """
+    Modifies audio files in the given audio_dict.
+
+    Parameters:
+        audio_dict (dict): A dictionary containing information about audio files.
+
+    Returns:
+        None
+    """
     del audio_dict["enabled"]
     for key in audio_dict:
         try:
@@ -223,9 +232,16 @@ def modify_audio_files(audio_dict):
             log.error(traceback.format_exc())
 
 
-def play_sound(au: audio):
-    """Plays a sound file."""
+def play_sound(au: audio) -> None:
+    """
+    Play a sound file.
 
+    Args:
+        au (audio): The audio object containing the file to be played.
+
+    Returns:
+        None
+    """
     global config
 
     if not config.audio_feedback.enabled:
@@ -243,8 +259,18 @@ def play_sound(au: audio):
         log.error(traceback.format_exc())
 
 
-def set_typing_indicator(state: bool, textfield: bool = False):
-    """Sets the typing indicator for the Chatbox and KAT."""
+def set_typing_indicator(state: bool, textfield: bool = False) -> None:
+    """
+    Sets the typing indicator state for the textbox and/or KAT.
+
+    Args:
+        state (bool): The state of the typing indicator (True for active, False for inactive).
+        textfield (bool, optional): Indicates whether the typing indicator should be set for the textbox. 
+            Defaults to False.
+
+    Returns:
+        None
+    """
 
     global config
     global osc
@@ -255,16 +281,27 @@ def set_typing_indicator(state: bool, textfield: bool = False):
         osc.set_kat_typing_indicator(state)
 
 
-def set_finished(state: bool):
+def set_finished(state: bool) -> None:
+    """
+    Sets the finished state for browsersource and/or websocket.
+    Determines whether the transcription is finished.
+
+    Args:
+        state (bool): The finished state to set.
+
+    Returns:
+        None
+    """
     if config.obs.enabled:
         browsersource.setFinished(state)
     if config.websocket.enabled:
         websocket.set_finished(state)
 
 
-def clear_chatbox():
-    """Clears the Chatbox, KAT and Overlay."""
-
+def clear_chatbox() -> None:
+    """
+    Clears text in all output sources.
+    """
     global config
     global osc
     global ovr
@@ -295,7 +332,14 @@ def clear_chatbox():
 
 
 def populate_chatbox(text, cutoff: bool = False, is_textfield: bool = False):
-    """Populates the Chatbox, KAT and Overlay with the given text."""
+    """
+    Populates all output sources with the given text.
+
+    Args:
+        text (str): The text to populate the chatbox with.
+        cutoff (bool, optional): Whether to truncate the text if it exceeds the character limit. Defaults to False.
+        is_textfield (bool, optional): Whether the text is from a text field. Defaults to False.
+    """
 
     global config
     global main_window
@@ -346,8 +390,15 @@ def populate_chatbox(text, cutoff: bool = False, is_textfield: bool = False):
     set_typing_indicator(False)
 
 
-def process_forever():
-    """Processes audio data from the data queue until the user cancels the process by pressing the button again."""
+def process_forever() -> None:
+    """
+    Processes audio data from the data queue until the user cancels the process.
+
+    The function uses several global variables for configuration and state management.
+
+    Returns:
+        None
+    """
 
     global config
     global main_window
@@ -416,6 +467,8 @@ def process_forever():
             main_window.set_time_label(time_taken)
 
             _time_last = time()
+            if not _text:
+                continue
             populate_chatbox(_text, True)
 
             sentence_end = _text and _text[-1] in {".", "!", "?"}
@@ -443,8 +496,15 @@ def process_forever():
     listen.stop_listen_background()
 
 
-def process_loop():
-    """Processes audio data from the data queue and transcribes it until the user stops talking."""
+def process_loop() -> None:
+    """
+    Processes audio data from the data queue and transcribes it until the user stops talking.
+
+    The function uses several global variables for configuration and state management.
+
+    Returns:
+        None
+    """
 
     global config
     global listen
@@ -512,6 +572,8 @@ def process_loop():
             main_window.set_time_label(time_taken)
 
             _time_last = time()
+            if not _text:
+                continue
             populate_chatbox(_text, True)
 
             sentence_end = _text and _text[-1] in {".", "!", "?"}
@@ -543,8 +605,15 @@ def process_loop():
 
 
 def process_once():
-    """Process a single input and return the transcription."""
+    """
+    Process audio input once.
 
+    This function listens for audio input, transcribes it, and performs additional processing such as translation.
+    It updates the status labels and plays audio feedback based on the processing results.
+
+    Returns:
+        None
+    """
     global config
     global main_window
     global pressed
@@ -604,9 +673,13 @@ def process_once():
     main_window.set_button_enabled(True)
 
 
-def get_trigger_state():
-    """Returns the state of the trigger, either from the keyboard or the ovr action"""
+def get_trigger_state() -> bool:
+    """
+    Returns the trigger state based on the configured hotkey and OpenVR action.
 
+    Returns:
+        bool: True if the trigger is activated, False otherwise.
+    """
     global config
     global ovr
     global initialized
@@ -632,8 +705,14 @@ def get_trigger_state():
         return hotkey_pressed
 
 
-def check_timeout():
+def check_timeout() -> None:
+    """
+    Checks if the timeout conditions are met and performs the necessary actions.
 
+    This function checks if the speech-to-text process has finished and if the timeout
+    conditions for the overlay and text are met. If the conditions are met, it clears
+    the chatbox, plays a sound, and resets the necessary variables.
+    """
     global timeout_time
     global overlay_timeout_time
     global finished
@@ -650,9 +729,10 @@ def check_timeout():
         timeout_time = 0.0
 
 
-def handle_input():
-    """Handles all input from the user"""
-
+def handle_input() -> None:
+    """
+    Handles the input from the user and performs the necessary actions based on the input.
+    """
     global config
     global thread_process
     global held
@@ -695,8 +775,13 @@ def handle_input():
         holding = False
 
 
-def entrybox_enter_event(text):
-    """Handles the enter event for the textfield."""
+def entrybox_enter_event(text) -> None:
+    """
+    Process the entered text in the entry box.
+
+    Args:
+        text (str): The text entered in the entry box.
+    """
 
     global config
     global main_window
@@ -729,8 +814,14 @@ def entrybox_enter_event(text):
     overlay_timeout_time = time()
 
 
-def textfield_keyrelease(text, last_char):
-    """Handles the key release event for the textfield."""
+def textfield_keyrelease(text, last_char) -> None:
+    """
+    Handles the key release event for the textfield.
+    
+    Args:
+        text (str): The text in the textfield.
+        last_char (str): The last character entered in the textfield.
+    """
 
     global config
     global osc
@@ -767,7 +858,7 @@ def textfield_keyrelease(text, last_char):
     overlay_timeout_time = time()
 
 
-def main_window_closing():
+def main_window_closing() -> None:
     """Handles the closing of the main window."""
 
     global config
@@ -801,7 +892,7 @@ def main_window_closing():
     os._exit(0)
 
 
-def open_settings():
+def open_settings() -> None:
     """Opens the settings menu"""
 
     global config
@@ -820,7 +911,7 @@ def open_settings():
     config_ui.open()
 
 
-def determine_energy_threshold():
+def determine_energy_threshold() -> None:
     """Determines the energy threshold for the microphone to use for speech recognition"""
 
     global config
@@ -831,8 +922,18 @@ def determine_energy_threshold():
     config_ui.set_energy_threshold(listen.get_energy_threshold())
 
 
-def check_ovr():
+def check_ovr() -> None:
+    """
+    Checks the status of the Oculus Virtual Reality (OVR) system and performs reinitialization if necessary.
 
+    This function checks if the OVR system is already initialized and if the configuration UI is open. If any of these conditions are met, the function returns without performing any action. Otherwise, it checks if SteamVR is running and if the OVRHandler is currently running. If both conditions are met, the function reinitalizes the OVR system.
+
+    Note:
+    - The global variables `config`, `initialized`, `ovr`, `config_ui_open`, and `main_window` are assumed to be defined and accessible within the scope of this function.
+
+    Returns:
+    None
+    """
     global config
     global initialized
     global ovr
@@ -847,7 +948,10 @@ def check_ovr():
     main_window.set_conf_label(config.osc.ip, config.osc.client_port, config.osc.server_port, ovr.initialized, transcriber.device_name, transcriber.whisper_model, transcriber.compute_type, config.device.cpu_threads, config.device.num_workers)
 
 
-def update():
+def update() -> None:
+    """
+    Function to update the application.
+    """
     global updater
     global main_window
     global config_ui_open
@@ -870,8 +974,10 @@ def update():
     updater.update(update_done, main_window.set_text_label)
 
 
-def restart():
-    """Restarts the program."""
+def restart() -> None:
+    """
+    Restarts the program.
+    """
 
     global main_window
     global config_ui
@@ -896,8 +1002,10 @@ def restart():
     main_window_closing()
 
 
-def reload(save=False):
-    """Handles the closing of the settings menu. If save is True, saves the settings and restarts the program."""
+def reload(save=False) -> None:
+    """
+    Handles the closing of the settings menu. If save is True, saves the settings and restarts the program.
+    """
 
     global config
     global osc
@@ -927,7 +1035,7 @@ def reload(save=False):
     config_ui_open = False
 
 
-def load_fonts():
+def load_fonts() -> None:
     """Loads all fonts in the resources/fonts folder on Windows."""
 
     font_path = get_absolute_path("resources/fonts/", __file__)

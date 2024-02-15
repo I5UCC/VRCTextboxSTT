@@ -125,8 +125,6 @@ class OBSBrowserSource(object):
         return self.app.kill()
 
     def setText(self, text):
-        if not text:
-            return
         self.text = text
     
     def setFinished(self, state):

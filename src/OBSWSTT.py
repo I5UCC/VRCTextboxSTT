@@ -129,6 +129,10 @@ def main():
                     if config.wordreplacement.enabled:
                         text = replace_words(text, replacement_dict)
                         text = replace_words(text, base_replacement_dict)
+
+                    if not text:
+                        continue
+
                     browsersource.setText(text)
                     print("- " + text if text else "No text found")
 
