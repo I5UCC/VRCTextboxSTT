@@ -19,6 +19,6 @@ websockets==12.0
 zeroconf==0.131.0
 safetensors==0.4.1
 transformers==4.36.2
-ctranslate2==4.0.0
-torch==2.2.0
+ctranslate2==3.24.0
+torch==2.1.2
 faster-whisper==0.10.0
