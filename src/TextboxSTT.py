@@ -22,7 +22,7 @@ try:
     from keyboard import is_pressed, all_modifiers
     from ui import MainWindow, SettingsWindow
     from osc import OscHandler
-    from browsersource import OBSBrowserSource
+    from browsersource import BrowserHandler
     from ovr import OVRHandler
     from listen import ListenHandler
     from transcribe import TranscribeHandler
@@ -32,7 +32,7 @@ try:
     from config import config_struct, audio, LANGUAGE_TO_KEY
     from updater import Update_Handler
     from pydub import AudioSegment
-    from helper import replace_words, replace_emotes, loadfont
+    from helper import replace_words, replace_emotes, loadfont, measure_time
     from torch.cuda import is_available
     from autocorrect import Speller
     import winsound
@@ -76,9 +76,9 @@ ovr: OVRHandler = None
 listener: ListenHandler = None
 transcriber: TranscribeHandler = None
 translator: TranslationHandler = None
-browsersource: OBSBrowserSource = None
+browsersource: BrowserHandler = None
 websocket: WebsocketHandler = None
-clipboard: clipboardHandler = clipboardHandler()
+clipboard: clipboardHandler = None
 autocorrect: Speller = None
 timeout_time: float = 0.0
 overlay_timeout_time: float = 0.0
@@ -86,10 +86,11 @@ curr_time: float = 0.0
 pressed: bool = False
 holding: bool = False
 held: bool = False
-thread_process: Thread = Thread()
+thread_process: Thread = None
+thread_pressed: Thread = None
 initialized: bool = False
-replacement_dict: dict = {}
-base_replacement_dict: dict = {}
+replacement_dict: dict = None
+base_replacement_dict: dict = None
 
 
 def init():
@@ -101,6 +102,7 @@ def init():
     global transcriber
     global translator
     global websocket
+    global clipboard
     global ovr
     global initialized
     global browsersource
@@ -113,8 +115,10 @@ def init():
     replacement_dict = {re.compile(key, re.IGNORECASE): value for key, value in config.wordreplacement.list.items()}
     base_replacement_dict = {re.compile(key, re.IGNORECASE): value for key, value in config.wordreplacement.base_replacements.items()}
 
-    main_window.toggle_copy_button(not config.always_clipboard)
-    main_window.btn_copy.configure(command=(lambda: clipboard.set_clipboard()))
+    if not clipboard:
+        clipboard = clipboardHandler()
+        main_window.toggle_copy_button(not config.always_clipboard)
+        main_window.btn_copy.configure(command=(lambda: clipboard.set_clipboard()))
 
     modify_audio_files(config.audio_feedback.__dict__.copy())
 
@@ -154,7 +158,7 @@ def init():
 
     # Start Flask server
     if not browsersource:
-        browsersource = OBSBrowserSource(config.obs, get_absolute_path('resources/obs_source.html', __file__), CACHE_PATH)
+        browsersource = BrowserHandler(config.obs, get_absolute_path('resources/obs_source.html', __file__), CACHE_PATH)
     if config.obs.enabled and not browsersource.running:
         if browsersource.start():
             log.info("Initialized Flask Server")
@@ -400,6 +404,60 @@ def populate_chatbox(text, cutoff: bool = False, is_textfield: bool = False):
     timeout_time = time()
     overlay_timeout_time = time()
 
+@measure_time
+def transcribe_translate_populate(raw_audio: bytes, append: bool = False, last_text: str = "") -> tuple[str, float]:
+    """
+    Transcribes and translates the given raw audio, and populates the chatbox with the result.
+
+    Args:
+        raw_audio (bytes): The raw audio data to transcribe.
+        append (bool, optional): Whether to append the transcribed text to the last text. Defaults to False.
+        last_text (str, optional): The last text to append to. Defaults to "".
+
+    Returns:
+        tuple[str, float]: A tuple containing the transcribed/translated text and the time taken for the operation.
+    """
+    pre = time()
+    set_typing_indicator(True)
+    _np_audio = listener.raw_to_np(raw_audio)
+    
+    main_window.set_status_label("TRANSCRIBING", "orange")
+    _text = transcriber.transcribe(_np_audio)
+    if append:
+        _text = last_text + _text
+    if translator:
+        main_window.set_status_label("TRANSLATING", "orange")
+        play_sound(config.audio_feedback.sound_donelisten)
+        _text = translator.translate(_text)
+
+    if not _text:
+        return ("", 0.0)
+    
+    populate_chatbox(_text, True)
+    time_taken = time() - pre
+    main_window.set_time_label(time_taken)
+    return (_text, time_taken)
+
+
+def should_start_new_phrase(text: str, _raw_audio: bytes, time_taken: float) -> bool:
+    """
+    Determines whether a new phrase should be started based on the given parameters.
+
+    Args:
+        text (str): The current text.
+        _raw_audio (bytes): The raw audio data.
+        time_taken (float): The time taken for transcription.
+
+    Returns:
+        bool: True if a new phrase should be started, False otherwise.
+    """
+    sentence_end = text and text[-1] in {".", "!", "?"}
+    is_timeout = len(_raw_audio) > config.whisper.max_samples or time_taken > config.whisper.max_transciption_time
+    if sentence_end and is_timeout:
+        log.warning("Either max samples or max transcription time reached. Starting new phrase.")
+        return True
+    return False
+
 
 def process_forever() -> None:
     """
@@ -419,17 +477,14 @@ def process_forever() -> None:
 
     play_sound(config.audio_feedback.sound_listen)
 
-    finished = False
     _text = ""
-    _time_last = None
-    _last_sample = bytes()
+    _raw_audio = bytes()
     last_text = ""
     append = False
-    first_run = True
 
     main_window.set_button_enabled(True)
     set_typing_indicator(True)
-    set_finished(finished)
+    set_finished(False)
     main_window.set_status_label("LISTENING", "#FF00FF")
 
     listener.start_listen_background()
@@ -452,49 +507,26 @@ def process_forever() -> None:
                 main_window.set_status_label("CLEARED", "#00008b")
                 play_sound(config.audio_feedback.sound_clear)
                 clear_chatbox()
-                finished = False
                 break
-        elif not listener.data_queue.empty():
-            while not listener.data_queue.empty():
-                data = listener.data_queue.get()
-                _last_sample += data
-
+        elif not listener.get_queue_empty():
             set_typing_indicator(True)
-
-            pre = time()
-            _np_audio = listener.raw_to_np(_last_sample)
-            _text = transcriber.transcribe(_np_audio)
-            log.info("Transcription: " + _text)
-            
-            if append:
-                _text = last_text + _text
-            if translator:
-                main_window.set_status_label("TRANSLATING", "orange")
-                play_sound(config.audio_feedback.sound_donelisten)
-                _text = translator.translate(_text)
-            time_taken = time() - pre
-            main_window.set_time_label(time_taken)
-            log.debug(f"Full time taken: {time_taken}")
-
+            set_finished(False)
+            _raw_audio += listener.get_queue_data()
+            _text, time_taken = transcribe_translate_populate(_raw_audio, append, last_text)
             _time_last = time()
-            if not _text:
-                continue
-            populate_chatbox(_text, True)
 
-            sentence_end = _text and _text[-1] in {".", "!", "?"}
-            if sentence_end and not first_run and (len(_last_sample) > config.whisper.max_samples or time_taken > config.whisper.max_transciption_time):
-                log.warning("Either max samples or max transcription time reached. Starting new phrase.")
+            if should_start_new_phrase(_text, _raw_audio, time_taken):
                 last_text = _text + " "
                 append = True
-                _last_sample = _last_sample[-config.whisper.cutoff_buffer:]
-            
-            first_run = False
-        elif _last_sample != bytes() and time() - _time_last > config.listener.pause_threshold:
+                _raw_audio = _raw_audio[-config.whisper.cutoff_buffer:]
+            else:
+                append = False
+        elif _raw_audio != bytes() and time() - _time_last > config.listener.pause_threshold:
             set_typing_indicator(False)
-            finished = True
-            set_finished(finished)
-            _last_sample = bytes()
+            set_finished(True)
+            _raw_audio = bytes()
             append = False
+            last_text = ""
 
         sleep(0.05)
 
@@ -524,10 +556,9 @@ def process_loop() -> None:
     finished = False
     _text = ""
     _time_last = None
-    _last_sample = bytes()
+    _raw_audio = bytes()
     last_text = ""
     append = False
-    first_run = True
 
     main_window.set_button_enabled(False)
     set_typing_indicator(True)
@@ -552,50 +583,28 @@ def process_loop() -> None:
                 play_sound(config.audio_feedback.sound_clear)
                 clear_chatbox()
                 break
-            elif _last_sample == bytes():
+            elif _raw_audio == bytes():
                 main_window.set_status_label("CANCELED - WAITING FOR INPUT", "#00008b")
                 play_sound(config.audio_feedback.sound_timeout)
                 break
         elif not listener.data_queue.empty():
-            while not listener.data_queue.empty():
-                data = listener.data_queue.get()
-                _last_sample += data
-
             set_typing_indicator(True)
-
-            pre = time()
-            _np_audio = listener.raw_to_np(_last_sample)
-            _text = transcriber.transcribe(_np_audio)
-            log.info("Transcription: " + _text)
-            if append:
-                _text = last_text + _text
-            if translator:
-                main_window.set_status_label("TRANSLATING", "orange")
-                play_sound(config.audio_feedback.sound_donelisten)
-                _text = translator.translate(_text)
-            time_taken = time() - pre
-            main_window.set_time_label(time_taken)
-            log.debug(f"Full time taken: {time_taken}")
-
+            _raw_audio += listener.get_queue_data()
+            _text, time_taken = transcribe_translate_populate(_raw_audio, append, last_text)
             _time_last = time()
-            if not _text:
-                continue
-            populate_chatbox(_text, True)
 
-            sentence_end = _text and _text[-1] in {".", "!", "?"}
-            if sentence_end and not first_run and (len(_last_sample) > config.whisper.max_samples or time_taken > config.whisper.max_transciption_time):
-                log.warning("Either max samples or max transcription time reached. Starting new phrase.")
+            if should_start_new_phrase(_text, _raw_audio, time_taken):
                 last_text = _text + " "
                 append = True
-                _last_sample = _last_sample[-config.whisper.cutoff_buffer:]
-            
-            first_run = False
-        elif _last_sample != bytes() and time() - _time_last > config.listener.pause_threshold:
+                _raw_audio = _raw_audio[-config.whisper.cutoff_buffer:]
+            else:
+                append = False
+        elif _raw_audio != bytes() and time() - _time_last > config.listener.pause_threshold:
             main_window.set_status_label("FINISHED - WAITING FOR INPUT", "blue")
             finished = True
             play_sound(config.audio_feedback.sound_finished)
             break
-        elif _last_sample == bytes() and time() - _time_last > config.listener.timeout_time:
+        elif _raw_audio == bytes() and time() - _time_last > config.listener.timeout_time:
             main_window.set_status_label("TIMEOUT - WAITING FOR INPUT", "#00008b")
             play_sound(config.audio_feedback.sound_timeout)
             break
@@ -621,8 +630,6 @@ def process_once():
     global main_window
     global pressed
     global listener
-    global timeout_time
-    global overlay_timeout_time
 
     finished = False
     main_window.set_button_enabled(False)
@@ -634,28 +641,16 @@ def process_once():
     if raw_audio is None:
         main_window.set_status_label("TIMEOUT - WAITING FOR INPUT", "orange")
         play_sound(config.audio_feedback.sound_timeout)
-        set_typing_indicator(False)
     else:
         play_sound(config.audio_feedback.sound_donelisten)
         set_typing_indicator(True)
         main_window.set_status_label("TRANSCRIBING", "orange")
 
         if not pressed:
-            pre = time()
-            _np_audio = listener.raw_to_np(raw_audio)
-            _text = transcriber.transcribe(_np_audio)
-            log.info("Transcription: " + _text)
-            if translator:
-                play_sound(config.audio_feedback.sound_donelisten)
-                main_window.set_status_label("TRANSLATING", "orange")
-                _text = translator.translate(_text)
-            time_taken = time() - pre
-            main_window.set_time_label(time_taken)
-            log.debug(f"Full time taken: {time_taken}")
+            _text, _ = transcribe_translate_populate(raw_audio)
             if pressed:
                 main_window.set_status_label("CANCELED - WAITING FOR INPUT", "orange")
                 play_sound(config.audio_feedback.sound_timeout)
-                finished = False
             elif _text:
                 main_window.set_status_label("FINISHED - WAITING FOR INPUT", "blue")
                 populate_chatbox(_text)
@@ -664,11 +659,9 @@ def process_once():
             else:
                 main_window.set_status_label("ERROR TRANSCRIBING - WAITING FOR INPUT", "red")
                 play_sound(config.audio_feedback.sound_timeout)
-                finished = False
         else:
             main_window.set_status_label("CANCELED - WAITING FOR INPUT", "orange")
             play_sound(config.audio_feedback.sound_timeout)
-            finished = False
 
     set_typing_indicator(False)
     set_finished(finished)
@@ -735,7 +728,6 @@ def handle_input() -> None:
     Handles the input from the user and performs the necessary actions based on the input.
     """
     global config
-    global thread_process
     global held
     global holding
     global pressed
@@ -743,37 +735,47 @@ def handle_input() -> None:
     global main_window
     global initialized
 
-    if not initialized or main_window.config_ui_open:
-        return
+    while True:
+        if not initialized or main_window.config_ui_open:
+            sleep(0.5)
+            continue
 
-    pressed = get_trigger_state()
-    check_timeout()
+        check_timeout()
 
-    if thread_process.is_alive():
-        return
-
-    if not thread_process.is_alive() and config.mode == 2 and not main_window.config_ui_open:
-        thread_process = Thread(target=process_forever)
-        thread_process.start()
-    elif pressed and not holding and not held:
-        holding = True
-        curr_time = time()
-    elif pressed and holding and not held:
-        holding = True
-        if time() - curr_time > config.listener.hold_time:
-            clear_chatbox()
-            main_window.set_status_label("CLEARED - WAITING FOR INPUT", "#00008b")
-            play_sound(config.audio_feedback.sound_clear)
+        if config.mode == 2 and not main_window.config_ui_open:
+            process_forever()
+            continue
+        elif pressed and not holding and not held:
+            holding = True
+            curr_time = time()
+        elif pressed and holding and not held:
+            holding = True
+            if time() - curr_time > config.listener.hold_time:
+                clear_chatbox()
+                main_window.set_status_label("CLEARED - WAITING FOR INPUT", "#00008b")
+                play_sound(config.audio_feedback.sound_clear)
+                held = True
+                holding = False
+        elif not pressed and holding and not held:
             held = True
             holding = False
-    elif not pressed and holding and not held:
-        held = True
-        holding = False
-        thread_process = Thread(target=process_loop if config.mode else process_once)
-        thread_process.start()
-    elif not pressed and held:
-        held = False
-        holding = False
+            if config.mode:
+                process_loop()
+            else:
+                process_once()
+            continue
+        elif not pressed and held:
+            held = False
+            holding = False
+        sleep(0.1)
+
+
+def handle_trigger_state():
+    """Checks if the trigger is pressed and sets the global variable pressed accordingly."""
+    global pressed
+    while True:
+        pressed = get_trigger_state()
+        sleep(0.08)
 
 
 def entrybox_enter_event(text) -> None:
@@ -909,12 +911,7 @@ def determine_energy_threshold() -> None:
 
 def check_ovr() -> None:
     """
-    Checks the status of the Oculus Virtual Reality (OVR) system and performs reinitialization if necessary.
-
-    This function checks if the OVR system is already initialized and if the configuration UI is open. If any of these conditions are met, the function returns without performing any action. Otherwise, it checks if SteamVR is running and if the OVRHandler is currently running. If both conditions are met, the function reinitalizes the OVR system.
-
-    Returns:
-    None
+    Checks the status of OpenVR and performs reinitialization if necessary.
     """
     global config
     global initialized
@@ -1051,6 +1048,9 @@ if __name__ == "__main__":
     main_window.btn_settings.configure(command=open_settings)
     main_window.btn_refresh.configure(command=restart)
     main_window.create_loop(7000, check_ovr)
-    main_window.create_loop(50, handle_input)
-    main_window.tkui.after(100, reload)
+    main_window.tkui.after(1000, reload)
+    thread_process = Thread(target=handle_input)
+    thread_pressed = Thread(target=handle_trigger_state)
+    thread_process.start()
+    thread_pressed.start()
     main_window.run_loop()

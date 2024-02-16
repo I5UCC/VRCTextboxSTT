@@ -85,6 +85,15 @@ class ListenHandler(object):
         except Exception:
             log.error("Error clearing queue: ")
             log.error(traceback.format_exc())
+    
+    def get_queue_data(self) -> bytes:
+        _data = bytes()
+        while not self.data_queue.empty():
+            _data += self.data_queue.get()
+        return _data
+    
+    def get_queue_empty(self) -> bool:
+        return self.data_queue.empty()
 
     def get_energy_threshold(self) -> int:
         try:

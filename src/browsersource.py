@@ -54,7 +54,7 @@ class FlaskAppWrapper(object):
             log.error(traceback.format_exc())
             return False
 
-class OBSBrowserSource(object):
+class BrowserHandler(object):
 
     def __init__(self, config: obs_config, template_path: str, cache_path: str):
         self.template_path = template_path

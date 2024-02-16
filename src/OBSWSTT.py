@@ -5,7 +5,7 @@ DEBUG = len(sys.argv) == 1
 from time import sleep, time
 from listen import ListenHandler
 from transcribe import TranscribeHandler
-from browsersource import OBSBrowserSource
+from browsersource import BrowserHandler
 from translate import TranslationHandler
 from helper import get_absolute_path, replace_words
 import keyboard
@@ -40,7 +40,7 @@ def main():
     translator: TranslationHandler = None
     if config.translator.language and config.translator.language != config.whisper.language and transcriber.task == "transcribe":
         translator = TranslationHandler(CACHE_PATH, config.whisper.language, config.translator)
-    browsersource = OBSBrowserSource(config.obs, get_absolute_path('resources/obs_source.html', __file__), CACHE_PATH)
+    browsersource = BrowserHandler(config.obs, get_absolute_path('resources/obs_source.html', __file__), CACHE_PATH)
     browsersource.start()
 
     phrase_timeout = config.listener.timeout_time
