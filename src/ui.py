@@ -112,6 +112,7 @@ class MainWindow(object):
             self.set_text_label(f"Downloading Model:{s[s.rindex('|')+1:]}")
         except Exception:
             pass
+        self.tkui.update()
 
     def set_conf_label(self, ip, port, server_port, http_port, ovr_initialized, device, model, compute_type, cpu_threads, vad):
         try:
