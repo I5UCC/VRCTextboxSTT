@@ -207,7 +207,7 @@ def init():
     OUT_FILE_LOGGER.remove_ui_output()
     
     main_window.set_text_label("- No Text -")
-    main_window.set_conf_label(config.osc.ip, config.osc.client_port, osc.osc_server_port, osc.http_port, ovr.initialized, transcriber.device_name, transcriber.whisper_model, transcriber.compute_type, config.whisper.device.cpu_threads, config.whisper.device.num_workers, config.vad.enabled)
+    main_window.set_conf_label(config.osc.ip, config.osc.client_port, osc.osc_server_port, osc.http_port, ovr.initialized, transcriber.device_name, transcriber.whisper_model, transcriber.compute_type, config.whisper.device.cpu_threads, config.vad.enabled)
     main_window.set_status_label("INITIALIZED - WAITING FOR INPUT", "green")
     main_window.set_button_enabled(True)
 

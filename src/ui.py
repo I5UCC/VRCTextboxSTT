@@ -53,7 +53,7 @@ class MainWindow(object):
 
         self.conf_lbl = tk.Label(self.tkui, text=f"Loading...")
         self.conf_lbl.configure(bg="#333333", fg="#666666", font=(self.FONT, 10))
-        self.conf_lbl.place(x=36, y=min_y - 25, anchor="w")
+        self.conf_lbl.place(x=48, y=min_y - 23, anchor="w")
 
         self.time_lbl = tk.Label(self.tkui, text=f"0.000s")
         self.time_lbl.configure(bg="#333333", fg="#666666", font=(self.FONT, 10))
@@ -113,9 +113,13 @@ class MainWindow(object):
         except Exception:
             pass
 
-    def set_conf_label(self, ip, port, server_port, http_port, ovr_initialized, device, model, compute_type, cpu_threads, num_workers, vad):
-        _cpu_str = f", CPU Threads: {cpu_threads}" if device.lower() == "cpu" else ""
-        self.conf_lbl.configure(justify="left", text=f"OSC: {ip}#{port}:{server_port}:{http_port}, OVR: {'Connected' if ovr_initialized else 'Disconnected'}, Device: {device}{_cpu_str}\nModel: {model}, Compute Type: {compute_type}, Workers: {num_workers}, VAD: {vad}")
+    def set_conf_label(self, ip, port, server_port, http_port, ovr_initialized, device, model, compute_type, cpu_threads, vad):
+        try:
+            _cpu_str = f", CPU Threads: {cpu_threads}" if device.lower() == "cpu" else ""
+            device = "CPU" if device.lower() == "cpu" else " ".join(device.split(" ")[-2:])
+        except Exception:
+            _cpu_str = ""
+        self.conf_lbl.configure(justify="left", text=f"OSC: {ip}#{port}:{server_port}:{http_port}, OVR: {'Connected' if ovr_initialized else 'Disconnected'}, Device: {device}{_cpu_str}\nModel: {model}, Compute Type: {compute_type}, VAD: {vad}")
 
     def set_time_label(self, time):
         self.time_lbl.configure(text=f"{time:0.3f}s")
@@ -165,8 +169,8 @@ class LogFrame(tk.Frame, logging.Handler):
         self.title_frame = tk.Frame(self, bg="#333333")
         self.title_frame.pack(fill="x", expand=1)
 
-        self.toggle_button = tk.Checkbutton(self.title_frame, width=2, text='▼', command=self.toggle, variable=self.show, bg="#333333", fg="white", font=(self.FONT, 12), indicatoron=False, highlightbackground="#333333", activebackground="#111111", activeforeground="white", selectcolor="#333333")
-        self.toggle_button.pack(side="left", padx=8)
+        self.toggle_button = tk.Checkbutton(self.title_frame, width=3, text='▼', command=self.toggle, variable=self.show, bg="#333333", fg="white", font=(self.FONT, 12), indicatoron=False, highlightbackground="#333333", activebackground="#111111", activeforeground="white", selectcolor="#333333")
+        self.toggle_button.pack(side="left", padx=9)
 
         self.sub_frame = tk.Frame(self, relief="sunken", borderwidth=1, bg="#333333", border=0)
 
