@@ -1,4 +1,5 @@
 import tkinter as tk
+import tkinter.scrolledtext as ScrolledText
 import json
 import pyaudio
 import keyboard
@@ -16,17 +17,11 @@ import traceback
 log = logging.getLogger(__name__)
 
 class MainWindow(object):
-    def __init__(self, script_path, x=None, y=None):
+    def __init__(self, script_path, x=None, y=None, version="DEV"):
 
-        self.version = "RELEASE"
-        try:
-            self.version = open(get_absolute_path("VERSION", script_path)).readline().rstrip()
-        except Exception:
-            pass
+        self.version = version
 
         self.icon_path = get_absolute_path("resources/icon.ico", script_path)
-
-        log.info(f"VRCTextboxSTT {self.version} by I5UCC")
 
         self.FONT = "Cascadia Code"
 
@@ -36,54 +31,59 @@ class MainWindow(object):
             self.coodinates = (x, y)
         else:
             self.coodinates = self.get_coordinates()
-        self.tkui.minsize(810, 380)
-        self.tkui.maxsize(810, 380)
+        
+        min_x = 810
+        min_y = 380
+        self.tkui.minsize(min_x, min_y)
+        self.tkui.maxsize(min_x, 550)
         self.tkui.resizable(False, False)
         self.tkui.configure(bg="#333333")
         self.tkui.title("TextboxSTT")
         self.tkui.iconbitmap(self.icon_path)
 
+        self.logging_frame = LogFrame(self.tkui, 170, 200, relief="raised", borderwidth=0, background="#333333")
+        self.logging_frame.place(x=-2, y=342)
+        logging.getLogger().addHandler(self.logging_frame)
+
         self.text_lbl = tk.Label(self.tkui, wraplength=800, text="- No Text -")
         self.text_lbl.configure(bg="#333333", fg="white", font=(self.FONT, 27))
-        self.text_lbl.place(relx=0.5, rely=0.45, anchor="center")
+        self.text_lbl.place(x=min_x/2, y=min_y/2 - 30, anchor="center")
 
         self.conf_lbl = tk.Label(self.tkui, text=f"Loading...")
         self.conf_lbl.configure(bg="#333333", fg="#666666", font=(self.FONT, 10))
-        self.conf_lbl.place(relx=0.01, rely=0.935, anchor="w")
+        self.conf_lbl.place(x=36, y=min_y - 25, anchor="w")
 
         self.time_lbl = tk.Label(self.tkui, text=f"0.000s")
         self.time_lbl.configure(bg="#333333", fg="#666666", font=(self.FONT, 10))
-        self.time_lbl.place(relx=0.075, rely=0.78, anchor="e")
+        self.time_lbl.place(x=7, y=min_y - 85, anchor="w")
 
         self.ver_lbl = tk.Label(self.tkui, text=f"VRCTextboxSTT {self.version} by I5UCC")
         self.ver_lbl.configure(bg="#333333", fg="#666666", font=(self.FONT, 10))
-        self.ver_lbl.place(relx=0.99, rely=0.05, anchor="e")
+        self.ver_lbl.place(x=min_x - 7, y=15, anchor="e")
 
         self.status_lbl = tk.Label(self.tkui, text="INITIALIZING")
         self.status_lbl.configure(bg="#333333", fg="white", font=(self.FONT, 12))
-        self.status_lbl.place(relx=0.047, rely=0.065, anchor="w")
+        self.status_lbl.place(x=38, y=24, anchor="w")
 
         self.color_lbl = tk.Label(self.tkui, text="")
         self.color_lbl.configure(bg="red", width=2, fg="white", font=(self.FONT, 12))
-        self.color_lbl.place(relx=0.01, rely=0.07, anchor="w")
+        self.color_lbl.place(x=10, y=25, anchor="w")
 
         self.btn_copy = tk.Button(self.tkui, text="📋")
         self.btn_copy.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=6, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
-        self.btn_copy.place(relx=0.99, rely=0.76, anchor="e")
+        self.btn_copy.place(x=min_x - 10, y=min_y - 90, anchor="e")
 
         self.btn_settings = tk.Button(self.tkui, text="⚙")
         self.btn_settings.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=6, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white", state="disabled")
-        self.btn_settings.place(relx=0.99, rely=0.94, anchor="e")
+        self.btn_settings.place(x=min_x - 10, y=min_y - 23, anchor="e")
 
         self.btn_refresh = tk.Button(self.tkui, text="⭯")
         self.btn_refresh.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=6, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white", state="disabled")
-        self.btn_refresh.place(relx=0.915, rely=0.94, anchor="e")
+        self.btn_refresh.place(x=min_x - 70, y=min_y - 23, anchor="e")
 
         self.textfield = tk.Entry(self.tkui)
-        self.textfield.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=25, highlightthickness=0, insertbackground="#666666")
-        self.textfield.place(relx=0.5, rely=0.845, anchor="center", width=792, height=25)
-
-        self.update()
+        self.textfield.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=31, highlightthickness=0, insertbackground="#666666")
+        self.textfield.place(x=min_x/2 - 2, y=min_y - 58, anchor="center", width=792, height=25)
 
     def show_update_button(self, text):
         self.btn_update = tk.Button(self.tkui, text=text)
@@ -93,10 +93,6 @@ class MainWindow(object):
     def run_loop(self):
         self.tkui.mainloop()
 
-    def update(self):
-        self.tkui.update()
-        self.tkui.update_idletasks()
-
     def create_loop(self, intervall, func):
         func()
         self.tkui.after(intervall, self.create_loop, *[intervall, func])
@@ -104,32 +100,26 @@ class MainWindow(object):
     def set_status_label(self, text, color="orange"):
         self.status_lbl.configure(text=text)
         self.color_lbl.configure(bg=color)
-        self.update()
         log.info(text)
 
     def set_text_label(self, text):
         self.text_lbl.configure(text=text)
-        self.update()
 
     def loading_status(self, s: str):
         try:
             self.set_text_label(f"Downloading Model:{s[s.rindex('|')+1:]}")
-            self.update()
         except Exception:
             pass
 
     def set_conf_label(self, ip, port, server_port, http_port, ovr_initialized, device, model, compute_type, cpu_threads, num_workers, vad):
         _cpu_str = f", CPU Threads: {cpu_threads}" if device.lower() == "cpu" else ""
         self.conf_lbl.configure(justify="left", text=f"OSC: {ip}#{port}:{server_port}:{http_port}, OVR: {'Connected' if ovr_initialized else 'Disconnected'}, Device: {device}{_cpu_str}\nModel: {model}, Compute Type: {compute_type}, Workers: {num_workers}, VAD: {vad}")
-        self.update()
 
     def set_time_label(self, time):
         self.time_lbl.configure(text=f"{time:0.3f}s")
-        self.update()
 
     def clear_textfield(self):
         self.textfield.delete(0, tk.END)
-        self.update()
 
     def on_closing(self):
         self.tkui.destroy()
@@ -144,6 +134,72 @@ class MainWindow(object):
 
     def get_coordinates(self):
         return (self.tkui.winfo_x(), self.tkui.winfo_y())
+    
+    def toggle_copy_button(self, state):
+        if state:
+            self.btn_copy.place(x=800, y=290, anchor="e")
+        else:
+            self.btn_copy.place_forget()
+
+
+class LogFrame(tk.Frame, logging.Handler):
+
+    def __init__(self, parent, added_height, max_lines, *args, **options):
+        logging.Handler.__init__(self)
+        tk.Frame.__init__(self, parent, *args, **options)
+        self.setLevel(logging.DEBUG)
+        self.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+        self.FONT = "Cascadia Code"
+
+        self.parent = parent
+        self.width = self.parent.winfo_width()
+        self.height_closed = self.parent.winfo_height()
+        self.height_opened = self.height_closed + added_height
+        self.max_lines = max_lines + 1
+
+        self.show = tk.IntVar()
+        self.show.set(0)
+
+        self.title_frame = tk.Frame(self, bg="#333333")
+        self.title_frame.pack(fill="x", expand=1)
+
+        self.toggle_button = tk.Checkbutton(self.title_frame, width=2, text='▼', command=self.toggle, variable=self.show, bg="#333333", fg="white", font=(self.FONT, 12), indicatoron=False, highlightbackground="#333333", activebackground="#111111", activeforeground="white", selectcolor="#333333")
+        self.toggle_button.pack(side="left", padx=8)
+
+        self.sub_frame = tk.Frame(self, relief="sunken", borderwidth=1, bg="#333333", border=0)
+
+        self.text = ScrolledText.ScrolledText(self.sub_frame, wrap="word", width=116, height=11, font=(self.FONT, 9), state=tk.DISABLED, bg="#303030", fg="white", padx=5)
+        self.text.pack(fill="both", expand=1, pady=8)
+    
+    def get_opened(self):
+        return bool(self.show.get())
+
+    def toggle(self):
+        if self.get_opened():
+            self.sub_frame.pack(fill="x", expand=1)
+            self.toggle_button.configure(text='▲')
+            self.parent.geometry(f"{self.width}x{self.height_opened}")
+        else:
+            self.sub_frame.forget()
+            self.toggle_button.configure(text='▼')
+            self.parent.geometry(f"{self.width}x{self.height_closed}")
+
+    def _insert(self, text):
+        self.text.config(state=tk.NORMAL)
+        self.text.insert(tk.END, text)
+        self.text.yview(tk.END)
+        self.text.config(state=tk.DISABLED)
+    
+    def _delete(self,start, end):
+        self.text.config(state=tk.NORMAL)
+        self.text.delete(start, end)
+        self.text.config(state=tk.DISABLED)
+
+    def emit(self, record):
+        if len(self.text.get(1.0, tk.END).split("\n")) > self.max_lines:
+            self._delete(1.0, 2.0)
+        
+        self._insert(self.format(record) + '\n')
 
 
 class SettingsWindow:

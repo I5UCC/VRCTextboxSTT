@@ -42,7 +42,20 @@ try:
     import pyperclip as clipboard
     import glob
     import re
-    log = logging.getLogger(__name__)
+
+    log = logging.getLogger("main")
+
+    import pkg_resources
+    installed_packages = pkg_resources.working_set
+    installed_packages_list = sorted(["%s==%s" % (i.key, i.version) for i in installed_packages])
+    log.debug(installed_packages_list)
+    log.debug("Python Version: " + sys.version)
+    VERSION = "DEV"
+    try:
+        VERSION = open(get_absolute_path("VERSION", __file__)).readline().rstrip()
+    except Exception:
+        pass
+    log.info(f"VRCTextboxSTT {VERSION} by I5UCC")
 except FileNotFoundError as e:
     import ctypes
     ctypes.windll.user32.MessageBoxW(0, f"Couldn't Import some dependencies, you might be missing C++ Redistributables needed for this program.\n\n Please try to reinstall the C++ Redistributables, link in the Requirements of the repository.\n\n{e}", "TextboxSTT - Dependency Error", 0)
@@ -103,11 +116,8 @@ def init():
     replacement_dict = {re.compile(key, re.IGNORECASE): value for key, value in config.wordreplacement.list.items()}
     base_replacement_dict = {re.compile(key, re.IGNORECASE): value for key, value in config.wordreplacement.base_replacements.items()}
 
-    if config.always_clipboard:
-        main_window.btn_copy.place_forget()
-    else:
-        main_window.btn_copy.place(relx=0.99, rely=0.76, anchor="e")
-        main_window.btn_copy.configure(command=(lambda: clipboard.copy(curr_text)))
+    main_window.toggle_copy_button(not config.always_clipboard)
+    main_window.btn_copy.configure(command=(lambda: clipboard.copy(curr_text)))
 
     modify_audio_files(config.audio_feedback.__dict__.copy())
 
@@ -131,9 +141,9 @@ def init():
     if ovr.overlay_font != font_language:
         ovr.set_overlay_font(font_language)
     if ovr.initialized:
-        main_window.set_status_label("INITIALZIED OVR", "green")
+        log.info("Initialized OpenVR")
     else:
-        main_window.set_status_label("COULDNT INITIALIZE OVR, CONTINUING DESKTOP ONLY", "orange")
+        log.warning("Failed to initialize OpenVR, continuing desktop only.")
     
     # Initialize OSC Handler
     if not osc:
@@ -143,26 +153,28 @@ def init():
         restart()
     else:
         osc.config_osc = copy.deepcopy(config.osc)
+    log.info("Initialized OSC")
 
     # Start Flask server
     if not browsersource:
         browsersource = OBSBrowserSource(config.obs, get_absolute_path('resources/obs_source.html', __file__), CACHE_PATH)
     if config.obs.enabled and not browsersource.running:
         if browsersource.start():
-            main_window.set_status_label("INITIALIZED FLASK SERVER", "green")
+            log.info("Initialized Flask Server")
         else:
-            main_window.set_status_label("COULDNT INITIALIZE FLASK SERVER, CONTINUING WITHOUT OBS SOURCE", "orange")
+            log.warning("Failed to initialize Flask Server, continuing without OBS Source")
     elif not config.obs.enabled and browsersource.running:
-        log.info("Changed OBS settings, restarting...")
+        log.warning("Changed OBS settings, restarting...")
         restart()
 
+    # Initialize Websocket Handler
     if not websocket:
         websocket = WebsocketHandler(config.websocket.port, config.websocket.update_rate, config.websocket.is_client, config.websocket.uri)
     if config.websocket.enabled and not websocket.running:
         websocket.start()
-        main_window.set_status_label("INITIALIZED WEBSOCKET SERVER", "green")
+        log.info("Initialized WebSocket Server")
     elif not config.websocket.enabled and websocket.running or config.websocket.is_client != websocket.is_client or config.websocket.uri != websocket.uri or config.websocket.port != websocket.port:
-        log.info("Changed WebSocket settings, restarting...")
+        log.warning("Changed WebSocket settings, restarting...")
         restart()
     if config.websocket.update_rate != websocket.update_rate:
         websocket.set_update_rate(config.websocket.update_rate)
@@ -173,9 +185,8 @@ def init():
     if not transcriber:
         transcriber = TranscribeHandler(copy.deepcopy(config.whisper), config.vad, CACHE_PATH, config.translator.language == "english")
         log.info("Device: " + transcriber.device_name)
-        transcriber.transcribe(np.zeros(100000, dtype=np.float32))
     elif config.whisper != transcriber.config_whisper:
-        log.info("Changed Whisper settings, restarting...")
+        log.warning("Changed Whisper settings, restarting...")
         restart()
     else:
         transcriber.config_whisper = copy.deepcopy(config.whisper)
@@ -187,10 +198,10 @@ def init():
         if not translator:
             translator = TranslationHandler(CACHE_PATH, config.whisper.language, copy.deepcopy(config.translator))
         elif config.translator != translator.translator_config:
-            log.info("Changed Translator settings, restarting...")
+            log.warning("Changed Translator settings, restarting...")
             restart()
     elif translator:
-        log.info("Changed Translator settings, restarting...")
+        log.warning("Changed Translator settings, restarting...")
         restart()
     OUT_FILE_LOGGER.remove_ui_output()
     
@@ -465,6 +476,7 @@ def process_forever() -> None:
                 _text = translator.translate(_text)
             time_taken = time() - pre
             main_window.set_time_label(time_taken)
+            log.debug(f"Time taken: {time_taken}")
 
             _time_last = time()
             if not _text:
@@ -473,7 +485,7 @@ def process_forever() -> None:
 
             sentence_end = _text and _text[-1] in {".", "!", "?"}
             if sentence_end and not first_run and (len(_last_sample) > config.whisper.max_samples or time_taken > config.whisper.max_transciption_time):
-                log.warn("Either max samples or max transcription time reached. Starting new phrase.")
+                log.warning("Either max samples or max transcription time reached. Starting new phrase.")
                 last_text = _text + " "
                 append = True
                 _last_sample = _last_sample[-config.whisper.cutoff_buffer:]
@@ -570,6 +582,7 @@ def process_loop() -> None:
                 _text = translator.translate(_text)
             time_taken = time() - pre
             main_window.set_time_label(time_taken)
+            log.debug(f"Time taken: {time_taken}")
 
             _time_last = time()
             if not _text:
@@ -578,7 +591,7 @@ def process_loop() -> None:
 
             sentence_end = _text and _text[-1] in {".", "!", "?"}
             if sentence_end and not first_run and (len(_last_sample) > config.whisper.max_samples or time_taken > config.whisper.max_transciption_time):
-                log.warn("Either max samples or max transcription time reached. Starting new phrase.")
+                log.warning("Either max samples or max transcription time reached. Starting new phrase.")
                 last_text = _text + " "
                 append = True
                 _last_sample = _last_sample[-config.whisper.cutoff_buffer:]
@@ -647,7 +660,9 @@ def process_once():
                 play_sound(config.audio_feedback.sound_donelisten)
                 main_window.set_status_label("TRANSLATING", "orange")
                 _text = translator.translate(_text)
-            main_window.set_time_label(time() - pre)
+            time_taken = time() - pre
+            main_window.set_time_label(time_taken)
+            log.debug(f"Time taken: {time_taken}")
             if pressed:
                 main_window.set_status_label("CANCELED - WAITING FOR INPUT", "orange")
                 play_sound(config.audio_feedback.sound_timeout)
@@ -1063,7 +1078,7 @@ if __name__ == "__main__":
         x = None
         y = None
 
-    main_window = MainWindow(__file__, x, y)
+    main_window = MainWindow(__file__, x, y, VERSION)
 
     main_window.tkui.protocol("WM_DELETE_WINDOW", main_window_closing)
     main_window.textfield.bind("<Return>", (lambda event: entrybox_enter_event(main_window.textfield.get())))

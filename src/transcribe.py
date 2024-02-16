@@ -69,17 +69,20 @@ class TranscribeHandler(object):
 
         self.compute_type = self.device_config.compute_type if self.device_config.compute_type else get_best_compute_type(self.device, self.device_index)
         
-        log.info(f"Using model: {self.whisper_model} for language: {self.language} ({self.task}) - {self.compute_type}")
-        log.info("ct2 version: " + ctranslate2_version)
-        log.info("whisper version: " + whisper_version)
-        log.info("torch version: " + torch.__version__)
-        
         self.use_cpu = True if str(self.device) == "cpu" else False
         self.model_path = self.load_model(self.whisper_model, self.compute_type, self.is_openai_model)
 
         self.device_name = torch.cuda.get_device_name(self.device_index) if self.device == "cuda" else "CPU"
         
         self.model: WhisperModel = WhisperModel(self.model_path, self.device, self.device_index, self.compute_type, self.device_config.cpu_threads, self.device_config.num_workers)
+
+        log.debug(f"Using model: {self.whisper_model} for language: {self.language} ({self.task}) - {self.compute_type}")
+        log.debug(f"Language: {self.language}")
+        log.debug(f"Task: {self.task}")
+        log.debug(f"Device: {self.device} ({self.device_index}) - {self.device_name}")
+        log.debug(f"Compute Type: {self.compute_type}")
+        log.debug(f"VAD Enabled: {self.config_vad.enabled}")
+        log.debug(f"VAD Parameters: {self.config_vad.parameters.__dict__}")
 
     def transcribe(self, audio) -> str:
         """
@@ -98,13 +101,13 @@ class TranscribeHandler(object):
             # Code adapted from the TaSTT project
             for s in segments:
                 if s.no_speech_prob > 0.6 and s.avg_logprob < -0.5:
-                    log.warn(f"Skipping possible hallucination: {s.text}\n" +
+                    log.warning(f"Skipping possible hallucination: {s.text}\n" +
                                 f"with no_speech_prob: {s.no_speech_prob}\n" +
                                 f"and avg_logprob: {s.avg_logprob}\n" +
                                 "case 1")
                     continue
                 if s.no_speech_prob > 0.15 and s.avg_logprob < -0.7:
-                    log.warn(f"Skipping possible hallucination: {s.text}\n" +
+                    log.warning(f"Skipping possible hallucination: {s.text}\n" +
                                 f"with no_speech_prob: {s.no_speech_prob}\n" +
                                 f"and avg_logprob: {s.avg_logprob}\n" +
                                 "case 2")

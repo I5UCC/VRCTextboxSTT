@@ -90,6 +90,11 @@ class Update_Handler(object):
 
         update_available = current_version != latest_tag
 
+        if update_available:
+            log.debug(f"Update Available! {current_version} -> {latest_tag}")
+        else:
+            log.debug("No Update Available")
+
         return update_available, latest_tag
 
     def fetch(self) -> None:
@@ -99,7 +104,9 @@ class Update_Handler(object):
         try:
             log.debug("Fetching Tags")
             result = subprocess.run([self.git_path, "fetch", "--all", "--tags", "--force"], cwd=self.repo_path, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, startupinfo=self.startupinfo)
-            log.debug(result.stdout.decode('utf-8'))
+            result = result.stdout.decode('utf-8')
+            if result:
+                log.debug(result)
         except Exception:
             log.debug(traceback.format_exc())
 
