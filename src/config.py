@@ -145,12 +145,12 @@ class audio(object):
 @dataclass
 class audio_feedback_config(object):
     enabled: bool = True
-    sound_clear: audio = audio(True, "clear.wav", 0)
-    sound_donelisten: audio = audio(True, "donelisten.wav", 0)
-    sound_finished: audio = audio(True, "finished.wav", 0)
-    sound_listen: audio = audio(True, "listen.wav", 0)
-    sound_timeout: audio = audio(True, "timeout.wav", 0)
-    sound_timeout_text: audio = audio(True, "timeout_text.wav", 0)
+    sound_clear: audio = field(default_factory=lambda: audio(True, "clear.wav", 0))
+    sound_donelisten: audio = field(default_factory=lambda: audio(True, "donelisten.wav", 0))
+    sound_finished: audio = field(default_factory=lambda: audio(True, "finished.wav", 0))
+    sound_listen: audio = field(default_factory=lambda: audio(True, "listen.wav", 0))
+    sound_timeout: audio = field(default_factory=lambda: audio(True, "timeout.wav", 0))
+    sound_timeout_text: audio = field(default_factory=lambda: audio(True, "timeout_text.wav", 0))
     
 
 @dataclass_json
