@@ -54,7 +54,7 @@ try:
     try:
         VERSION = open(get_absolute_path("VERSION", __file__)).readline().rstrip()
     except Exception:
-        pass
+        log.error("Failed to read version file.")
     log.info(f"VRCTextboxSTT {VERSION} by I5UCC")
 except FileNotFoundError as e:
     import ctypes
@@ -80,7 +80,6 @@ websocket: WebsocketHandler = None
 autocorrect: Speller = None
 timeout_time: float = 0.0
 overlay_timeout_time: float = 0.0
-finished: bool = False
 curr_time: float = 0.0
 pressed: bool = False
 holding: bool = False
@@ -318,8 +317,6 @@ def clear_chatbox() -> None:
     global ovr
     global browsersource
     global websocket
-    global transcriber
-    global finished
     global timeout_time
     global overlay_timeout_time
 
@@ -335,7 +332,8 @@ def clear_chatbox() -> None:
     if ovr.initialized and config.overlay.enabled:
         ovr.set_overlay_text("")
 
-    finished = False
+    set_typing_indicator(False)
+
     overlay_timeout_time = 0.0
     timeout_time = 0.0
 
@@ -361,6 +359,8 @@ def populate_chatbox(text, cutoff: bool = False, is_textfield: bool = False):
     global curr_text
     global replacement_dict
     global base_replacement_dict
+    global timeout_time
+    global overlay_timeout_time
 
     if config.wordreplacement.enabled:
         text = replace_words(text, replacement_dict)
@@ -399,6 +399,8 @@ def populate_chatbox(text, cutoff: bool = False, is_textfield: bool = False):
         ovr.set_overlay_text(text)
 
     set_typing_indicator(False)
+    timeout_time = time()
+    overlay_timeout_time = time()
 
 
 def process_forever() -> None:
@@ -417,9 +419,6 @@ def process_forever() -> None:
     global config_ui_open
     global listen
     global transcriber
-    global finished
-    global timeout_time
-    global overlay_timeout_time
 
     play_sound(config.audio_feedback.sound_listen)
 
@@ -500,8 +499,6 @@ def process_forever() -> None:
 
         sleep(0.05)
 
-    timeout_time = time()
-    overlay_timeout_time = time()
     set_typing_indicator(False)
     set_finished(False)
     main_window.set_button_enabled(True)
@@ -524,9 +521,6 @@ def process_loop() -> None:
     global pressed
     global listen
     global transcriber
-    global finished
-    global timeout_time
-    global overlay_timeout_time
 
     finished = False
     _text = ""
@@ -609,8 +603,6 @@ def process_loop() -> None:
             break
         sleep(0.05)
 
-    timeout_time = time()
-    overlay_timeout_time = time()
     set_typing_indicator(False)
     set_finished(finished)
     main_window.set_button_enabled(True)
@@ -631,7 +623,6 @@ def process_once():
     global main_window
     global pressed
     global listen
-    global finished
     global timeout_time
     global overlay_timeout_time
 
@@ -681,8 +672,6 @@ def process_once():
             play_sound(config.audio_feedback.sound_timeout)
             finished = False
 
-    timeout_time = time()
-    overlay_timeout_time = time()
     set_typing_indicator(False)
     set_finished(finished)
     main_window.set_button_enabled(True)
@@ -730,17 +719,16 @@ def check_timeout() -> None:
     """
     global timeout_time
     global overlay_timeout_time
-    global finished
 
-    if finished and config.overlay.timeout > 0 and overlay_timeout_time > 0 and time() - overlay_timeout_time > config.overlay.timeout:
+    if config.overlay.timeout > 0 and overlay_timeout_time > 0 and time() - overlay_timeout_time > config.overlay.timeout:
         if ovr.initialized and config.overlay.enabled:
             ovr.set_overlay_text("")
+            log.info("Overlay timeout")
         overlay_timeout_time = 0.0
 
-    if finished and config.text_timeout > 0 and timeout_time > 0 and time() - timeout_time > config.text_timeout:
+    if config.text_timeout > 0 and timeout_time > 0 and time() - timeout_time > config.text_timeout:
         clear_chatbox()
         play_sound(config.audio_feedback.sound_timeout_text)
-        finished = False
         timeout_time = 0.0
 
 
@@ -792,7 +780,7 @@ def handle_input() -> None:
 
 def entrybox_enter_event(text) -> None:
     """
-    Process the entered text in the entry box.
+    Process the enter key event for the entry box.
 
     Args:
         text (str): The text entered in the entry box.
@@ -801,9 +789,6 @@ def entrybox_enter_event(text) -> None:
     global config
     global main_window
     global enter_pressed
-    global finished
-    global timeout_time
-    global overlay_timeout_time
 
     enter_pressed = True
     if text:
@@ -824,12 +809,8 @@ def entrybox_enter_event(text) -> None:
         clear_chatbox()
         play_sound(config.audio_feedback.sound_clear)
 
-    finished = True
-    timeout_time = time()
-    overlay_timeout_time = time()
 
-
-def textfield_keyrelease(text, last_char) -> None:
+def entrybox_keyrelease(text, last_char) -> None:
     """
     Handles the key release event for the textfield.
     
@@ -841,9 +822,6 @@ def textfield_keyrelease(text, last_char) -> None:
     global config
     global osc
     global enter_pressed
-    global finished
-    global timeout_time
-    global overlay_timeout_time
     global autocorrect
 
     if autocorrect and last_char in {" ", ",", ".", "!", "?", ";", ":"}:
@@ -868,9 +846,6 @@ def textfield_keyrelease(text, last_char) -> None:
         set_finished(True)
 
     enter_pressed = False
-    finished = True
-    timeout_time = time()
-    overlay_timeout_time = time()
 
 
 def main_window_closing() -> None:
@@ -1082,7 +1057,7 @@ if __name__ == "__main__":
 
     main_window.tkui.protocol("WM_DELETE_WINDOW", main_window_closing)
     main_window.textfield.bind("<Return>", (lambda event: entrybox_enter_event(main_window.textfield.get())))
-    main_window.textfield.bind("<KeyRelease>", (lambda event: textfield_keyrelease(main_window.textfield.get(), event.char)))
+    main_window.textfield.bind("<KeyRelease>", (lambda event: entrybox_keyrelease(main_window.textfield.get(), event.char)))
     main_window.btn_settings.configure(command=open_settings)
     main_window.btn_refresh.configure(command=restart)
     main_window.create_loop(7000, check_ovr)
