@@ -24,6 +24,8 @@ class MainWindow(object):
         self.icon_path = get_absolute_path("resources/icon.ico", script_path)
 
         self.FONT = "Cascadia Code"
+        self.enter_pressed = False
+        self.config_ui_open = False
 
         self.tkui = tk.Tk()
         if x and y:

@@ -1,4 +1,4 @@
-from helper import get_best_compute_type
+from helper import get_best_compute_type, measure_time
 from shutil import rmtree
 from config import translator_config, LANGUAGE_TO_KEY, TRANSLATE_MODELS
 from ctranslate2.converters import TransformersConverter
@@ -62,6 +62,7 @@ class TranslationHandler(object):
         self.tokenizer = transformers.AutoTokenizer.from_pretrained(self.model_path)
         self.tokenizer.src_lang = self.from_language
 
+    @measure_time
     def translate(self, text) -> str:
         """
         Translates the given text from the source language to the target language.

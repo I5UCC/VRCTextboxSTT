@@ -28,6 +28,7 @@ try:
     from transcribe import TranscribeHandler
     from translate import TranslationHandler
     from websocket import WebsocketHandler
+    from clipboard import clipboardHandler
     from config import config_struct, audio, LANGUAGE_TO_KEY
     from updater import Update_Handler
     from pydub import AudioSegment
@@ -39,7 +40,6 @@ try:
     import subprocess
     import numpy as np
     import logging
-    import pyperclip as clipboard
     import glob
     import re
 
@@ -68,15 +68,17 @@ except Exception as e:
     sys.exit(1)
 
 main_window: MainWindow = None
+config_window: SettingsWindow = None
 config: config_struct = None
 updater: Update_Handler = None
 osc: OscHandler = None
 ovr: OVRHandler = None
-listen: ListenHandler = None
+listener: ListenHandler = None
 transcriber: TranscribeHandler = None
 translator: TranslationHandler = None
 browsersource: OBSBrowserSource = None
 websocket: WebsocketHandler = None
+clipboard: clipboardHandler = clipboardHandler()
 autocorrect: Speller = None
 timeout_time: float = 0.0
 overlay_timeout_time: float = 0.0
@@ -85,11 +87,7 @@ pressed: bool = False
 holding: bool = False
 held: bool = False
 thread_process: Thread = Thread()
-config_ui: SettingsWindow = None
-config_ui_open: bool = False
-enter_pressed: bool = False
 initialized: bool = False
-curr_text: str = ""
 replacement_dict: dict = {}
 base_replacement_dict: dict = {}
 
@@ -106,7 +104,7 @@ def init():
     global ovr
     global initialized
     global browsersource
-    global listen
+    global listener
     global autocorrect
     global updater
     global replacement_dict
@@ -116,7 +114,7 @@ def init():
     base_replacement_dict = {re.compile(key, re.IGNORECASE): value for key, value in config.wordreplacement.base_replacements.items()}
 
     main_window.toggle_copy_button(not config.always_clipboard)
-    main_window.btn_copy.configure(command=(lambda: clipboard.copy(curr_text)))
+    main_window.btn_copy.configure(command=(lambda: clipboard.set_clipboard()))
 
     modify_audio_files(config.audio_feedback.__dict__.copy())
 
@@ -126,10 +124,10 @@ def init():
         del autocorrect
 
     # Initialize ListenHandler
-    if not listen:
-        listen = ListenHandler(config.listener)
+    if not listener:
+        listener = ListenHandler(config.listener)
     else:
-        listen.set_config(config.listener)
+        listener.set_config(config.listener)
 
     # Initialize OpenVR
     font_language = config.whisper.language if not config.translator.language else config.translator.language
@@ -356,11 +354,11 @@ def populate_chatbox(text, cutoff: bool = False, is_textfield: bool = False):
     global ovr
     global browsersource
     global websocket
-    global curr_text
     global replacement_dict
     global base_replacement_dict
     global timeout_time
     global overlay_timeout_time
+    global clipboard
 
     if config.wordreplacement.enabled:
         text = replace_words(text, replacement_dict)
@@ -369,7 +367,7 @@ def populate_chatbox(text, cutoff: bool = False, is_textfield: bool = False):
     if not text:
         return
 
-    curr_text = text
+    clipboard.content = text
 
     if config.always_clipboard:
         clipboard.copy(text)
@@ -416,8 +414,7 @@ def process_forever() -> None:
     global config
     global main_window
     global pressed
-    global config_ui_open
-    global listen
+    global listener
     global transcriber
 
     play_sound(config.audio_feedback.sound_listen)
@@ -435,11 +432,11 @@ def process_forever() -> None:
     set_finished(finished)
     main_window.set_status_label("LISTENING", "#FF00FF")
 
-    listen.start_listen_background()
+    listener.start_listen_background()
 
     _time_last = time()
     while True:
-        if config_ui_open or config.mode != 2:
+        if main_window.config_ui_open or config.mode != 2:
             main_window.set_status_label("CANCELED - WAITING FOR INPUT", "orange")
             break
 
@@ -457,13 +454,15 @@ def process_forever() -> None:
                 clear_chatbox()
                 finished = False
                 break
-        elif not listen.data_queue.empty():
-            while not listen.data_queue.empty():
-                data = listen.data_queue.get()
+        elif not listener.data_queue.empty():
+            while not listener.data_queue.empty():
+                data = listener.data_queue.get()
                 _last_sample += data
 
+            set_typing_indicator(True)
+
             pre = time()
-            _np_audio = listen.raw_to_np(_last_sample)
+            _np_audio = listener.raw_to_np(_last_sample)
             _text = transcriber.transcribe(_np_audio)
             log.info("Transcription: " + _text)
             
@@ -475,7 +474,7 @@ def process_forever() -> None:
                 _text = translator.translate(_text)
             time_taken = time() - pre
             main_window.set_time_label(time_taken)
-            log.debug(f"Time taken: {time_taken}")
+            log.debug(f"Full time taken: {time_taken}")
 
             _time_last = time()
             if not _text:
@@ -502,7 +501,7 @@ def process_forever() -> None:
     set_typing_indicator(False)
     set_finished(False)
     main_window.set_button_enabled(True)
-    listen.stop_listen_background()
+    listener.stop_listen_background()
 
 
 def process_loop() -> None:
@@ -516,10 +515,10 @@ def process_loop() -> None:
     """
 
     global config
-    global listen
+    global listener
     global main_window
     global pressed
-    global listen
+    global listener
     global transcriber
 
     finished = False
@@ -536,7 +535,7 @@ def process_loop() -> None:
     main_window.set_status_label("LISTENING", "#FF00FF")
     play_sound(config.audio_feedback.sound_listen)
 
-    listen.start_listen_background()
+    listener.start_listen_background()
 
     _time_last = time()
     while True:
@@ -552,20 +551,20 @@ def process_loop() -> None:
                 main_window.set_status_label("CLEARED - WAITING FOR INPUT", "#00008b")
                 play_sound(config.audio_feedback.sound_clear)
                 clear_chatbox()
-                finished = False
                 break
             elif _last_sample == bytes():
                 main_window.set_status_label("CANCELED - WAITING FOR INPUT", "#00008b")
                 play_sound(config.audio_feedback.sound_timeout)
-                finished = False
                 break
-        elif not listen.data_queue.empty():
-            while not listen.data_queue.empty():
-                data = listen.data_queue.get()
+        elif not listener.data_queue.empty():
+            while not listener.data_queue.empty():
+                data = listener.data_queue.get()
                 _last_sample += data
 
+            set_typing_indicator(True)
+
             pre = time()
-            _np_audio = listen.raw_to_np(_last_sample)
+            _np_audio = listener.raw_to_np(_last_sample)
             _text = transcriber.transcribe(_np_audio)
             log.info("Transcription: " + _text)
             if append:
@@ -576,7 +575,7 @@ def process_loop() -> None:
                 _text = translator.translate(_text)
             time_taken = time() - pre
             main_window.set_time_label(time_taken)
-            log.debug(f"Time taken: {time_taken}")
+            log.debug(f"Full time taken: {time_taken}")
 
             _time_last = time()
             if not _text:
@@ -599,14 +598,13 @@ def process_loop() -> None:
         elif _last_sample == bytes() and time() - _time_last > config.listener.timeout_time:
             main_window.set_status_label("TIMEOUT - WAITING FOR INPUT", "#00008b")
             play_sound(config.audio_feedback.sound_timeout)
-            finished = False
             break
         sleep(0.05)
 
     set_typing_indicator(False)
     set_finished(finished)
     main_window.set_button_enabled(True)
-    listen.stop_listen_background()
+    listener.stop_listen_background()
 
 
 def process_once():
@@ -622,7 +620,7 @@ def process_once():
     global config
     global main_window
     global pressed
-    global listen
+    global listener
     global timeout_time
     global overlay_timeout_time
 
@@ -632,7 +630,7 @@ def process_once():
     set_finished(finished)
     main_window.set_status_label("LISTENING", "#FF00FF")
     play_sound(config.audio_feedback.sound_listen)
-    raw_audio = listen.listen_once()
+    raw_audio = listener.listen_once()
     if raw_audio is None:
         main_window.set_status_label("TIMEOUT - WAITING FOR INPUT", "orange")
         play_sound(config.audio_feedback.sound_timeout)
@@ -644,7 +642,7 @@ def process_once():
 
         if not pressed:
             pre = time()
-            _np_audio = listen.raw_to_np(raw_audio)
+            _np_audio = listener.raw_to_np(raw_audio)
             _text = transcriber.transcribe(_np_audio)
             log.info("Transcription: " + _text)
             if translator:
@@ -653,7 +651,7 @@ def process_once():
                 _text = translator.translate(_text)
             time_taken = time() - pre
             main_window.set_time_label(time_taken)
-            log.debug(f"Time taken: {time_taken}")
+            log.debug(f"Full time taken: {time_taken}")
             if pressed:
                 main_window.set_status_label("CANCELED - WAITING FOR INPUT", "orange")
                 play_sound(config.audio_feedback.sound_timeout)
@@ -742,10 +740,10 @@ def handle_input() -> None:
     global holding
     global pressed
     global curr_time
-    global config_ui_open
+    global main_window
     global initialized
 
-    if not initialized or config_ui_open:
+    if not initialized or main_window.config_ui_open:
         return
 
     pressed = get_trigger_state()
@@ -754,7 +752,7 @@ def handle_input() -> None:
     if thread_process.is_alive():
         return
 
-    if not thread_process.is_alive() and config.mode == 2 and not config_ui_open:
+    if not thread_process.is_alive() and config.mode == 2 and not main_window.config_ui_open:
         thread_process = Thread(target=process_forever)
         thread_process.start()
     elif pressed and not holding and not held:
@@ -788,9 +786,8 @@ def entrybox_enter_event(text) -> None:
 
     global config
     global main_window
-    global enter_pressed
 
-    enter_pressed = True
+    main_window.enter_pressed = True
     if text:
         if autocorrect:
             corrected_text = autocorrect(text)
@@ -821,7 +818,6 @@ def entrybox_keyrelease(text, last_char) -> None:
 
     global config
     global osc
-    global enter_pressed
     global autocorrect
 
     if autocorrect and last_char in {" ", ",", ".", "!", "?", ";", ":"}:
@@ -831,7 +827,7 @@ def entrybox_keyrelease(text, last_char) -> None:
             main_window.textfield.insert(0, corrected_text)
             text = corrected_text
 
-    if not enter_pressed:
+    if not main_window.enter_pressed:
         set_finished(False)
         if len(text) > osc.textbox_charlimit:
             main_window.textfield.delete(osc.textbox_charlimit, len(text))
@@ -845,7 +841,7 @@ def entrybox_keyrelease(text, last_char) -> None:
     else:
         set_finished(True)
 
-    enter_pressed = False
+    main_window.enter_pressed = False
 
 
 def main_window_closing() -> None:
@@ -853,7 +849,7 @@ def main_window_closing() -> None:
 
     global config
     global main_window
-    global config_ui
+    global config_window
     global osc
     global browsersource
     global websocket
@@ -868,7 +864,7 @@ def main_window_closing() -> None:
     except Exception:
         pass
     try:
-        config_ui.on_closing()
+        config_window.on_closing()
     except Exception:
         pass
     try:
@@ -887,29 +883,28 @@ def open_settings() -> None:
 
     global config
     global main_window
-    global config_ui
-    global config_ui_open
+    global config_window
 
     main_window.set_status_label("WAITING FOR SETTINGS MENU TO CLOSE", "orange")
-    config_ui_open = True
-    config_ui = SettingsWindow(config, CONFIG_PATH, __file__, main_window.get_coordinates, restart)
-    config_ui.button_refresh.configure(command=determine_energy_threshold)
-    config_ui.btn_save.configure(command=(lambda: reload(True)))
-    config_ui.button_force_update.configure(command=update)
-    config_ui.tkui.protocol("WM_DELETE_WINDOW", reload)
+    main_window.config_ui_open = True
+    config_window = SettingsWindow(config, CONFIG_PATH, __file__, main_window.get_coordinates, restart)
+    config_window.button_refresh.configure(command=determine_energy_threshold)
+    config_window.btn_save.configure(command=(lambda: reload(True)))
+    config_window.button_force_update.configure(command=update)
+    config_window.tkui.protocol("WM_DELETE_WINDOW", reload)
     main_window.set_button_enabled(False)
-    config_ui.open()
+    config_window.open()
 
 
 def determine_energy_threshold() -> None:
     """Determines the energy threshold for the microphone to use for speech recognition"""
 
     global config
-    global config_ui
-    global listen
+    global config_window
+    global listener
 
-    config_ui.set_energy_threshold("Be quiet for 5 seconds...")
-    config_ui.set_energy_threshold(listen.get_energy_threshold())
+    config_window.set_energy_threshold("Be quiet for 5 seconds...")
+    config_window.set_energy_threshold(listener.get_energy_threshold())
 
 
 def check_ovr() -> None:
@@ -918,19 +913,15 @@ def check_ovr() -> None:
 
     This function checks if the OVR system is already initialized and if the configuration UI is open. If any of these conditions are met, the function returns without performing any action. Otherwise, it checks if SteamVR is running and if the OVRHandler is currently running. If both conditions are met, the function reinitalizes the OVR system.
 
-    Note:
-    - The global variables `config`, `initialized`, `ovr`, `config_ui_open`, and `main_window` are assumed to be defined and accessible within the scope of this function.
-
     Returns:
     None
     """
     global config
     global initialized
     global ovr
-    global config_ui_open
     global main_window
 
-    if not initialized or config_ui_open or ovr.initialized or not OVRHandler.is_running():
+    if not initialized or main_window.config_ui_open or ovr.initialized or not OVRHandler.is_running():
         return
 
     log.info("SteamVR is running, reinitalizing...")
@@ -944,11 +935,10 @@ def update() -> None:
     """
     global updater
     global main_window
-    global config_ui_open
-    global config_ui
+    global config_window
 
-    if config_ui_open:
-        config_ui.on_closing()
+    if main_window.config_ui_open:
+        config_window.on_closing()
 
     def update_done():
         log.name = "TextboxSTT"
@@ -970,7 +960,7 @@ def restart() -> None:
     """
 
     global main_window
-    global config_ui
+    global config_window
 
     executable = sys.executable
     log.info("Restarting...")
@@ -999,19 +989,19 @@ def reload(save=False) -> None:
 
     global config
     global osc
-    global config_ui
-    global config_ui_open
+    global config_window
+    global main_window
     global browsersource
 
-    if save and config_ui_open:
+    if save and main_window.config_ui_open:
         try:
-            config_ui.save()
-            config_ui.on_closing()
+            config_window.save()
+            config_window.on_closing()
         except Exception:
             log.error("Error saving settings: ")
             log.error(traceback.format_exc())
-    elif config_ui_open:
-        config_ui.on_closing()
+    elif main_window.config_ui_open:
+        config_window.on_closing()
         main_window.set_status_label("SETTINGS NOT SAVED - WAITING FOR INPUT", "#00008b")
     
     try:
@@ -1022,7 +1012,7 @@ def reload(save=False) -> None:
         main_window.set_status_label("ERROR INITIALIZING, PLEASE CHECK YOUR SETTINGS,\nLOOK INTO cache/latest.log for more info on the error", "red")
 
     main_window.set_button_enabled(True)
-    config_ui_open = False
+    main_window.config_ui_open = False
 
 
 def load_fonts() -> None:

@@ -1,6 +1,6 @@
 import os
 import torch
-from helper import get_best_compute_type
+from helper import get_best_compute_type, measure_time
 from faster_whisper import WhisperModel, __version__ as whisper_version
 from ctranslate2 import __version__ as ctranslate2_version
 from ctranslate2.converters import TransformersConverter
@@ -84,6 +84,7 @@ class TranscribeHandler(object):
         log.debug(f"VAD Enabled: {self.config_vad.enabled}")
         log.debug(f"VAD Parameters: {self.config_vad.parameters.__dict__}")
 
+    @measure_time
     def transcribe(self, audio) -> str:
         """
         Transcribes the given audio and returns the transcribed text.

@@ -4,8 +4,20 @@ import logging
 from ctypes import windll, byref, create_unicode_buffer, create_string_buffer
 from ctranslate2 import get_supported_compute_types
 import re
+import time
 
 log = logging.getLogger(__name__)
+
+
+def measure_time(func):
+    """Decorator to measure the time of a function."""
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = func(*args, **kwargs)
+        log.debug(f"{func.__qualname__} took {time.time() - start:.4f} seconds")
+        return result
+    return wrapper
+
 
 def loadfont(fontpath, private=True, enumerable=False) -> bool:
     '''
