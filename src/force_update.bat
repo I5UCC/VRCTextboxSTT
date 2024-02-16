@@ -29,6 +29,8 @@ if exist python/CPU (
 	.\python\python.exe -m pip install -U -r .\src\requirements.txt --no-warn-script-location
 )
 
+.\python\python.exe -m pip cache purge
+
 echo.
 echo.
 echo Done!
