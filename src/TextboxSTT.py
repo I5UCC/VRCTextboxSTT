@@ -112,6 +112,8 @@ def init():
     global replacement_dict
     global base_replacement_dict
 
+    initialized = False
+
     replacement_dict = {re.compile(key, re.IGNORECASE): value for key, value in config.wordreplacement.list.items()}
     base_replacement_dict = {re.compile(key, re.IGNORECASE): value for key, value in config.wordreplacement.base_replacements.items()}
 
@@ -1048,9 +1050,9 @@ if __name__ == "__main__":
     main_window.btn_settings.configure(command=open_settings)
     main_window.btn_refresh.configure(command=restart)
     main_window.create_loop(7000, check_ovr)
-    main_window.tkui.after(1000, reload)
     thread_process = Thread(target=handle_input)
     thread_pressed = Thread(target=handle_trigger_state)
     thread_process.start()
     thread_pressed.start()
+    main_window.tkui.after(1000, reload)
     main_window.run_loop()

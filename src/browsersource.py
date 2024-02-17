@@ -1,6 +1,7 @@
 import waitress
 from flask import Flask, render_template_string, jsonify
-from kthread import KThread
+from flask_cors import CORS
+from threading import Thread
 from config import obs_config
 import requests
 import traceback
@@ -13,13 +14,14 @@ log = logging.getLogger(__name__)
 
 class FlaskAppWrapper(object):
 
-    def __init__(self, app, port, **configs):
+    def __init__(self, app: Flask, port, **configs):
         self.app = app
         self.port = port
         self.running = False
         self.configs(**configs)
+        CORS(self.app)
         self.server = waitress.create_server(self.app, host="127.0.0.1", port=self.port)
-        self.flask_thread = KThread(target=self.server.run)
+        self.flask_thread = Thread(target=self.server.run)
 
     def configs(self, **configs):
         for config, value in configs:
@@ -46,7 +48,8 @@ class FlaskAppWrapper(object):
             return True
 
         try:
-            self.flask_thread.kill()
+            self.server.close()
+            self.flask_thread.join()
             self.running = False
             return True
         except Exception:
