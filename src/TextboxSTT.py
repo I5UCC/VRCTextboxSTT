@@ -116,14 +116,24 @@ def init():
 
     replacement_dict = {re.compile(key, re.IGNORECASE): value for key, value in config.wordreplacement.list.items()}
     base_replacement_dict = {re.compile(key, re.IGNORECASE): value for key, value in config.wordreplacement.base_replacements.items()}
+    modify_audio_files(config.audio_feedback.__dict__.copy())
 
+    # Initialize Update Handler and Check for Updates
+    if not updater:
+        updater = Update_Handler(get_absolute_path("../git/bin/git.exe", __file__), os.path.abspath(sys.path[-1] + "\\..\\"), __file__)
+        log.info(main_window.version)
+        update_available, latest_tag = updater.check_for_updates(main_window.version)
+        if update_available:
+            main_window.show_update_button(f"Update Available! ({latest_tag})")
+            main_window.btn_update.configure(command=update)
+
+    # Initialize Clipboard Handler
     if not clipboard:
         clipboard = clipboardHandler()
         main_window.toggle_copy_button(not config.always_clipboard)
         main_window.btn_copy.configure(command=(lambda: clipboard.set_clipboard()))
 
-    modify_audio_files(config.audio_feedback.__dict__.copy())
-
+    # Initialize Autocorrect
     if config.autocorrect.language and config.autocorrect.language in LANGUAGE_TO_KEY:
         autocorrect = Speller(LANGUAGE_TO_KEY[config.autocorrect.language])
     elif not config.autocorrect.language and autocorrect:
@@ -158,7 +168,34 @@ def init():
         osc.config_osc = copy.deepcopy(config.osc)
     log.info("Initialized OSC")
 
-    # Start Flask server
+    # Temporarily output to text label for download progress.
+    OUT_FILE_LOGGER.set_ui_output(main_window.loading_status)
+    main_window.set_status_label("LOADING WHISPER MODEL", "orange")
+    # Initialize TranscribeHandler
+    if not transcriber:
+        transcriber = TranscribeHandler(copy.deepcopy(config.whisper), config.vad, CACHE_PATH, config.translator.language == "english")
+        log.info("Device: " + transcriber.device_name)
+    elif config.whisper != transcriber.config_whisper:
+        log.warning("Changed Whisper settings, restarting...")
+        restart()
+    else:
+        transcriber.config_whisper = copy.deepcopy(config.whisper)
+    main_window.set_status_label(f"LOADED \"{transcriber.whisper_model}\"", "orange")
+
+    # Initialize TranslationHandler
+    if config.translator.language and config.translator.language != config.whisper.language and transcriber.task == "transcribe":
+        main_window.set_status_label("LOADING TRANSLATION MODEL", "orange")
+        if not translator:
+            translator = TranslationHandler(CACHE_PATH, config.whisper.language, copy.deepcopy(config.translator))
+        elif config.translator != translator.translator_config:
+            log.warning("Changed Translator settings, restarting...")
+            restart()
+    elif translator:
+        log.warning("Changed Translator settings, restarting...")
+        restart()
+    OUT_FILE_LOGGER.remove_ui_output()
+
+    # Start Browser Handler
     if not browsersource:
         browsersource = BrowserHandler(config.obs, get_absolute_path('resources/obs_source.html', __file__), CACHE_PATH)
     if config.obs.enabled and not browsersource.running:
@@ -182,45 +219,10 @@ def init():
     if config.websocket.update_rate != websocket.update_rate:
         websocket.set_update_rate(config.websocket.update_rate)
 
-    # Temporarily output to text label for download progress.
-    OUT_FILE_LOGGER.set_ui_output(main_window.loading_status)
-    main_window.set_status_label("LOADING WHISPER MODEL", "orange")
-    if not transcriber:
-        transcriber = TranscribeHandler(copy.deepcopy(config.whisper), config.vad, CACHE_PATH, config.translator.language == "english")
-        log.info("Device: " + transcriber.device_name)
-    elif config.whisper != transcriber.config_whisper:
-        log.warning("Changed Whisper settings, restarting...")
-        restart()
-    else:
-        transcriber.config_whisper = copy.deepcopy(config.whisper)
-    main_window.set_status_label(f"LOADED \"{transcriber.whisper_model}\"", "orange")
-
-    # Initialize TranslationHandler
-    if config.translator.language and config.translator.language != config.whisper.language and transcriber.task == "transcribe":
-        main_window.set_status_label("LOADING TRANSLATION MODEL", "orange")
-        if not translator:
-            translator = TranslationHandler(CACHE_PATH, config.whisper.language, copy.deepcopy(config.translator))
-        elif config.translator != translator.translator_config:
-            log.warning("Changed Translator settings, restarting...")
-            restart()
-    elif translator:
-        log.warning("Changed Translator settings, restarting...")
-        restart()
-    OUT_FILE_LOGGER.remove_ui_output()
-    
     main_window.set_text_label("- No Text -")
     main_window.set_conf_label(config.osc.ip, config.osc.client_port, osc.osc_server_port, osc.http_port, ovr.initialized, transcriber.device_name, transcriber.whisper_model, transcriber.compute_type, config.whisper.device.cpu_threads, config.vad.enabled)
     main_window.set_status_label("INITIALIZED - WAITING FOR INPUT", "green")
     main_window.set_button_enabled(True)
-
-    if not updater:
-        updater = Update_Handler(get_absolute_path("../git/bin/git.exe", __file__), os.path.abspath(sys.path[-1] + "\\..\\"), __file__)
-        log.info(main_window.version)
-        update_available, latest_tag = updater.check_for_updates(main_window.version)
-        if update_available:
-            main_window.show_update_button(f"Update Available! ({latest_tag})")
-            main_window.btn_update.configure(command=update)
-
     initialized = True
 
 
@@ -1050,9 +1052,10 @@ if __name__ == "__main__":
     main_window.btn_settings.configure(command=open_settings)
     main_window.btn_refresh.configure(command=restart)
     main_window.create_loop(7000, check_ovr)
+    main_window.tkui.update()
     thread_process = Thread(target=handle_input)
     thread_pressed = Thread(target=handle_trigger_state)
     thread_process.start()
     thread_pressed.start()
-    main_window.tkui.after(1000, reload)
+    main_window.tkui.after(0, reload)
     main_window.run_loop()
