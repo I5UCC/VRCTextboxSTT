@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from dataclasses_json import dataclass_json
 from typing import Optional
-from json import load
+from json import load, dump
 
 LANGUAGE_TO_KEY = {
     'english': 'en',
@@ -405,3 +405,8 @@ class config_struct(object):
     def load(path: str):
         """Load a config from a file path. Returns a config_struct object."""
         return config_struct.from_dict(load(open(path)))
+    
+    @staticmethod
+    def save(config, path: str):
+        """Save a config to a file path."""
+        dump(config.to_dict(), open(path, "w"), indent=4)
