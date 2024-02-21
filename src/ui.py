@@ -49,19 +49,13 @@ class MainWindow(object):
 
         self.current_config = current_config
         self.configs_path = configs_path
-        self.configs = []
-        for file in glob.glob(f"{configs_path}/*.json"):
-            file_name = file[file.rindex("\\")+1:]
-            if file_name == "obs_only.json":
-                continue
-            log.info(f"Found config: {file_name}")
-            self.configs.append(file_name[:-5])
 
         self.dropdown_var = tk.StringVar(self.tkui)
         self.dropdown_var.set(self.current_config[:-5])
-        self.dropdown_profiles = tk.OptionMenu(self.tkui, self.dropdown_var, *self.configs)
+        self.dropdown_profiles = tk.OptionMenu(self.tkui, self.dropdown_var, "")
         self.dropdown_profiles.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.dropdown_profiles.place(x=50, y=344)
+        self.refresh_profiles()
         self.button_profile_add = tk.Button(self.tkui, text="➕")
         self.button_profile_add.configure(bg="#333333", fg="white", font=(self.FONT, 10), anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white", command=lambda: self.profile_toggle(True))
         self.button_profile_add.place(x=246, y=344)
@@ -106,6 +100,19 @@ class MainWindow(object):
         self.textfield = tk.Entry(self.tkui)
         self.textfield.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=31, highlightthickness=0, insertbackground="#666666")
         self.textfield.place(x=min_x/2 - 2, y=min_y - 58, anchor="center", width=792, height=25)
+
+    def refresh_profiles(self):
+        self.configs = []
+        for file in glob.glob(f"{self.configs_path}/*.json"):
+            file_name = file[file.rindex("\\")+1:]
+            if file_name == "obs_only.json":
+                continue
+            log.info(f"Found config: {file_name}")
+            self.configs.append(file_name[:-5])
+            self.dropdown_profiles["menu"].delete(0, "end")
+            for string in self.configs:
+                self.dropdown_profiles["menu"].add_command(label=string, command=tk._setit(self.dropdown_var, string))
+
 
     def profile_toggle(self, state):
         if state:

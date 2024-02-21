@@ -1083,6 +1083,7 @@ def add_profile(profile):
         config_struct.save(config, CONFIGS_PATH + profile)
 
     main_window.dropdown_var.set(profile[:-5])
+    main_window.refresh_profiles()
     change_profiles()
     main_window.profile_toggle(False)
 
@@ -1101,6 +1102,7 @@ def remove_profile(profile):
         f.write(CURRENT_CONFIG)
     
     main_window.dropdown_var.set("default")
+    main_window.refresh_profiles()
     change_profiles()
 
 
