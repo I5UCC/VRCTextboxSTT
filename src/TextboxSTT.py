@@ -1080,7 +1080,7 @@ def add_profile(profile):
         main_window.profile_toggle(False)
         log.error(f"Profile {profile} already exists.")
     else:
-        config_struct.save(config_struct(), CONFIGS_PATH + profile)
+        config_struct.save(config, CONFIGS_PATH + profile)
 
     main_window.dropdown_var.set(profile[:-5])
     change_profiles()

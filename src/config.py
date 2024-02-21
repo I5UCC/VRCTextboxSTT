@@ -402,7 +402,7 @@ class config_struct(object):
     emotes: emotes_config = field(default_factory=emotes_config)
 
     @staticmethod
-    def load(path: str):
+    def load(path: str) -> 'config_struct':
         """Load a config from a file path. Returns a config_struct object."""
         return config_struct.from_dict(load(open(path)))
     
