@@ -66,13 +66,21 @@ try:
         log.fatal("Failed to create cache directory: ")
         log.error(traceback.format_exc())
     
+    # Move old config to new location
+    old_config = get_absolute_path('../config.json', __file__)
+    if os.path.isfile(old_config):
+        if os.path.isfile(DEFAULT_CONFIG):
+            os.remove(DEFAULT_CONFIG)
+        log.info("Moving old config to new location...")
+        os.rename(old_config, DEFAULT_CONFIG)
+    
     if not os.path.isfile(CURRENT_CONFIG_PATH):
         with open(CONFIGS_PATH + "CURRENT_CONFIG", "w") as f:
             f.write("default.json")
     else:
         with open(CURRENT_CONFIG_PATH, "r") as f:
             CURRENT_CONFIG = f.readline().rstrip()
-    
+
     if not os.path.isfile(DEFAULT_CONFIG):
         config_struct.save(config_struct(), DEFAULT_CONFIG)
 

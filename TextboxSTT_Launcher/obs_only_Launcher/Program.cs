@@ -67,11 +67,6 @@ namespace obs_only_Launcher
                 }
             }
 
-            if (!File.Exists(currpath + "\\config.json"))
-            {
-                File.Copy(currpath + "\\src\\config.json", currpath + "\\config.json");
-            }
-
             if (first_install)
             {
                 Console.Write("Installation Finished. Press any key to continue...");
