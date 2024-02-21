@@ -69,7 +69,7 @@ class MainWindow(object):
         self.button_profile_remove.configure(bg="#333333", fg="white", font=(self.FONT, 10), anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.button_profile_remove.place(x=276, y=344)
         self.textfield_profile = tk.Entry(self.tkui)
-        self.textfield_profile.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, highlightthickness=0, insertbackground="#666666")
+        self.textfield_profile.configure(bg="#333333", fg="white", font=(self.FONT, 12), width=19, highlightthickness=0, insertbackground="#666666")
 
         self.text_lbl = tk.Label(self.tkui, wraplength=800, text="- No Text -")
         self.text_lbl.configure(bg="#333333", fg="white", font=(self.FONT, 27))
@@ -111,7 +111,7 @@ class MainWindow(object):
         if state:
             self.button_profile_add.place_forget()
             self.button_profile_remove.place_forget()
-            self.textfield_profile.place(x=250, y=348)
+            self.textfield_profile.place(x=250, y=346)
         else:
             self.textfield_profile.place_forget()
             self.button_profile_remove.place(x=276, y=344)
