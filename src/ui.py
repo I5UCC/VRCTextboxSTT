@@ -57,7 +57,15 @@ class MainWindow(object):
         self.dropdown_var.set(self.current_config[:-5])
         self.dropdown_profiles = tk.OptionMenu(self.tkui, self.dropdown_var, *self.configs)
         self.dropdown_profiles.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
-        self.dropdown_profiles.place(x=50, y=343)
+        self.dropdown_profiles.place(x=50, y=344)
+        self.button_profile_add = tk.Button(self.tkui, text="➕")
+        self.button_profile_add.configure(bg="#333333", fg="white", font=(self.FONT, 10), anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white", command=lambda: self.profile_toggle(True))
+        self.button_profile_add.place(x=246, y=344)
+        self.button_profile_remove = tk.Button(self.tkui, text="➖")
+        self.button_profile_remove.configure(bg="#333333", fg="white", font=(self.FONT, 10), anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.button_profile_remove.place(x=276, y=344)
+        self.textfield_profile = tk.Entry(self.tkui)
+        self.textfield_profile.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, highlightthickness=0, insertbackground="#666666")
 
         self.text_lbl = tk.Label(self.tkui, wraplength=800, text="- No Text -")
         self.text_lbl.configure(bg="#333333", fg="white", font=(self.FONT, 27))
@@ -94,6 +102,16 @@ class MainWindow(object):
         self.textfield = tk.Entry(self.tkui)
         self.textfield.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=31, highlightthickness=0, insertbackground="#666666")
         self.textfield.place(x=min_x/2 - 2, y=min_y - 58, anchor="center", width=792, height=25)
+
+    def profile_toggle(self, state):
+        if state:
+            self.button_profile_add.place_forget()
+            self.button_profile_remove.place_forget()
+            self.textfield_profile.place(x=250, y=348)
+        else:
+            self.textfield_profile.place_forget()
+            self.button_profile_remove.place(x=276, y=344)
+            self.button_profile_add.place(x=246, y=344)
 
     def show_update_button(self, text):
         self.btn_update = tk.Button(self.tkui, text=text)

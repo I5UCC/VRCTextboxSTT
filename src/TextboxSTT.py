@@ -1060,6 +1060,42 @@ def change_profiles(*args):
     reload()
 
 
+def add_profile(profile):
+    if not profile:
+        main_window.profile_toggle(False)
+        return
+
+    if not profile.endswith(".json"):
+        profile += ".json"
+
+    if os.path.isfile(CONFIGS_PATH + profile):
+        main_window.profile_toggle(False)
+        log.error(f"Profile {profile} already exists.")
+    else:
+        config_struct.save(config_struct(), CONFIGS_PATH + profile)
+
+    main_window.dropdown_var.set(profile[:-5])
+    change_profiles()
+    main_window.profile_toggle(False)
+
+
+def remove_profile(profile):
+    if not profile or profile == "default.json":
+        log.error("Cannot remove default profile.")
+        return
+    
+    if os.path.isfile(CONFIGS_PATH + profile):
+        os.remove(CONFIGS_PATH + profile)
+    
+    CURRENT_CONFIG = "default.json"
+
+    with open(CURRENT_CONFIG_PATH, "w") as f:
+        f.write(CURRENT_CONFIG)
+    
+    main_window.dropdown_var.set("default")
+    change_profiles()
+
+
 if __name__ == "__main__":
     # Load config
     config = config_struct.load(CONFIG_PATH)
@@ -1083,6 +1119,8 @@ if __name__ == "__main__":
     main_window.tkui.protocol("WM_DELETE_WINDOW", main_window_closing)
     main_window.textfield.bind("<Return>", (lambda event: entrybox_enter_event(main_window.textfield.get())))
     main_window.textfield.bind("<KeyRelease>", (lambda event: entrybox_keyrelease(main_window.textfield.get(), event.char)))
+    main_window.textfield_profile.bind("<Return>", (lambda event: add_profile(main_window.textfield_profile.get())))
+    main_window.button_profile_remove.configure(command=(lambda: remove_profile(main_window.dropdown_var.get() + ".json")))
     main_window.btn_settings.configure(command=open_settings)
     main_window.btn_refresh.configure(command=restart)
     main_window.create_loop(7000, check_ovr)
