@@ -39,7 +39,6 @@ try:
     import winsound
     import copy
     import subprocess
-    import numpy as np
     import logging
     import glob
     import re
@@ -557,6 +556,7 @@ def process_forever() -> None:
         elif _raw_audio != bytes() and time() - _time_last > config.listener.pause_threshold:
             set_typing_indicator(False)
             set_finished(True)
+            log.info(f"Transcript: {_text}")
             _raw_audio = bytes()
             append = False
             last_text = ""
@@ -643,6 +643,8 @@ def process_loop() -> None:
             break
         sleep(0.05)
 
+    if finished:
+        log.info(f"Transcript: {_text}")
     set_typing_indicator(False)
     set_finished(finished)
     main_window.set_button_enabled(True)
@@ -696,6 +698,8 @@ def process_once():
             main_window.set_status_label("CANCELED - WAITING FOR INPUT", "orange")
             play_sound(config.audio_feedback.sound_timeout)
 
+    if finished:
+        log.info(f"Transcript: {_text}")
     set_typing_indicator(False)
     set_finished(finished)
     main_window.set_button_enabled(True)
