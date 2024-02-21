@@ -5,13 +5,14 @@ try:
     DEBUG = len(sys.argv) <= 3
 
     from logger import LogToFile, get_absolute_path, force_single_instance
-    if DEBUG:
-        CACHE_PATH = get_absolute_path('cache/', __file__)
-        CONFIG_PATH = get_absolute_path('config.json', __file__)
-    else:
+    if not DEBUG:
         force_single_instance()
-        CACHE_PATH = get_absolute_path('../cache/', __file__)
-        CONFIG_PATH = get_absolute_path('../config.json', __file__)
+    CACHE_PATH = get_absolute_path('../cache/', __file__)
+    CONFIGS_PATH = get_absolute_path('../configs/', __file__)
+
+    CURRENT_CONFIG = "default.json"
+    DEFAULT_CONFIG = CONFIGS_PATH + CURRENT_CONFIG
+    CURRENT_CONFIG_PATH = CONFIGS_PATH + "CURRENT_CONFIG"
     OUT_FILE_LOGGER = LogToFile(CACHE_PATH)
     sys.stdout = OUT_FILE_LOGGER
     sys.stderr = OUT_FILE_LOGGER
@@ -56,6 +57,27 @@ try:
     except Exception:
         log.error("Failed to read version file.")
     log.info(f"VRCTextboxSTT {VERSION} by I5UCC")
+
+    try:
+        os.mkdir(CONFIGS_PATH)
+    except FileExistsError:
+        pass
+    except Exception:
+        log.fatal("Failed to create cache directory: ")
+        log.error(traceback.format_exc())
+    
+    if not os.path.isfile(CURRENT_CONFIG_PATH):
+        with open(CONFIGS_PATH + "CURRENT_CONFIG", "w") as f:
+            f.write("default.json")
+    else:
+        with open(CURRENT_CONFIG_PATH, "r") as f:
+            CURRENT_CONFIG = f.readline().rstrip()
+    
+    if not os.path.isfile(DEFAULT_CONFIG):
+        config_struct.save(config_struct(), DEFAULT_CONFIG)
+
+    CONFIG_PATH = CONFIGS_PATH + CURRENT_CONFIG
+        
 except FileNotFoundError as e:
     import ctypes
     ctypes.windll.user32.MessageBoxW(0, f"Couldn't Import some dependencies, you might be missing C++ Redistributables needed for this program.\n\n Please try to reinstall the C++ Redistributables, link in the Requirements of the repository.\n\n{e}", "TextboxSTT - Dependency Error", 0)
@@ -220,7 +242,6 @@ def init():
         websocket.set_update_rate(config.websocket.update_rate)
 
     main_window.set_text_label("- No Text -")
-    main_window.set_conf_label(config.osc.ip, config.osc.client_port, osc.osc_server_port, osc.http_port, ovr.initialized, transcriber.device_name, transcriber.whisper_model, transcriber.compute_type, config.whisper.device.cpu_threads, config.vad.enabled)
     main_window.set_status_label("INITIALIZED - WAITING FOR INPUT", "green")
     main_window.set_button_enabled(True)
     initialized = True
@@ -1027,6 +1048,18 @@ def load_fonts() -> None:
             loadfont(font)
 
 
+def change_profiles(*args):
+    global config
+
+    selected = main_window.dropdown_var.get() + ".json"
+    log.info(f"Changing profile to {selected}")
+    with open(CURRENT_CONFIG_PATH, "w") as f:
+        f.write(selected)
+    CONFIG_PATH = CONFIGS_PATH + selected
+    config = config_struct.load(CONFIG_PATH)
+    reload()
+
+
 if __name__ == "__main__":
     # Load config
     config = config_struct.load(CONFIG_PATH)
@@ -1044,7 +1077,8 @@ if __name__ == "__main__":
         x = None
         y = None
 
-    main_window = MainWindow(__file__, x, y, VERSION)
+    main_window = MainWindow(__file__, CONFIGS_PATH, CURRENT_CONFIG, x, y, VERSION)
+    main_window.dropdown_var.trace_add("write", change_profiles)
 
     main_window.tkui.protocol("WM_DELETE_WINDOW", main_window_closing)
     main_window.textfield.bind("<Return>", (lambda event: entrybox_enter_event(main_window.textfield.get())))

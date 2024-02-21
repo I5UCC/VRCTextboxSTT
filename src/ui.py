@@ -17,7 +17,7 @@ import traceback
 log = logging.getLogger(__name__)
 
 class MainWindow(object):
-    def __init__(self, script_path, x=None, y=None, version="DEV"):
+    def __init__(self, script_path, configs_path, current_config, x=None, y=None, version="DEV"):
 
         self.version = version
 
@@ -47,13 +47,21 @@ class MainWindow(object):
         self.logging_frame.place(x=-2, y=342)
         logging.getLogger().addHandler(self.logging_frame)
 
+        self.current_config = current_config
+        self.configs_path = configs_path
+        self.configs = []
+        for file in glob.glob(f"{configs_path}/*.json"):
+            self.configs.append(file[file.rindex("\\")+1:-5])
+
+        self.dropdown_var = tk.StringVar(self.tkui)
+        self.dropdown_var.set(self.current_config[:-5])
+        self.dropdown_profiles = tk.OptionMenu(self.tkui, self.dropdown_var, *self.configs)
+        self.dropdown_profiles.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.dropdown_profiles.place(x=50, y=343)
+
         self.text_lbl = tk.Label(self.tkui, wraplength=800, text="- No Text -")
         self.text_lbl.configure(bg="#333333", fg="white", font=(self.FONT, 27))
         self.text_lbl.place(x=min_x/2, y=min_y/2 - 30, anchor="center")
-
-        self.conf_lbl = tk.Label(self.tkui, text=f"Loading...")
-        self.conf_lbl.configure(bg="#333333", fg="#666666", font=(self.FONT, 10))
-        self.conf_lbl.place(x=48, y=min_y - 23, anchor="w")
 
         self.time_lbl = tk.Label(self.tkui, text=f"0.000s")
         self.time_lbl.configure(bg="#333333", fg="#666666", font=(self.FONT, 10))
@@ -113,14 +121,6 @@ class MainWindow(object):
         except Exception:
             pass
         self.tkui.update()
-
-    def set_conf_label(self, ip, port, server_port, http_port, ovr_initialized, device, model, compute_type, cpu_threads, vad):
-        try:
-            _cpu_str = f", CPU Threads: {cpu_threads}" if device.lower() == "cpu" else ""
-            device = "CPU" if device.lower() == "cpu" else " ".join(device.split(" ")[-2:])
-        except Exception:
-            _cpu_str = ""
-        self.conf_lbl.configure(justify="left", text=f"OSC: {ip}#{port}:{server_port}:{http_port}, OVR: {'Connected' if ovr_initialized else 'Disconnected'}, Device: {device}{_cpu_str}\nModel: {model}, Compute Type: {compute_type}, VAD: {vad}")
 
     def set_time_label(self, time):
         self.time_lbl.configure(text=f"{time:0.3f}s")
