@@ -12,16 +12,51 @@ import keyboard
 from config import config_struct
 import numpy as np
 import re
+import traceback
+from ui import SettingsWindow
+import subprocess
+from logger import force_single_instance
+
+def restart(save: bool = False) -> None:
+    """
+    Restarts the program.
+    """
+    global settings_window
+    if save:
+        settings_window.save()
+    
+    settings_window.on_closing()
+    subprocess.Popen([sys.executable, *sys.argv])
+    sys.exit(0)
+
+def open_settings(config, config_path) -> None:
+    global settings_window
+
+    def get_coordinates():
+        return (50, 50)
+
+    settings_window = SettingsWindow(config, config_path, __file__, get_coordinates, get_coordinates)
+    settings_window.tkui.protocol("WM_DELETE_WINDOW", restart)
+    settings_window.btn_save.config(command=lambda: restart(True))
+    settings_window.open()
 
 def main():
-    global enabled, listen
-    
-    if DEBUG:
-        CACHE_PATH = get_absolute_path('cache/', __file__)
-        CONFIG_PATH = get_absolute_path('config.json', __file__)
-    else:
-        CACHE_PATH = get_absolute_path('../cache/', __file__)
-        CONFIG_PATH = get_absolute_path('../config.json', __file__)
+    global enabled, listen, settings_window
+
+    CACHE_PATH = get_absolute_path('../cache/', __file__)
+    CONFIGS_PATH = get_absolute_path('../configs/', __file__)
+
+    try:
+        os.mkdir(CONFIGS_PATH)
+    except FileExistsError:
+        pass
+    except Exception:
+        print("Failed to create cache directory: ")
+        print(traceback.format_exc())
+
+    CONFIG_PATH = os.path.join(CONFIGS_PATH, "obs_only.json")
+    if not os.path.exists(CONFIG_PATH):
+        config_struct.save(config_struct(), CONFIG_PATH)
     config: config_struct = config_struct.load(CONFIG_PATH)
 
     replacement_dict = {re.compile(key, re.IGNORECASE): value for key, value in config.wordreplacement.list.items()}
@@ -93,12 +128,16 @@ def main():
     print("vad:\t\t\t{}".format(config.vad.enabled))
     print()
     print(transcriber.device_name, transcriber.whisper_model, transcriber.compute_type)
+    print()
+    print("Press F12 to open settings.")
 
     listen.start_listen_background()
 
     print("------------------------ LISTENING -----------------------")
     while True:
         try:
+            if keyboard.is_pressed("F12"):
+                open_settings(config, CONFIG_PATH)
             time_last = time()
 
             if not listen.data_queue.empty():
@@ -164,5 +203,7 @@ def main():
             break
 
 if __name__=='__main__':
+    if not DEBUG:
+        force_single_instance()
     os.system('cls' if os.name == 'nt' else 'clear')
     main()

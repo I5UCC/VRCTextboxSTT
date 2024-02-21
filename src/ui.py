@@ -51,7 +51,11 @@ class MainWindow(object):
         self.configs_path = configs_path
         self.configs = []
         for file in glob.glob(f"{configs_path}/*.json"):
-            self.configs.append(file[file.rindex("\\")+1:-5])
+            file_name = file[file.rindex("\\")+1:]
+            if file_name == "obs_only.json":
+                continue
+            log.info(f"Found config: {file_name}")
+            self.configs.append(file_name[:-5])
 
         self.dropdown_var = tk.StringVar(self.tkui)
         self.dropdown_var.set(self.current_config[:-5])
