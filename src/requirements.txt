@@ -22,4 +22,4 @@ transformers==4.36.*
 ctranslate2==3.24.*
 torch==2.2.*
 --extra-index-url https://download.pytorch.org/whl/cu118
-faster-whisper @ git+https://github.com/SYSTRAN/faster-whisper@0.10.0
+faster-whisper==0.10.*
