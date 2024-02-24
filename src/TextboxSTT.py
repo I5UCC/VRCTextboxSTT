@@ -43,7 +43,7 @@ try:
     import glob
     import re
 
-    log = logging.getLogger("main")
+    log = logging.getLogger("TextboxSTT")
 
     import pkg_resources
     installed_packages = pkg_resources.working_set
@@ -804,7 +804,7 @@ def handle_input() -> None:
         elif not pressed and held:
             held = False
             holding = False
-        sleep(0.1)
+        sleep(0.03)
 
 
 def handle_trigger_state():
@@ -812,7 +812,7 @@ def handle_trigger_state():
     global pressed
     while True:
         pressed = get_trigger_state()
-        sleep(0.08)
+        sleep(0.03)
 
 
 def entrybox_enter_event(text) -> None:
