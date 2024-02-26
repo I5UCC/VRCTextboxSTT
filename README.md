@@ -59,7 +59,7 @@ With default settings, this program has following requirements:
 - [Visual C++ 2015-2022 Redistributable (x64)](https://aka.ms/vs/17/release/vc_redist.x64.exe)
 - SteamVR (IF ran in VR, no Oculus/Meta support as of now.)
 - Inference on GPU (Recommended): 
-  - CUDA enabled GPU (NVIDIA ONLY), otherwise it will fall back to using CPU.
+  - CUDA enabled GPU (So NVIDIA only, but you can try your luck with something like [ZLUDA](https://github.com/vosen/ZLUDA) for AMD GPUs), otherwise it will fall back to using CPU.
   - ~11GB of available space for installation, ~6GB of space used after successful installation and loading models.
   - ~1GB of available RAM.
   - ~600MB of available VRAM.
@@ -68,7 +68,7 @@ With default settings, this program has following requirements:
   - ~400MB of available RAM.
 
 > [!NOTE]
-> Depending on settings changed in the program those requirements can change exponentially.
+> Depending on settings changed in the program inference requirements can change exponentially.
 
 # Demo
 
@@ -95,7 +95,7 @@ You can always leave a Github Star 🟊 (It's free) or buy me a coffee:<br />
 
 # Credit
 - [OpenAI](https://github.com/openai) for their amazing work with anything really.
-- [guillaumekln/faster-whisper](https://github.com/guillaumekln/faster-whisper) and [ctranslate2](https://github.com/OpenNMT/CTranslate2), their work makes this project much more efficent and faster then it otherwise would be.
+- [SYSTRAN/faster-whisper](https://github.com/SYSTRAN/faster-whisper) and [ctranslate2](https://github.com/OpenNMT/CTranslate2), their work makes this project much more efficent and faster then it otherwise would be.
 - [ValveSoftware/openvr](https://github.com/ValveSoftware/openvr) and [cmbruns/pyopenvr](https://github.com/cmbruns/pyopenvr)
 - [Uberi/speech_recognition](https://github.com/Uberi/speech_recognition) and [jleb/pyaudio](https://github.com/jleb/pyaudio)
 - [killfrenzy96](https://github.com/killfrenzy96) for [KillFrenzyAvatarText](https://github.com/killfrenzy96/KillFrenzyAvatarText) and [KatOSC](https://github.com/killfrenzy96/KatOscApp)
