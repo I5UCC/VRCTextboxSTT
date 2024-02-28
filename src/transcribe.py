@@ -54,7 +54,8 @@ class TranscribeHandler(object):
 
         if self.config_whisper.language:
             self.language = LANGUAGE_TO_KEY[self.config_whisper.language]
-        else:
+        if "distil" in self.whisper_model:
+            log.warning("Distil models only support English. Overriding language to English.")
             self.language = "en"
 
         if self.is_openai_model and "large" not in self.whisper_model and self.language == "en" and ".en" not in self.whisper_model:
