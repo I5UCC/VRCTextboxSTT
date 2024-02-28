@@ -334,7 +334,7 @@ class SettingsWindow:
         self.label_model.bind("<Leave>", self.hide_tooltip)
         self.value_model = tk.StringVar(self.tkui)
         self.value_model.set(self.config.whisper.model)
-        self.value_model.trace("w", self.model_changed)
+        self.value_model.trace_add("write", self.model_changed)
         self.models = []
         for key in WHISPER_MODELS:
             if ".en" not in key:
@@ -431,7 +431,7 @@ class SettingsWindow:
         self.value_mode = tk.StringVar(self.tkui)
         self.options_mode = ["once", "once_continuous", "realtime"]
         self.value_mode.set(self.options_mode[self.config.mode])
-        self.value_mode.trace("w", self.mode_changed)
+        self.value_mode.trace_add("write", self.mode_changed)
         self.opt_mode = tk.OptionMenu(self.tkui, self.value_mode, *self.options_mode)
         self.opt_mode.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=19, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_mode.grid(row=10, column=1, padx=PADX_R, pady=PADY, sticky='ws')
@@ -720,6 +720,8 @@ class SettingsWindow:
         self.restart_lbl.configure(bg="#333333", fg="#666666", font=(self.FONT, 10))
         self.restart_lbl.place(relx=0.01, rely=0.9, anchor="w")
 
+        self.model_changed()
+
         self.tkui.withdraw()
 
     def open_emote_window(self):
@@ -763,6 +765,12 @@ class SettingsWindow:
             self.entry_model.grid(row=4, column=1, padx=0, pady=4, sticky='ws')
             self.entry_model.delete(0, tk.END)
             self.entry_model.insert(0, self.value_model.get())
+        
+        if "distil" in self.value_model.get() or "large" in self.value_model.get():
+            self.value_language.set("english")
+            self.opt_language.configure(state="disabled")
+        else:
+            self.opt_language.configure(state="normal")
             
     def entry_model_enter_event(self, text):
         if self.value_model.get() in self.config.whisper.custom_models:
@@ -1333,7 +1341,7 @@ class WebsocketSettingsWindow:
         self.label_align.grid(row=0, column=1, padx=12, pady=5, sticky='ws')
         self.value_align = tk.StringVar(self.tkui)
         self.value_align.set("Client" if self.config.websocket.is_client else "Server")
-        self.value_align.trace("w", self.changed)
+        self.value_align.trace_add("write", self.changed)
         self.opt_align = tk.OptionMenu(self.tkui, self.value_align, *["Server", "Client"])
         self.opt_align.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=18, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
         self.opt_align.grid(row=0, column=2, padx=12, pady=5, sticky='ws')
