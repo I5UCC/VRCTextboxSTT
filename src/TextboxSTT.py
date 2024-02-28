@@ -406,7 +406,7 @@ def populate_chatbox(text, cutoff: bool = False, is_textfield: bool = False):
     clipboard.content = text
 
     if config.always_clipboard:
-        clipboard.copy(text)
+        clipboard.set_clipboard(text)
 
     if browsersource:
         browsersource.setText(text)
