@@ -71,7 +71,7 @@ def main():
 
     listen = ListenHandler(config.listener)
     transcriber = TranscribeHandler(config.whisper, config.vad, CACHE_PATH, config.translator.language == "english")
-    transcriber.transcribe(np.zeros(100000, dtype=np.float32))
+    transcriber.transcribe()
     translator: TranslationHandler = None
     if config.translator.language and config.translator.language != config.whisper.language and transcriber.task == "transcribe":
         translator = TranslationHandler(CACHE_PATH, config.whisper.language, config.translator)

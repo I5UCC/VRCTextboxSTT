@@ -8,6 +8,7 @@ from shutil import rmtree
 from config import whisper_config, vad_config, ct2_device_config, WHISPER_MODELS, LANGUAGE_TO_KEY
 import traceback
 import logging
+from numpy import zeros, ndarray, float32
 
 log = logging.getLogger(__name__)
 
@@ -88,7 +89,7 @@ class TranscribeHandler(object):
         log.debug(f"VAD Parameters: {self.config_vad.parameters.__dict__}")
 
     @measure_time
-    def transcribe(self, audio) -> str:
+    def transcribe(self, audio: ndarray = zeros(100000, dtype=float32)) -> str:
         """
         Transcribes the given audio and returns the transcribed text.
 

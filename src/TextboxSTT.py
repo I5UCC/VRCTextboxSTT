@@ -203,6 +203,7 @@ def init():
     # Initialize TranscribeHandler
     if not transcriber:
         transcriber = TranscribeHandler(copy.deepcopy(config.whisper), config.vad, CACHE_PATH, config.translator.language == "english")
+        transcriber.transcribe()
         log.info("Device: " + transcriber.device_name)
     elif config.whisper != transcriber.config_whisper:
         log.warning("Changed Whisper settings, restarting...")
