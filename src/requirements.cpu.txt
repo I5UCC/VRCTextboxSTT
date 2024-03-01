@@ -12,13 +12,13 @@ Flask-Cors==4.0.*
 pyperclip==1.8.*
 pydub==0.25.*
 dataclasses-json==0.6.*
-sentencepiece==0.1.*
+sentencepiece==0.2.*
 autocorrect==2.6.*
 requests==2.31.*
 websockets==12.*
 zeroconf==0.131.*
 safetensors==0.4.*
-transformers==4.36.*
-ctranslate2==3.24.*
+transformers==4.38.*
+ctranslate2==4.0.*
 torch==2.2.*
-faster-whisper==0.10.*
+faster-whisper==1.0.*
