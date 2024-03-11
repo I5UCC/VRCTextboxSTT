@@ -1,4 +1,5 @@
 try:
+    import ctypes
     import sys
     import os
     sys.path.append(os.path.dirname(__file__))
@@ -56,6 +57,10 @@ try:
     except Exception:
         log.error("Failed to read version file.")
     log.info(f"VRCTextboxSTT {VERSION} by I5UCC")
+
+    python_version = sys.version.split(" ")[0].strip()
+    if "3.12" not in python_version and "v2" in VERSION:
+        ctypes.windll.user32.MessageBoxW(0, f"You are using an unsupported version of Python ({python_version}) for this version of TextboxSTT ({VERSION}), please reinstall the newest version of TextboxSTT from github.", "TextboxSTT - Unsupported Python Version", 0)
 
     try:
         os.mkdir(CONFIGS_PATH)
