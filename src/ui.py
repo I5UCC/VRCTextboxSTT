@@ -127,7 +127,7 @@ class MainWindow(object):
     def show_update_button(self, text):
         self.btn_update = tk.Button(self.tkui, text=text)
         self.btn_update.configure(bg="#333333", fg="white", font=(self.FONT, 10), anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
-        self.btn_update.place(relx=0.99, rely=0.14, anchor="e")
+        self.btn_update.place(x=803, y=50, anchor="e")
 
     def run_loop(self):
         self.tkui.mainloop()
