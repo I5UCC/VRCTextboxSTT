@@ -62,13 +62,22 @@ With default settings, this program has following requirements:
   - CUDA enabled GPU (So NVIDIA only, but you can try your luck with something like [ZLUDA](https://github.com/vosen/ZLUDA) for AMD GPUs), otherwise it will fall back to using CPU.
   - ~11GB of available space for installation, ~6GB of space used after successful installation and loading models.
   - ~1GB of available RAM.
-  - ~600MB of available VRAM.
+  - ~250MB of available VRAM.
 - Inference on CPU:
   - ~4GB of available space for installation, ~2GB of space used after successful installation and loading models.
   - ~400MB of available RAM.
 
 > [!NOTE]
-> Depending on settings changed in the program inference requirements can change exponentially.
+> Depending on settings changed in the program those requirements can change drastically. <br>
+> VRAM usages per Model: (int8 Precision. English models only) <br>
+> ~200MB with tiny.en <br>
+> ~220MB with base.en <br>
+> ~320MB with distil-small.en <br>
+> ~380MB with small.en <br>
+> ~580MB with distil-medium.en <br>
+> ~900MB with medium.en <br>
+> ~900MB with distil-large-v2 <br>
+> ~1.6GB with large-v2
 
 # Demo
 
