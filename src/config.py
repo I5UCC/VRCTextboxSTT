@@ -178,7 +178,7 @@ class osc_config(object):
 @dataclass_json
 @dataclass
 class whisper_config(object):
-    model: str = "base"
+    model: str = "distil-large-v2"
     custom_models: Optional[list[str]] = field(default_factory=list)
     language: str = "english"
     max_transciption_time: float = 2.0
