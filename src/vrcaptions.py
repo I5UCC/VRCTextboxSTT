@@ -125,7 +125,7 @@ def main():
         print("Adjusting for ambient noise. Please wait a moment and be silent.")
         listen.rec.energy_threshold = listen.get_energy_threshold()
 
-    print("---------------- OBS Whisper Transcriber -----------------")
+    print("---------------------- VRCaptions ------------------------")
     print("Press {} to toggle listening.".format(toggle_hotkey))
     print("Press Ctrl+C to exit, or close the console window.")
     print("----------------------------------------------------------")

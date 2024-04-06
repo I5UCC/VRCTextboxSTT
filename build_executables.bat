@@ -14,4 +14,9 @@ dotnet publish -r win-x64
 cd ../..
 powershell -c "copy TextboxSTT_Launcher\obs_only_Launcher\bin\Debug\net4.8.1\win-x64\publish\obs_only_Launcher.exe ./obs_only.exe"
 
+cd TextboxSTT_Launcher\VRCaptions_Launcher
+dotnet publish -r win-x64
+cd ../..
+powershell -c "copy TextboxSTT_Launcher\VRCaptions_Launcher\bin\Debug\net4.8.1\win-x64\publish\VRCaptions_Launcher.exe ./VRCaptions.exe"
+
 timeout 3

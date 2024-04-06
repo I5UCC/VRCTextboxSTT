@@ -8,7 +8,7 @@ cd build
 
 git clone -n --depth=1 --filter=tree:0 https://github.com/I5UCC/VRCTextboxSTT
 cd VRCTextboxSTT
-git sparse-checkout set --no-cone src TextboxSTT.exe obs_only.exe
+git sparse-checkout set --no-cone src TextboxSTT.exe obs_only.exe VRCaptions.exe
 git checkout
 git fetch --all --tags
 
