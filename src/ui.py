@@ -105,7 +105,7 @@ class MainWindow(object):
         self.configs = []
         for file in glob.glob(f"{self.configs_path}/*.json"):
             file_name = file[file.rindex("\\")+1:]
-            if file_name == "obs_only.json":
+            if file_name == "obs_only.json" or file_name == "vrcaptions.json":
                 continue
             log.info(f"Found config: {file_name}")
             self.configs.append(file_name[:-5])

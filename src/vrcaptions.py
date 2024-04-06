@@ -54,7 +54,7 @@ def main():
         print("Failed to create cache directory: ")
         print(traceback.format_exc())
 
-    CONFIG_PATH = os.path.join(CONFIGS_PATH, "obs_only.json")
+    CONFIG_PATH = os.path.join(CONFIGS_PATH, "vrcaptions.json")
     if not os.path.exists(CONFIG_PATH):
         config_struct.save(config_struct(), CONFIG_PATH)
     config: config_struct = config_struct.load(CONFIG_PATH)
@@ -77,9 +77,15 @@ def main():
         translator = TranslationHandler(CACHE_PATH, config.whisper.language, config.translator)
     font_language = config.whisper.language if not config.translator.language else config.translator.language
     ovr = OVRHandler(config.overlay, __file__, font_language, DEBUG)
+    print("Waiting for SteamVR to start...")
     while not ovr.is_running():
+        sleep(3)
+    print("SteamVR started.")
+    print("Waiting for overlay to initialize...")
+    while not ovr.initialized:
         ovr.init()
         sleep(3)
+    print("Overlay initialized.")
     if ovr.overlay_font != font_language:
         ovr.set_overlay_font(font_language)
 

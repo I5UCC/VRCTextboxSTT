@@ -122,12 +122,13 @@ class OVRHandler(object):
                 return False
 
             openvr.VROverlay().showOverlay(self.overlay_handle)
+            text = text[-260:] if len(text) > 260 else text
             text = textwrap.fill(text, 70)
 
             _width = 1920
-            _height = 200
+            _height = 300
             _width_half = 960
-            _height_half = 100
+            _height_half = 150
 
             _img = Image.new("RGBA", (_width, _height))
             _draw = ImageDraw.Draw(_img)
