@@ -77,6 +77,7 @@ def main():
         translator = TranslationHandler(CACHE_PATH, config.whisper.language, config.translator)
     font_language = config.whisper.language if not config.translator.language else config.translator.language
     ovr = OVRHandler(config.overlay, __file__, font_language, DEBUG)
+    print("Please be sure to use a Virtual Audio Cable or similar software to route audio to the microphone input and set it as the Microphone in the settings.")
     print("Waiting for SteamVR to start...")
     while not ovr.is_running():
         sleep(3)
