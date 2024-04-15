@@ -29,7 +29,7 @@ class OVRHandler(object):
         self.initialized = False
         self.overlay_font = None
         
-    def init(self):
+    def init(self, overlay_key: str = "i5ucc.textboxstt", overlay_name: str = "TextboxSTT"):
         if self.initialized:
             self.shutdown()
 
@@ -46,7 +46,7 @@ class OVRHandler(object):
             self.button_action_handle = openvr.VRInput().getActionHandle(STTLISTENHANDLE)
             self.initialized = True
             if self.overlay_conf.enabled:
-                self.overlay_handle = openvr.VROverlay().createOverlay("i5ucc.textboxstt", "TextboxSTT")
+                self.overlay_handle = openvr.VROverlay().createOverlay(overlay_key, overlay_name)
                 openvr.VROverlay().setOverlayWidthInMeters(self.overlay_handle, 1)
                 openvr.VROverlay().setOverlayColor(self.overlay_handle, 1.0, 1.0, 1.0)
                 openvr.VROverlay().setOverlayAlpha(self.overlay_handle, self.overlay_conf.opacity)

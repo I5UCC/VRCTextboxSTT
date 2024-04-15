@@ -84,7 +84,7 @@ def main():
     print("SteamVR started.")
     print("Waiting for overlay to initialize...")
     while not ovr.initialized:
-        ovr.init()
+        ovr.init("i5ucc.vrcaptions", "VRCaptions")
         sleep(3)
     print("Overlay initialized.")
     if ovr.overlay_font != font_language:
