@@ -694,10 +694,10 @@ class SettingsWindow:
         self.button_emotes.bind("<Enter>", (lambda event: self.show_tooltip("Edit the emotes you want to use on KAT")))
         self.button_emotes.bind("<Leave>", self.hide_tooltip)
 
-        self.button_reset_config = tk.Button(self.tkui, text="Reset Settings*", command=self.reset_to_default)
+        self.button_reset_config = tk.Button(self.tkui, text="Open Configurator")
         self.button_reset_config.configure(bg="#333333", fg="white", font=(self.FONT, 10), highlightthickness=0, width=20, anchor="center", activebackground="#555555", activeforeground="white")
         self.button_reset_config.place(relx=0.52, rely=0.95, anchor="center")
-        self.button_reset_config.bind("<Enter>", (lambda event: self.show_tooltip("Resets the config to default values. (Does not clear wordreplacement- and emote lists)")))
+        self.button_reset_config.bind("<Enter>", (lambda event: self.show_tooltip("Opens the Configurator for easy editing of the config file.")))
         self.button_reset_config.bind("<Leave>", self.hide_tooltip)
 
         self.button_osc_reset_config = tk.Button(self.tkui, text="Reset OSC config", command=self.reset_osc_config)
@@ -868,13 +868,6 @@ class SettingsWindow:
         self.config.always_clipboard = True if self.value_clipboard_mode.get() == "Always" else False
 
         json.dump(self.config.to_dict(), open(self.config_path, "w"), indent=4)
-
-    def reset_to_default(self):
-        _config = config_struct()
-        _config.wordreplacement.list = self.config.wordreplacement.list
-        _config.emotes.list = self.config.emotes.list
-        json.dump(_config.to_dict(), open(self.config_path, "w"), indent=4)
-        self.restart_func()
 
     def update(self):
         self.tkui.update()

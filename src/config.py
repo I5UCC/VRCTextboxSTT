@@ -384,6 +384,8 @@ class emotes_config(object):
 @dataclass_json
 @dataclass
 class config_struct(object):
+    last_position_x: int = 125
+    last_position_y: int = 125
     mode: int = 1
     hotkey: str = "f1"
     text_timeout: float = 30.0

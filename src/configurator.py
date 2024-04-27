@@ -6,12 +6,20 @@ from helper import get_absolute_path
 import torch
 
 class Configurator(tk.Tk):
-    def __init__(self, config: config_struct, config_path: str):
+    def __init__(self, config: config_struct, config_path: str, coords: tuple = None, reload_function=None):
         super().__init__()
+        self.reload_function = reload_function
         self.title("Configurator")
         self.geometry("450x440")
         self.minsize(450, 460)
         self.maxsize(450, 460)
+        self.resizable(False, False)
+        if coords:
+            self.geometry(f"+{coords[0] + 150}+{coords[1] - 50}")
+            self.coodinates = coords
+        else:
+            self.coodinates = self.get_coordinates()
+
         self.configure(bg="#333333")
         self.FONT = "Cascadia Code"
         self.config = config
@@ -28,6 +36,8 @@ class Configurator(tk.Tk):
 
         self.create_pages()
         self.show_current_page()
+        self.protocol("WM_DELETE_WINDOW", self.end_configurator)
+        self.mainloop()
 
     def page_output(self):
         page = tk.Frame(self, bg="#333333", width=400, height=300)
@@ -229,6 +239,10 @@ class Configurator(tk.Tk):
     def end_configurator(self):
         config_struct.save(self.config, self.config_path)
         self.destroy()
+        self.reload_function()
+
+    def get_coordinates(self):
+        return (self.winfo_x(), self.winfo_y())
 
 if __name__ == "__main__":
     config_path = get_absolute_path("../configs/default.json")

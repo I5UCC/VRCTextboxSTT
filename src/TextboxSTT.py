@@ -23,6 +23,7 @@ try:
     from time import time, sleep
     from keyboard import is_pressed, all_modifiers
     from ui import MainWindow, SettingsWindow
+    from configurator import Configurator
     from osc import OscHandler
     from browsersource import BrowserHandler
     from ovr import OVRHandler
@@ -51,6 +52,7 @@ try:
     installed_packages_list = sorted(["%s==%s" % (i.key, i.version) for i in installed_packages])
     log.debug(installed_packages_list)
     log.debug("Python Version: " + sys.version)
+    FIRST_LAUNCH = False
     VERSION = "DEV"
     try:
         VERSION = open(get_absolute_path("VERSION", __file__)).readline().rstrip()
@@ -86,6 +88,7 @@ try:
             CURRENT_CONFIG = f.readline().rstrip()
 
     if not os.path.isfile(DEFAULT_CONFIG):
+        FIRST_LAUNCH = True
         config_struct.save(config_struct(), DEFAULT_CONFIG)
 
     CONFIG_PATH = CONFIGS_PATH + CURRENT_CONFIG
@@ -899,6 +902,11 @@ def main_window_closing() -> None:
     global browsersource
     global websocket
 
+    x, y = main_window.get_coordinates()
+    config.last_position_x = x
+    config.last_position_y = y
+    config_struct.save(config, CONFIG_PATH)
+
     log.info("Closing...")
     try:
         osc.stop()
@@ -935,11 +943,18 @@ def open_settings() -> None:
     config_window = SettingsWindow(config, CONFIG_PATH, __file__, main_window.get_coordinates, restart)
     config_window.button_refresh.configure(command=determine_energy_threshold)
     config_window.btn_save.configure(command=(lambda: reload(True)))
+    config_window.button_reset_config.configure(command=open_configurator)
     config_window.button_force_update.configure(command=update)
     config_window.tkui.protocol("WM_DELETE_WINDOW", reload)
     main_window.set_button_enabled(False)
     config_window.open()
 
+def open_configurator():
+    global config_window
+
+    if config_window:
+        config_window.on_closing()
+    Configurator(config, CONFIG_PATH, main_window.get_coordinates(), restart)
 
 def determine_energy_threshold() -> None:
     """Determines the energy threshold for the microphone to use for speech recognition"""
@@ -1130,8 +1145,8 @@ if __name__ == "__main__":
         x = int(sys.argv[1])
         y = int(sys.argv[2])
     except Exception as e:
-        x = None
-        y = None
+        x = config.last_position_x
+        y = config.last_position_y
 
     main_window = MainWindow(__file__, CONFIGS_PATH, CURRENT_CONFIG, x, y, VERSION)
     main_window.dropdown_var.trace_add("write", change_profiles)
@@ -1143,6 +1158,9 @@ if __name__ == "__main__":
     main_window.button_profile_remove.configure(command=(lambda: remove_profile(main_window.dropdown_var.get() + ".json")))
     main_window.btn_settings.configure(command=open_settings)
     main_window.btn_refresh.configure(command=restart)
+    if FIRST_LAUNCH:
+        open_configurator()
+
     main_window.create_loop(7000, check_ovr)
     main_window.tkui.update()
     thread_process = Thread(target=handle_input)
