@@ -65,7 +65,7 @@ With default settings, this program has following requirements:
   - CUDA enabled GPU (So NVIDIA only, but you can try your luck with something like [ZLUDA](https://github.com/vosen/ZLUDA) for AMD GPUs), otherwise it will fall back to using CPU.
   - ~11GB of available space for installation, ~6GB of space used after successful installation and loading models.
   - ~1GB of available RAM.
-  - ~900MB of available VRAM.
+  - ~320MB of available VRAM.
 - Inference on CPU:
   - ~4GB of available space for installation, ~2GB of space used after successful installation and loading models.
   - ~400MB of available RAM.
