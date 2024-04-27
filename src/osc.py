@@ -378,7 +378,7 @@ class OscHandler:
 			try:
 				self.osc_server_test_step = 1
 
-				if self.osc_server_port != 9001:
+				if self.osc_server_port == 0:
 					log.info("OSC Server port is not default, testing port availability and advertising OSCQuery endpoints")
 					if self.osc_server_port <= 0 or not check_if_udp_port_open(self.osc_server_port):
 						self.osc_server_port = get_open_udp_port()
@@ -398,7 +398,7 @@ class OscHandler:
 				self.osc_server = osc_server.ThreadingOSCUDPServer((self.osc_server_ip, self.osc_server_port), self.osc_dispatcher, asyncio.get_event_loop())
 				threading.Thread(target = self.osc_server_serve, daemon = True).start()
 
-				if self.osc_server_port != 9001:
+				if self.osc_server_port == 0:
 					self.oscqs = OSCQueryService("TextboxSTT", self.http_port, self.osc_server_port)
 					for i in range(self.sync_params_max):
 						self.oscqs.advertise_endpoint(self.osc_parameter_prefix + self.param_sync + str(i), access="readwrite")
