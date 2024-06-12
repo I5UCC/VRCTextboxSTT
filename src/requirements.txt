@@ -19,3 +19,4 @@ websockets==12.*
 pyperclip==1.8.*
 pydub==0.25.*
 autocorrect==2.6.*
+sentencepiece==0.2.*
