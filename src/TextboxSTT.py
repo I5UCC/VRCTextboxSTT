@@ -565,6 +565,7 @@ def process_forever() -> None:
         elif _raw_audio != bytes() and time() - _time_last > config.listener.pause_threshold:
             set_typing_indicator(False)
             set_finished(True)
+            osc.textbox_sound_enabled = True
             log.info(f"Transcript: {_text}")
             _raw_audio = bytes()
             append = False
@@ -610,6 +611,8 @@ def process_loop() -> None:
 
     listener.start_listen_background()
 
+    osc.textbox_sound_enabled = True
+
     _time_last = time()
     while True:
         if pressed:
@@ -644,6 +647,7 @@ def process_loop() -> None:
         elif _raw_audio != bytes() and time() - _time_last > config.listener.pause_threshold:
             main_window.set_status_label("FINISHED - WAITING FOR INPUT", "blue")
             finished = True
+            osc.textbox_sound_enabled = True
             play_sound(config.audio_feedback.sound_finished)
             break
         elif _raw_audio == bytes() and time() - _time_last > config.listener.timeout_time:
@@ -682,6 +686,8 @@ def process_once():
     main_window.set_status_label("LISTENING", "#FF00FF")
     play_sound(config.audio_feedback.sound_listen)
     raw_audio = listener.listen_once()
+    osc.textbox_sound_enabled = True
+
     if raw_audio is None:
         main_window.set_status_label("TIMEOUT - WAITING FOR INPUT", "orange")
         play_sound(config.audio_feedback.sound_timeout)
@@ -847,6 +853,7 @@ def entrybox_enter_event(text) -> None:
         if translator:
             play_sound(config.audio_feedback.sound_donelisten)
             text = translator.translate(text)
+        osc.textbox_sound_enabled = True
         populate_chatbox(text, False, True)
         play_sound(config.audio_feedback.sound_finished)
         main_window.clear_textfield()
@@ -885,6 +892,7 @@ def entrybox_keyrelease(text, last_char) -> None:
         if _is_text_empty:
             clear_chatbox()
         else:
+            osc.textbox_sound_enabled = False
             populate_chatbox(text, False, True)
     else:
         set_finished(True)

@@ -50,6 +50,7 @@ class OscHandler:
 		self.param_pointer: str = "KAT_Pointer"
 		self.param_sync: str = "KAT_CharSync"
 
+		self.textbox_sound_enabled: bool = False
 		
 		self.osc_parameter_prefix: str = "/avatar/parameters/"
 		self.osc_use_kat_path: str = self.osc_parameter_prefix + "use_kat"
@@ -458,11 +459,12 @@ class OscHandler:
 	def osc_chatbox_loop(self):
 		_text = self.textbox_target_text.replace("\n", " ")
 
-		if self.last_chatbox_text == _text:
+		if self.last_chatbox_text == "" and _text == "" or self.last_chatbox_text == _text and not self.textbox_sound_enabled:
 			return
 		
 		self.last_chatbox_text = _text
-		self.osc_client.send_message(self.osc_chatbox_path, [_text, True, True if self.textbox_target_text == "" else False])
+		self.osc_client.send_message(self.osc_chatbox_path, [_text, True, self.textbox_sound_enabled])
+		self.textbox_sound_enabled = False
 
 	def set_kat_typing_indicator(self, state: bool):
 		self.osc_client.send_message(self.osc_parameter_listening, state)
