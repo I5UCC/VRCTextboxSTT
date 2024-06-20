@@ -1,3 +1,6 @@
+### v2.1.2 Changelog
+- Fix a dependency issue that caused model downloads to fail for new installs.
+
 ### v2.1.1 Changelog
 - Show changelog before updating
 
