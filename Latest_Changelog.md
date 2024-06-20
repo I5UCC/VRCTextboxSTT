@@ -1,3 +1,6 @@
+### v2.1.1 Changelog
+- Show changelog before updating
+
 ### v2.1.0 Changelog
 - feature request: new mode `always_once`,
   - essentially works just like `realtime` but without interim results. 
