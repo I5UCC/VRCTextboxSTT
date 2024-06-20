@@ -1086,20 +1086,24 @@ def update() -> None:
             main_window.show_update_button("Updating...")
 
         main_window.btn_update.configure(text="Updating..." , state="disabled")
-        main_window.update()
+        main_window.tkui.update()
         cl_view.destroy()
         updater.update(update_done, main_window.set_text_label)
 
     def cancel_update():
         cl_view.destroy()
         main_window.btn_update.configure(state="normal")
-        main_window.update()
+        main_window.tkui.update()
 
-    main_window.btn_update.configure(state="disabled")
+    try:
+        main_window.btn_update.configure(state="disabled")
+    except:
+        pass
     cl_view.run()
     cl_view.update()
     cl_view.button_install.configure(command=update_now)
     cl_view.button_close.configure(command=cancel_update)
+    cl_view.protocol("WM_DELETE_WINDOW", cancel_update)
 
 
 def restart() -> None:
