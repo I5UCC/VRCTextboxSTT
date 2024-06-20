@@ -13,6 +13,7 @@ from config import config_struct, LANGUAGE_TO_KEY, WHISPER_MODELS
 from multiprocessing import cpu_count
 import logging
 import traceback
+import urllib.request
 
 log = logging.getLogger(__name__)
 
@@ -176,6 +177,56 @@ class MainWindow(object):
             self.btn_copy.place(x=800, y=290, anchor="e")
         else:
             self.btn_copy.place_forget()
+
+class ChangeLogViewer(tk.Toplevel):
+    def __init__(self, script_path, x=None, y=None):
+        super().__init__()
+        self.geometry("500x500")
+        if x and y:
+            self.geometry(f"+{x+150}+{y-70}")
+        self.icon_path = get_absolute_path("resources/icon.ico", script_path)
+        self.FONT = "Cascadia Code"
+        self.title("Change Log")
+        self.resizable(False, False)
+        self.iconbitmap(self.icon_path)
+        self.configure(bg="#333333")
+
+        self.label_version = tk.Label(self)
+        self.label_version.configure(bg="#333333", fg="white", font=(self.FONT, 12))
+        self.label_version.pack(pady=5)
+
+        self.text = ScrolledText.ScrolledText(self, wrap="word", width=50, height=18, font=(self.FONT, 10), state=tk.NORMAL, bg="#303030", fg="white", padx=5)
+        self.text.pack(fill="both", expand=1, pady=8, padx=8)
+        self.text.config(state=tk.DISABLED)
+
+        self.button_close = tk.Button(self, text="Cancel", command=self.destroy)
+        self.button_close.configure(bg="#333333", fg="white", font=(self.FONT, 10), anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.button_close.pack(side="bottom", fill="x", expand=1, pady=8, padx=8)
+
+        # add button to navigate to https://github.com/I5UCC/VRCTextboxSTT/releases/latest
+        self.button_github = tk.Button(self, text="Show Latest Release", command=lambda: os.system("start https://github.com/I5UCC/VRCTextboxSTT/releases/latest"))
+        self.button_github.configure(bg="#333333", fg="white", font=(self.FONT, 10), anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.button_github.pack(side="bottom", fill="x", expand=1, pady=8, padx=8)
+
+        self.button_install = tk.Button(self, text="Install Latest Release")
+        self.button_install.configure(bg="#333333", fg="white", font=(self.FONT, 10), anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.button_install.pack(side="bottom", fill="x", expand=1, pady=8, padx=8)
+
+    
+    def run(self):
+        url = "https://raw.githubusercontent.com/I5UCC/VRCTextboxSTT/main/Latest_Changelog.md"
+        try:
+            with urllib.request.urlopen(url) as response:
+                changelog = response.read().decode("utf-8").split('\n')
+                version = changelog[0].replace("#", "").strip()
+                changelog = "\n".join(changelog[1:])
+                self.text.config(state=tk.NORMAL)
+                self.text.delete(1.0, tk.END)
+                self.text.insert(tk.END, changelog)
+                self.text.config(state=tk.DISABLED)
+                self.label_version.configure(text=version)
+        except Exception as e:
+            log.error(f"Failed to fetch changelog: {e}")
 
 
 class LogFrame(tk.Frame, logging.Handler):

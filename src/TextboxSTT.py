@@ -22,7 +22,7 @@ try:
     from threading import Thread
     from time import time, sleep
     from keyboard import is_pressed, all_modifiers
-    from ui import MainWindow, SettingsWindow
+    from ui import MainWindow, SettingsWindow, ChangeLogViewer
     from configurator import Configurator
     from osc import OscHandler
     from browsersource import BrowserHandler
@@ -555,7 +555,6 @@ def process_forever_once():
             _text, time_taken = transcribe_translate_populate(_raw_audio)
             log.info(f"Transcript: {_text}")
             _raw_audio = bytes()
-            append = False
 
         sleep(0.05)
 
@@ -1076,13 +1075,31 @@ def update() -> None:
         restart()
     log.name = "Updater"
 
-    try:
-        main_window.btn_update
-    except AttributeError:
-        main_window.show_update_button("Updating...")
+    coord = main_window.get_coordinates()
 
-    main_window.btn_update.configure(text="Updating..." , state="disabled")
-    updater.update(update_done, main_window.set_text_label)
+    cl_view = ChangeLogViewer(__file__, coord[0], coord[1])
+
+    def update_now():
+        try:
+            main_window.btn_update
+        except AttributeError:
+            main_window.show_update_button("Updating...")
+
+        main_window.btn_update.configure(text="Updating..." , state="disabled")
+        main_window.update()
+        cl_view.destroy()
+        updater.update(update_done, main_window.set_text_label)
+
+    def cancel_update():
+        cl_view.destroy()
+        main_window.btn_update.configure(state="normal")
+        main_window.update()
+
+    main_window.btn_update.configure(state="disabled")
+    cl_view.run()
+    cl_view.update()
+    cl_view.button_install.configure(command=update_now)
+    cl_view.button_close.configure(command=cancel_update)
 
 
 def restart() -> None:
