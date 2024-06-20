@@ -429,7 +429,7 @@ class SettingsWindow:
         self.label_mode.bind("<Enter>", (lambda event: self.show_tooltip("If set to 'realtime' it will show interim results while you are talking until you are done talking.\nIf set to 'once' it will only listen once and then stop listening, like it used to be.")))
         self.label_mode.bind("<Leave>", self.hide_tooltip)
         self.value_mode = tk.StringVar(self.tkui)
-        self.options_mode = ["once", "once_continuous", "realtime"]
+        self.options_mode = ["once", "once_continuous", "realtime", "always_once"]
         self.value_mode.set(self.options_mode[self.config.mode])
         self.value_mode.trace_add("write", self.mode_changed)
         self.opt_mode = tk.OptionMenu(self.tkui, self.value_mode, *self.options_mode)
@@ -845,6 +845,8 @@ class SettingsWindow:
             _realtime = 1
         elif self.value_mode.get() == "realtime":
             _realtime = 2
+        elif self.value_mode.get() == "always_once":
+            _realtime = 3
         self.config.mode = _realtime
         self.config.listener.dynamic_energy_threshold = True if self.value_det.get() == "ON" else False
         self.config.listener.energy_threshold = int(self.entry_energy_threshold.get())

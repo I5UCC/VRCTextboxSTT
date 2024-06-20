@@ -40,7 +40,7 @@ class ListenHandler(object):
 
             return _audio.get_raw_data()
         
-    def start_listen_background(self) -> None:
+    def start_listen_background(self, no_phrase_time_limit = False) -> None:
         """
         Listens in the background and puts the audio data into a queue.
         """
@@ -53,7 +53,7 @@ class ListenHandler(object):
                 log.error(traceback.format_exc())
 
         try:
-            self.stop_listening = self.rec.listen_in_background(self.source, record_callback, phrase_time_limit=self.config.phrase_time_limit)
+            self.stop_listening = self.rec.listen_in_background(self.source, record_callback, phrase_time_limit=self.config.phrase_time_limit if not no_phrase_time_limit else None)
         except Exception:
             log.error("Error starting background listener: ")
             log.error(traceback.format_exc())

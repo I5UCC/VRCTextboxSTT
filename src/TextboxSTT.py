@@ -500,6 +500,71 @@ def should_start_new_phrase(text: str, _raw_audio: bytes, time_taken: float) -> 
     return False
 
 
+def process_forever_once():
+    """
+    Listens consistently but only transcribes once instead of continuously.
+    """
+    
+    global config
+    global main_window
+    global pressed
+    global listener
+    global transcriber
+
+    play_sound(config.audio_feedback.sound_listen)
+
+    _text = ""
+    _raw_audio = bytes()
+
+    main_window.set_button_enabled(True)
+    set_typing_indicator(True)
+    set_finished(False)
+    main_window.set_status_label("LISTENING", "#FF00FF")
+
+    listener.start_listen_background(True)
+
+    _time_last = time()
+    while True:
+        if main_window.config_ui_open or config.mode != 3:
+            main_window.set_status_label("CANCELED - WAITING FOR INPUT", "orange")
+            break
+
+        if pressed:
+            _time_last = time()
+            _held = False
+            while pressed:
+                if time() - _time_last > config.listener.hold_time:
+                    _held = True
+                    break
+                sleep(0.05)
+            if _held:
+                main_window.set_status_label("CLEARED", "#00008b")
+                play_sound(config.audio_feedback.sound_clear)
+                clear_chatbox()
+                break
+        elif not listener.get_queue_empty():
+            set_typing_indicator(True)
+            set_finished(False)
+            _raw_audio += listener.get_queue_data()
+            _time_last = time()
+        elif _raw_audio != bytes() and time() - _time_last > config.listener.pause_threshold:
+            set_typing_indicator(False)
+            set_finished(True)
+            osc.textbox_sound_enabled = True
+            play_sound(config.audio_feedback.sound_donelisten)
+            _text, time_taken = transcribe_translate_populate(_raw_audio)
+            log.info(f"Transcript: {_text}")
+            _raw_audio = bytes()
+            append = False
+
+        sleep(0.05)
+
+    set_typing_indicator(False)
+    set_finished(False)
+    main_window.set_button_enabled(True)
+    listener.stop_listen_background()
+
+
 def process_forever() -> None:
     """
     Processes audio data from the data queue until the user cancels the process.
@@ -796,6 +861,9 @@ def handle_input() -> None:
 
         if config.mode == 2 and not main_window.config_ui_open:
             process_forever()
+            continue
+        elif config.mode == 3 and not main_window.config_ui_open:
+            process_forever_once()
             continue
         elif pressed and not holding and not held:
             holding = True
