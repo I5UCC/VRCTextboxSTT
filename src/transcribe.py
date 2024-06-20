@@ -146,7 +146,6 @@ class TranscribeHandler(object):
             rmtree(os.path.join(os.path.expanduser("~"), ".cache\huggingface"))
         except RuntimeError:
             log.info("Model already exists, skipping conversion.")
-            log.error(traceback.format_exc())
         except FileNotFoundError:
             log.error("Model Cache doesnt exist.")
             log.error(traceback.format_exc())
