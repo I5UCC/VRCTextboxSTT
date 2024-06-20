@@ -13,7 +13,7 @@ from config import config_struct, LANGUAGE_TO_KEY, WHISPER_MODELS
 from multiprocessing import cpu_count
 import logging
 import traceback
-import urllib.request
+import requests
 
 log = logging.getLogger(__name__)
 
@@ -215,16 +215,16 @@ class ChangeLogViewer(tk.Toplevel):
     
     def run(self):
         url = "https://raw.githubusercontent.com/I5UCC/VRCTextboxSTT/main/Latest_Changelog.md"
+        headers = {'Cache-Control': 'no-cache'}
+        
         try:
-            with urllib.request.urlopen(url) as response:
-                changelog = response.read().decode("utf-8").split('\n')
-                version = changelog[0].replace("#", "").strip()
-                changelog = "\n".join(changelog[1:])
-                self.text.config(state=tk.NORMAL)
-                self.text.delete(1.0, tk.END)
-                self.text.insert(tk.END, changelog)
-                self.text.config(state=tk.DISABLED)
-                self.label_version.configure(text=version)
+            changelog = requests.request("GET", "https://raw.githubusercontent.com/I5UCC/VRCTextboxSTT/main/Latest_Changelog.md", headers=headers).text
+            version = changelog.split('\n')[0].replace("#", "").strip()
+            self.text.config(state=tk.NORMAL)
+            self.text.delete(1.0, tk.END)
+            self.text.insert(tk.END, changelog)
+            self.text.config(state=tk.DISABLED)
+            self.label_version.configure(text=version)
         except Exception as e:
             log.error(f"Failed to fetch changelog: {e}")
 
