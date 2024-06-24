@@ -1,10 +1,2 @@
-### v2.1.2 Changelog
-- Fix a dependency issue that caused model downloads to fail for new installs.
-
-### v2.1.1 Changelog
-- Show changelog before updating
-
-### v2.1.0 Changelog
-- feature request: new mode `always_once`,
-  - essentially works just like `realtime` but without interim results. 
-  - or `once` but without requiring the press of a button. 
+### v2.1.3 Changelog
+- Support Flash attention for Ampere GPUs and above. This should improve performance on supported GPUs (>=3000 series)
