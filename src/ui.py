@@ -1449,12 +1449,13 @@ class DeviceSettingsWindow:
         self.tkui = tk.Tk()
         coordinates = get_coordinates()
         self.tkui.geometry(f"+{coordinates[0]}+{coordinates[1]}")
-        self.tkui.minsize(430, 290)
-        self.tkui.maxsize(430, 290)
+        self.tkui.minsize(430, 310)
+        self.tkui.maxsize(430, 310)
         self.tkui.resizable(False, False)
         self.tkui.configure(bg="#333333")
         self.tkui.title("TextboxSTT - Device Settings")
         self.tkui.iconbitmap(icon_path)
+        self.yn_options = ["ON", "OFF"]
 
         self.devices_list = []
         self.value_device = tk.StringVar(self.tkui)
@@ -1506,9 +1507,17 @@ class DeviceSettingsWindow:
         self.entry_max_cutoff_buffer.configure(bg="#333333", fg="white", font=(self.FONT, 12), highlightthickness=0, insertbackground="#666666")
         self.entry_max_cutoff_buffer.grid(row=5, column=1, padx=12, pady=5, sticky='ws')
 
+        self.label_flash_attention = tk.Label(self.tkui, text="Flash Attention", bg="#333333", fg="white", font=(self.FONT, 12))
+        self.label_flash_attention.grid(row=6, column=0, padx=12, pady=5, sticky='ws')
+        self.value_flash_attention = tk.StringVar(self.tkui)
+        self.value_flash_attention.set("ON" if self.config.whisper.device.flash_attention else "OFF")
+        self.opt_flash_attention = tk.OptionMenu(self.tkui, self.value_flash_attention, *self.yn_options)
+        self.opt_flash_attention.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=18, anchor="w", highlightthickness=0, activebackground="#555555", activeforeground="white")
+        self.opt_flash_attention.grid(row=6, column=1, padx=12, pady=5, sticky='ws')
+
         self.btn_save = tk.Button(self.tkui, text="Save", command=self.save)
         self.btn_save.configure(bg="#333333", fg="white", font=(self.FONT, 10), width=49, anchor="center", highlightthickness=0, activebackground="#555555", activeforeground="white")
-        self.btn_save.place(relx=0.5, rely=0.88, anchor="center")
+        self.btn_save.place(relx=0.5, rely=0.91, anchor="center")
 
         self.tkui.mainloop()
 
@@ -1521,6 +1530,7 @@ class DeviceSettingsWindow:
         self.config.whisper.max_transciption_time = float(self.entry_max_transciption_time.get())
         self.config.whisper.max_samples = int(self.entry_max_sample.get())
         self.config.whisper.cutoff_buffer = int(self.entry_max_cutoff_buffer.get())
+        self.config.whisper.device.flash_attention = True if self.value_flash_attention.get() == "ON" else False
 
         json.dump(self.config.to_dict(), open(self.config_path, "w"), indent=4)
         self.on_closing()
