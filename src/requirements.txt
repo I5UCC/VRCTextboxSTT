@@ -21,4 +21,3 @@ pydub==0.25.*
 autocorrect==2.6.*
 sentencepiece==0.2.*
 numpy==1.26.*
-uv==0.2.*
