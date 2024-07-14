@@ -1,2 +1,2 @@
-### v2.1.3 Changelog
-- Support Flash attention for Ampere GPUs and above. This should improve performance on supported GPUs (>=3000 series)
+### v2.1.4 Changelog
+- Fixes Text to Text causing "Unusual Client Behaviour" in VRChat. Don't know how it caused it. ¯\\_(ツ)_/¯
