@@ -383,7 +383,7 @@ def clear_chatbox() -> None:
     main_window.set_text_label("- No Text -")
 
 
-def populate_chatbox(text, cutoff: bool = False, is_textfield: bool = False):
+def populate_chatbox(text, cutoff: bool = False):
     """
     Populates all output sources with the given text.
 
@@ -424,7 +424,7 @@ def populate_chatbox(text, cutoff: bool = False, is_textfield: bool = False):
         websocket.set_text(text)
 
     if config.osc.use_textbox and config.osc.use_both or config.osc.use_textbox and config.osc.use_kat and not osc.isactive or not config.osc.use_kat:
-        osc.set_textbox_text(text, cutoff, config.mode == 0 and not is_textfield)
+        osc.set_textbox_text(text, cutoff, config.mode == 0)
 
     if config.osc.use_kat and osc.isactive:
         _kat_text = text
@@ -921,7 +921,7 @@ def entrybox_enter_event(text) -> None:
             play_sound(config.audio_feedback.sound_donelisten)
             text = translator.translate(text)
         osc.textbox_sound_enabled = True
-        populate_chatbox(text, False, True)
+        populate_chatbox(text, False)
         play_sound(config.audio_feedback.sound_finished)
         main_window.clear_textfield()
     else:
@@ -958,9 +958,6 @@ def entrybox_keyrelease(text, last_char) -> None:
         set_typing_indicator(not _is_text_empty, True)
         if _is_text_empty:
             clear_chatbox()
-        else:
-            osc.textbox_sound_enabled = False
-            populate_chatbox(text, False, True)
     else:
         set_finished(True)
 
