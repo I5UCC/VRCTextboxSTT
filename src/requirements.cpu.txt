@@ -10,7 +10,7 @@ python-osc==1.8.*
 zeroconf==0.131.*
 waitress==3.0.*
 Flask==3.0.*
-Flask-Cors==4.0.*
+Flask-Cors==5.0.*
 openvr==1.26.*
 pillow==10.3.*
 SpeechRecognition==3.10.*
