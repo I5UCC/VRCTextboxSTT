@@ -143,7 +143,8 @@ class TranscribeHandler(object):
         try:
             model_split = model_name.split('/')
             _model_path = f"{self.cache_path}{model_split[0]}-{model_split[1]}-ct2-{quantization}"
-            _converter = TransformersConverter(model_name, copy_files=["tokenizer.json"] if download_tokenizer else None)
+            copy_files = ["preprocessor_config.json", "tokenizer.json"]
+            _converter = TransformersConverter(model_name, copy_files=copy_files)
             _converter.convert(_model_path, force=False, quantization=quantization)
 
             rmtree(os.path.join(os.path.expanduser("~"), ".cache\huggingface"))
