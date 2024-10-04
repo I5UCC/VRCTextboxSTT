@@ -71,16 +71,17 @@ class TranscribeHandler(object):
             self.device = "cpu"
             self.device_index = 0
 
-        self.compute_type = self.device_config.compute_type if self.device_config.compute_type else get_best_compute_type(self.device, self.device_index)
+        self.device_name = torch.cuda.get_device_name(self.device_index) if self.device == "cuda" else "CPU"
+
+        if self.device_config.flash_attention and ("RTX" not in self.device_name or "20" in self.device_name):
+            log.warning("Flash attention is only supported on Ampere GPUs and above. Disabling flash attention.")
+            self.device_config.flash_attention = False
+
+        self.compute_type = self.device_config.compute_type if self.device_config.compute_type else get_best_compute_type(self.device, self.device_index, self.device_config.flash_attention)
         
         self.use_cpu = True if str(self.device) == "cpu" else False
         self.model_path = self.load_model(self.whisper_model, self.compute_type, self.is_openai_model)
-
-        self.device_name = torch.cuda.get_device_name(self.device_index) if self.device == "cuda" else "CPU"
-
-        if self.device_config.flash_attention and "30" not in self.device_name:
-            log.warning("Flash attention is only supported on Ampere GPUs and above. Disabling flash attention.")
-            self.device_config.flash_attention = False
+        
         self.model: WhisperModel = WhisperModel(self.model_path, self.device, self.device_index, self.compute_type, self.device_config.cpu_threads, self.device_config.num_workers, flash_attention=self.device_config.flash_attention)
 
         log.debug(f"Using model: {self.whisper_model} for language: {self.language} ({self.task}) - {self.compute_type}")
