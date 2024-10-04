@@ -163,7 +163,7 @@ class ct2_device_config(object):
     compute_type: Optional[str] = None
     cpu_threads: int = 4
     num_workers: int = 1
-    flash_attention: bool = True
+    flash_attention: bool = False
 
 
 @dataclass_json
