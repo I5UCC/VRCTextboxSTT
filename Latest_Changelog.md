@@ -1,2 +1,2 @@
-### v2.1.4 Changelog
-- Fixes Text to Text causing "Unusual Client Behaviour" in VRChat. Don't know how it caused it. ¯\\_(ツ)_/¯
+### v2.1.5 Changelog
+- add support for large-v3 and large-v3-turbo models
